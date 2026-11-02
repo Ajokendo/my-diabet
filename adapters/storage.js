@@ -1,0 +1,1 @@
+(function(w){function create(o){var key=o&&o.key||'dmFull';return {load:function(){try{var s=localStorage.getItem(key);return s?JSON.parse(s):null}catch(e){return null}},save:function(v){try{localStorage.setItem(key,JSON.stringify(v));return true}catch(e){return false}},clear:function(){try{localStorage.removeItem(key)}catch(e){}}}}w.DMStorage={create:create}})(window);
