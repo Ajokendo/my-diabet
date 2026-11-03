@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v62.02",foods:[
+window.DM_CATALOG={version:"v62.03",foods:[
 {"id":"b195","name":"Горох варёный","category":"Бобовые","kcal":118,"c":21.1,"p":8.3,"f":0.4,"fib":8.3,"se":0,"image":"assets/foods/goroh-varenyy.jpg"},
 {"id":"b58","name":"Горошек зелёный","category":"Бобовые","kcal":81,"c":14.5,"p":5.4,"f":0.4,"fib":5.7,"se":0,"image":"assets/foods/goroshek-zelenyy.jpg"},
 {"id":"b53","name":"Зелёная фасоль","category":"Бобовые","kcal":31,"c":7,"p":1.8,"f":0.2,"fib":3.4,"se":0,"image":"assets/foods/zelenaya-fasol.jpg"},
@@ -105,15 +105,15 @@ window.DM_CATALOG={version:"v62.02",foods:[
 {"id":"cheese-12","name":"Сулугуни","category":"Молочные продукты","kcal":286,"c":0.4,"p":20.5,"f":22,"fib":0,"se":0,"image":"assets/foods/suluguni.jpg"},
 {"id":"cheese-chechil","name":"Сыр Чечил","category":"Молочные продукты","kcal":313,"c":1.5,"p":24.5,"f":23.0,"fib":0,"se":0,"image":"assets/foods/syr-chechil.jpg","note":"Источник КБЖУ: по данным Gemini, требует сверки."},
 {"id":"b179","name":"Сыр адыгейский","category":"Молочные продукты","kcal":240,"c":1.5,"p":19,"f":18,"fib":0,"se":0,"image":"assets/foods/syr-adygeyskiy.jpg"},
-{"id":"b178","name":"Сыр моцарелла","category":"Молочные продукты","kcal":280,"c":3,"p":28,"f":17,"fib":0,"se":0,"image":"assets/foods/syr-motsarella.jpg"},
+{"id":"b178","name":"Сыр моцарелла","category":"Молочные продукты","kcal":299,"c":2.4,"p":22.2,"f":22.1,"fib":0,"se":0,"image":"assets/foods/syr-motsarella.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 170845 (Cheese, mozzarella, whole milk)."},
 {"id":"b28","name":"Сыр твёрдый","category":"Молочные продукты","kcal":350,"c":1.3,"p":25,"f":27,"fib":0,"se":0,"image":"assets/foods/syr-tverdyy.jpg"},
-{"id":"b25","name":"Творог 5%","category":"Молочные продукты","kcal":121,"c":3.3,"p":17,"f":5,"fib":0,"se":0,"image":"assets/foods/tvorog-5pct.jpg"},
+{"id":"b25","name":"Творог 5%","category":"Молочные продукты","kcal":121,"c":1.8,"p":17.2,"f":5,"fib":0,"se":0,"image":"assets/foods/tvorog-5pct.jpg","note":"Источник КБЖУ: таблицы химического состава российских продуктов (творог 5%: Б 17.2, Ж 5, У 1.8). У разных производителей углеводы 1.5–3 г — сверяйтесь с упаковкой."},
 {"id":"b26","name":"Творог 9%","category":"Молочные продукты","kcal":159,"c":2.8,"p":16.7,"f":9,"fib":0,"se":0,"image":"assets/foods/tvorog-9pct.jpg"},
 {"id":"b177","name":"Творог обезжиренный","category":"Молочные продукты","kcal":88,"c":1.8,"p":18,"f":0.6,"fib":0,"se":0,"image":"assets/foods/tvorog-obezzhirennyy.jpg"},
 {"id":"cheese-02","name":"Тильзитский","category":"Молочные продукты","kcal":340,"c":0.5,"p":25,"f":26,"fib":0,"se":0,"image":"assets/foods/tilzitskiy.jpg"},
 {"id":"b180","name":"Фета","category":"Молочные продукты","kcal":264,"c":4.1,"p":14.2,"f":21.3,"fib":0,"se":0,"image":"assets/foods/feta.jpg"},
 {"id":"cheese-06","name":"Чеддер","category":"Молочные продукты","kcal":403,"c":1.3,"p":25,"f":33,"fib":0,"se":0,"image":"assets/foods/chedder.jpg"},
-{"id":"cheese-24","name":"Швейцарский сыр","category":"Молочные продукты","kcal":393,"c":1.4,"p":27,"f":31,"fib":0,"se":0,"image":"assets/foods/shveytsarskiy-syr.jpg"},
+{"id":"cheese-24","name":"Швейцарский сыр","category":"Молочные продукты","kcal":393,"c":1.4,"p":27,"f":31,"fib":0,"se":0,"image":"assets/foods/shveytsarskiy-syr.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 746767 (Cheese, swiss)."},
 {"id":"cheese-05","name":"Эдам","category":"Молочные продукты","kcal":357,"c":1.4,"p":25,"f":28,"fib":0,"se":0,"image":"assets/foods/edam.jpg"},
 {"id":"cheese-07","name":"Эмменталь","category":"Молочные продукты","kcal":380,"c":1.4,"p":28.4,"f":29.7,"fib":0,"se":0,"image":"assets/foods/emmental.jpg"},
 {"id":"cooked-meat-06","name":"Баранина отварная","category":"Мясо и птица","kcal":258,"c":0,"p":25.6,"f":16.5,"fib":0,"se":0,"image":"assets/foods/baranina-otvarnaya.jpg"},
@@ -274,7 +274,7 @@ window.DM_CATALOG={version:"v62.02",foods:[
 {"id":"b1","name":"Хлеб ржаной","category":"Хлеб и выпечка","kcal":210,"c":41,"p":6.6,"f":1.2,"fib":5.8,"se":0,"image":"assets/foods/hleb-rzhanoy.jpg"},
 {"id":"b102","name":"Хлебцы гречневые","category":"Хлеб и выпечка","kcal":350,"c":72,"p":10,"f":3,"fib":5,"se":0,"image":"assets/foods/hlebtsy-grechnevye.jpg"},
 {"id":"b101","name":"Хлебцы рисовые","category":"Хлеб и выпечка","kcal":387,"c":81,"p":8,"f":2.5,"fib":4,"se":0,"image":"assets/foods/hlebtsy-risovye.jpg"},
-{"id":"b139","name":"Вишня","category":"Ягоды","kcal":63,"c":16,"p":1.1,"f":0.2,"fib":2.1,"se":0,"image":"assets/foods/vishnya.jpg"},
+{"id":"b139","name":"Вишня","category":"Ягоды","kcal":50,"c":12.2,"p":1.0,"f":0.3,"fib":1.6,"se":0,"image":"assets/foods/vishnya.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 173954 (Cherries, sour, red, raw)."},
 {"id":"b140","name":"Ежевика","category":"Ягоды","kcal":43,"c":9.6,"p":1.4,"f":0.5,"fib":5.3,"se":0,"image":"assets/foods/ezhevika.jpg"},
 {"id":"b15","name":"Клубника","category":"Ягоды","kcal":32,"c":7.7,"p":0.7,"f":0.3,"fib":2,"se":0,"image":"assets/foods/klubnika.jpg"},
 {"id":"b144","name":"Клюква","category":"Ягоды","kcal":46,"c":12.2,"p":0.4,"f":0.1,"fib":4.6,"se":0,"image":"assets/foods/klyukva.jpg"},
