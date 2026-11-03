@@ -11,6 +11,8 @@ b198,Хумус,Бобовые,166,14.3,7.9,9.6,6,humus.jpg
 b55,Чечевица варёная,Бобовые,116,20.1,9,0.4,7.9,chechevitsa-varenaya.jpg
 dish-v5920-07,Ашлямфу,Готовые блюда,100,19,2,2,0,ashlyamfu.jpg
 dish-v5920-01,Бешбармак,Готовые блюда,230,17,16,10,0,beshbarmak.jpg
+b222,Бифштекс без яйца,Готовые блюда,210,1,19,14,0,bifshteks-bez-yaytsa.jpg
+b221,Бифштекс с яйцом,Готовые блюда,235,1.5,18.5,16.8,0,bifshteks-s-yaytsom.jpg
 b199,Вареники с картофелем,Готовые блюда,190,32,5,5,2,vareniki-s-kartofelem.jpg
 b206,Гречка с грибами,Готовые блюда,120,18,4,3.5,3,grechka-s-gribami.jpg
 b146,Куриное филе запечённое,Готовые блюда,187,0,29,7.8,0,kurinoe-file-zapechennoe.jpg
@@ -23,6 +25,7 @@ shashlik-v5930-4,Люля-кебаб,Готовые блюда,260,2,16,21,0,lyu
 b208,Макароны с томатным соусом,Готовые блюда,130,23,4,2.5,2,makarony-s-tomatnym-sousom.jpg
 dish-v5920-02,Манты,Готовые блюда,210,24,10,7,0,manty.jpg
 b200,Пельмени,Готовые блюда,275,25,11,14,1.5,pelmeni.jpg
+b220,Пельмени жареные,Готовые блюда,310,26,10.5,18,1.2,pelmeni-zharenye.jpg
 b201,Пицца сырная,Готовые блюда,266,33,11,10,2,pitstsa-syrnaya.jpg
 dish-v5920-08,Плов,Готовые блюда,200,28,8,7,0,plov.jpg
 b210,Рататуй,Готовые блюда,60,8,1.5,2.5,2.5,ratatuy.jpg
@@ -40,6 +43,7 @@ b95,Вермишель варёная,Крупы и гарниры,138,25,4.5,2,
 b79,Гречка варёная,Крупы и гарниры,92,19.9,3.4,0.6,2.7,grechka-varenaya.jpg
 b3,Картофель варёный,Крупы и гарниры,86,20.0,1.7,0.1,1.8,kartofel-varenyy.jpg
 b97,Картофель запечённый,Крупы и гарниры,93,21.2,2.5,0.1,2.2,kartofel-zapechennyy.jpg
+b223,Картофель фри,Крупы и гарниры,312,41.4,3.4,14.7,3.8,kartofel-fri.jpg
 b96,Картофельное пюре,Крупы и гарниры,113,16.8,1.9,4.2,1.5,kartofelnoe-pyure.jpg
 b84,Каша кукурузная на воде,Крупы и гарниры,71,14.8,1.7,0.5,0.8,kasha-kukuruznaya-na-vode.jpg
 b85,Каша овсяная на воде,Крупы и гарниры,71,12.0,2.5,1.5,1.7,kasha-ovsyanaya-na-vode.jpg
@@ -128,12 +132,16 @@ boiled-meat-v5933-09,Сердце отварное,Мясо и птица,148,0,
 b158,Сосиски,Мясо и птица,301,2,12.5,27,0,sosiski.jpg
 boiled-meat-v5933-03,Телятина отварная,Мясо и птица,172,0,24,8,0,telyatina-otvarnaya.jpg
 boiled-meat-v5933-08,Язык говяжий отварной,Мясо и птица,224,0,15,17,0,yazyk-govyazhiy-otvarnoy.jpg
+b224,"Айран 1,5%",Напитки,27,1.8,1.6,1.5,0,ayran-1-5pct.jpg
 shoro-2,Аралаш,Напитки,27.3,3.9,2.3,0.9,0,aralash.jpg
 shoro-4,Бозо,Напитки,32,2.3,1.6,1.8,0,bozo.jpg
 shoro-5,Бозо с облепихой,Напитки,53.5,10.2,1.9,0.4,0,bozo-s-oblepihoy.jpg
 b86,Вода,Напитки,0,0,0,0,0,voda.jpg
 shoro-3,Жарма,Напитки,12.2,2.2,0.9,0.1,0,zharma.jpg
 shoro-7,Квас,Напитки,28,7.37,0.09,0.003,0,kvas.jpg
+b227,Компот из сухофруктов,Напитки,43,10.2,0.3,0,1,kompot-iz-suhofruktov.jpg
+b226,Кофе со сливками без сахара,Напитки,45,1.2,0.8,4,0,kofe-so-slivkami-bez-sahara.jpg
+b225,Кофе чёрный без сахара,Напитки,1,0,0.1,0,0,kofe-chernyy-bez-sahara.jpg
 shoro-0,Максым,Напитки,24,5.1,0.89,0.18,0,maksym.jpg
 drink-cola-zero,Напиток Кола без сахара,Напитки,0.3,0,0,0,0,napitok-kola-bez-sahara.jpg
 drink-pepsi-zero,Напиток Пепси без сахара,Напитки,0.3,0,0,0,0,napitok-pepsi-bez-sahara.jpg
@@ -206,7 +214,9 @@ b163,Форель,Рыба и морепродукты,148,0,20.5,6.5,0,forel.jp
 b213,Винегрет,Салаты и закуски,80,10,2,3.5,2.5,vinegret.jpg
 b114,Салат айсберг,Салаты и закуски,14,3,0.9,0.1,1.2,salat-aysberg.jpg
 b211,Салат греческий,Салаты и закуски,85,5,2.5,6,2,salat-grecheskiy.jpg
+b228,Салат из капусты,Салаты и закуски,46,6.2,1.4,1.8,2,salat-iz-kapusty.jpg
 b212,Салат овощной,Салаты и закуски,45,6,1.5,2,2,salat-ovoschnoy.jpg
+b229,Салат оливье,Салаты и закуски,198,7.5,4.2,17.5,1.2,salat-olive.jpg
 kulikov-desert-v-stakanchike-primavera,Десерт в стаканчике Primavera (Куликовский),Сладости и десерты,199,17.5,4.2,12.5,0,desert-v-stakanchike-primavera-kulikovskiy.jpg
 kulikov-desert-v-stakanchike-medovik-s-orehami,Десерт в стаканчике Медовик с орехами (Куликовский),Сладости и десерты,491,44.3,7.6,32.1,0,desert-v-stakanchike-medovik-s-orehami-kulikovskiy.jpg
 kulikov-desert-v-stakanchike-medovik-so-sguschenkoy,Десерт в стаканчике Медовик со сгущёнкой (Куликовский),Сладости и десерты,427,44.0,5.6,25.7,0,desert-v-stakanchike-medovik-so-sguschenkoy-kulikovskiy.jpg
@@ -298,6 +308,7 @@ kulikov-ekler-plombir,Эклер Пломбир (Куликовский),Сла�
 kulikov-ekler-fistashkovyy,Эклер фисташковый (Куликовский),Сладости и десерты,337,26.2,9.1,42.4,0,ekler-fistashkovyy-kulikovskiy.jpg
 b203,Борщ без сметаны,Супы,50,6,2.5,1.8,0,borsch-bez-smetany.jpg
 dish-v5920-12,Борщ со сметаной 15%,Супы,55.3,5.9,2.5,2.4,0,borsch-so-smetanoy-15pct.jpg
+b219,Мампар,Супы,85,9.5,5.2,3.4,0.6,mampar.jpg
 dish-v5920-17,Окрошка с колбасой,Супы,68,6,4,4,0,okroshka-s-kolbasoy.jpg
 dish-v5920-16,Окрошка с мясом,Супы,52,5,4,2,0,okroshka-s-myasom.jpg
 dish-v5920-18,Рассольник,Супы,71,9,4,2,0,rassolnik.jpg
