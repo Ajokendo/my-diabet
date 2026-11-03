@@ -20,7 +20,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир 2.5%',200],['Яблоко',100],['Грецкие орехи',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v62.14';
+const APP_VERSION='v62.15';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -522,8 +522,8 @@ r.addEventListener('change',()=>{const d=D[r.value];if(!d)return;if([...u.option
 const cur=+(db.settings?.xe||12);if(cur!==d.xe&&confirm('Для этого региона обычно используют ХЕ = '+d.xe+' г углеводов (сейчас '+cur+' г). Изменить?')){db.settings.xe=d.xe;const px=document.getElementById('pXE');if(px)px.value=d.xe;save();try{loadDay()}catch(e){}}});})();
 
 const SUB_LABELS={menu:'Конструктор меню',templates:'Шаблоны',recipes:'Рецепты',favorites:'Избранное',calendar:'Календарь',dayinsight:'Разбор дня',glucose:'Сахар',myprofile:'Мои показатели',nutrients:'Нутриенты',digestion:'Переваривание',vitamins:'Витамины',activity:'Активность',profile:'Мой профиль',labs:'Анализы',medical:'Медицинские данные',reports:'Отчёты врачу',family:'Семья и доступ',account:'Аккаунт',help:'Помощь',glossary:'Глоссарий',about:'О приложении'};
-function renderSubTabs(id){document.querySelectorAll('.subTabs').forEach(x=>x.remove());const b=[...document.querySelectorAll('.nav button')].find(b=>(b.dataset.g||'').split(' ').includes(id));if(!b)return;const g=b.dataset.g.split(' ');if(g.length<2)return;
-const bar=document.createElement('div');bar.className='subTabs';bar.innerHTML=g.map(x=>`<button class="${x===id?'active':''}" onclick="show('${x}')">${SUB_LABELS[x]||x}</button>`).join('');const sec=document.getElementById(id);sec.insertBefore(bar,sec.firstChild);}
+function renderSubTabs(id){document.querySelectorAll('.subTabs').forEach(x=>x.remove());makeStickyHead(id);const b=[...document.querySelectorAll('.nav button')].find(b=>(b.dataset.g||'').split(' ').includes(id));if(!b)return;const g=b.dataset.g.split(' ');if(g.length<2)return;
+const bar=document.createElement('div');bar.className='subTabs';bar.innerHTML=g.map(x=>`<button class="${x===id?'active':''}" onclick="show('${x}')">${SUB_LABELS[x]||x}</button>`).join('');const sec=document.getElementById(id);const sh=sec.querySelector(':scope>.stickyHead');sh?sh.insertBefore(bar,sh.firstChild):sec.insertBefore(bar,sec.firstChild);}
 
 const LAB_TYPES=[['hba1c','Гликированный гемоглобин (HbA1c)','%'],['cpep','С-пептид','нг/мл'],['vitd','Витамин D (25-OH)','нг/мл'],['glu','Глюкоза натощак (венозная)','ммоль/л'],['chol','Холестерин общий','ммоль/л'],['ldl','ЛПНП','ммоль/л'],['tg','Триглицериды','ммоль/л'],['creat','Креатинин','мкмоль/л'],['tsh','ТТГ','мЕд/л'],['other','Другое','']];
 function labUnitHint(){const t=LAB_TYPES.find(x=>x[0]===labType.value);labUnit.value=t?t[2]:''}
@@ -550,3 +550,7 @@ const PROFILE_EXTRA=[['pBlood','bloodGroup'],['pRh','rh'],['pDiet','diet'],['pDi
 function fillProfileExtras(){db.profile=db.profile||{};PROFILE_EXTRA.forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.value=db.profile[k]||''})}
 (function(){const orig=window.saveProfile;if(typeof orig!=='function')return;window.saveProfile=function(){db.profile=db.profile||{};PROFILE_EXTRA.forEach(([id,k])=>{const e=document.getElementById(id);if(e)db.profile[k]=e.value.trim()});return orig.apply(this,arguments)}})();
 function latestLab(t){return (db.labs||[]).filter(x=>x.type===t).sort((a,b)=>b.date.localeCompare(a.date))[0]}
+
+function makeStickyHead(id){const sec=document.getElementById(id);if(!sec||sec.querySelector(':scope>.stickyHead'))return;const kids=[...sec.children].slice(0,3);const top=kids.find(k=>k.classList.contains('top'));const sh=document.createElement('div');sh.className='stickyHead';sec.insertBefore(sh,top||sec.firstChild);if(top)sh.appendChild(top);}
+window.addEventListener('scroll',()=>document.body.classList.toggle('scrolled',window.scrollY>40),{passive:true});
+try{makeStickyHead(document.querySelector('.section.active')?.id||'dashboard')}catch(e){}

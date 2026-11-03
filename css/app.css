@@ -122,3 +122,11 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 .subTabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.subTabs button{border:1px solid var(--line,#dbe3ea);background:var(--card,#fff);color:inherit;border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}.subTabs button.active{background:var(--brand);border-color:var(--brand);color:#fff}
 
 .dashKpi{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.dashKpi .mini{display:flex;flex-direction:column;gap:3px}.dashKpi .mini b{font-size:20px}
+
+.stickyHead{position:sticky;top:0;z-index:30;background:var(--bg);margin:-28px -30px 18px;padding:14px 30px 10px;transition:box-shadow .2s}
+.stickyHead .top{margin-bottom:0!important}
+.stickyHead .subTabs{margin-bottom:10px}
+body.scrolled .stickyHead{box-shadow:0 6px 14px -10px rgba(16,59,58,.35)}
+body.scrolled .stickyHead .top p{display:none}
+body.scrolled .stickyHead h1{font-size:22px;margin:0}
+@media(max-width:900px){.stickyHead{margin:-13px -13px 14px;padding:10px 13px 8px}}
