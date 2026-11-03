@@ -4,6 +4,7 @@ const http=require('http');
 const fs=require('fs');
 const path=require('path');
 const crypto=require('crypto');
+const foodPhoto=require('./food-photo');
 const PORT=Number(process.env.PORT||8787);
 const DATA_DIR=process.env.DATA_DIR||path.join(__dirname,'data');
 fs.mkdirSync(DATA_DIR,{recursive:true});
@@ -15,7 +16,7 @@ function persist(){fs.writeFileSync(DB_FILE,JSON.stringify(db,null,2));}
 function id(p){return p+'_'+crypto.randomBytes(12).toString('hex');}
 function now(){return new Date().toISOString();}
 function json(res,status,obj){const s=JSON.stringify(obj);res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Content-Length':Buffer.byteLength(s),'Cache-Control':'no-store'});res.end(s);}
-function readBody(req){return new Promise((resolve,reject)=>{let b='';req.on('data',c=>{b+=c;if(b.length>5e6){req.destroy();reject(new Error('payload too large'))}});req.on('end',()=>{try{resolve(b?JSON.parse(b):{})}catch(e){reject(new Error('invalid json'))}});req.on('error',reject)})}
+function readBody(req){return new Promise((resolve,reject)=>{let b='';req.on('data',c=>{b+=c;if(b.length>15e6){req.destroy();reject(new Error('payload too large'))}});req.on('end',()=>{try{resolve(b?JSON.parse(b):{})}catch(e){reject(new Error('invalid json'))}});req.on('error',reject)})}
 function hashPassword(password,salt=crypto.randomBytes(16).toString('hex')){const hash=crypto.scryptSync(String(password),salt,64).toString('hex');return {salt,hash};}
 function verifyPassword(password,u){return crypto.timingSafeEqual(Buffer.from(hashPassword(password,u.salt).hash,'hex'),Buffer.from(u.passwordHash,'hex'));}
 function token(){return crypto.randomBytes(32).toString('base64url');}
@@ -61,9 +62,10 @@ function changesAfter(pid,cursor,limit){const n=Number(cursor||0);return Object.
 
 async function handler(req,res){
   const method=req.method||'GET', p=route(req);
-  if(method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, Authorization','Access-Control-Allow-Methods':'GET,POST,DELETE,OPTIONS'});return res.end()}
-  res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization');res.setHeader('Access-Control-Allow-Methods','GET,POST,DELETE,OPTIONS');
+  if(method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, Authorization, X-Access-Code','Access-Control-Allow-Methods':'GET,POST,DELETE,OPTIONS'});return res.end()}
+  res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization, X-Access-Code');res.setHeader('Access-Control-Allow-Methods','GET,POST,DELETE,OPTIONS');
   try{
+    if(method==='POST'&&p==='/v1/food-photo'){if(!foodPhoto.checkAccess(req))return json(res,401,{error:'Неверный код доступа.'});try{return json(res,200,await foodPhoto.recognize(await readBody(req)))}catch(e){return json(res,e.status||500,{error:e.message})}}
     if(method==='GET'&&p==='/health')return json(res,200,{ok:true,service:'my-diabetes-sync',time:now(),version:'SYNC-SERVER-3.0-SECURE-AUTH'});
     if(method==='POST'&&p==='/v1/auth/register'){
       const b=await readBody(req),email=String(b.email||'').trim().toLowerCase(),password=String(b.password||'');
