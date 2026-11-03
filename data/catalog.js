@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v62.05",foods:[
+window.DM_CATALOG={version:"v62.06",foods:[
 {"id":"b195","name":"Горох варёный","category":"Бобовые","kcal":118,"c":21.1,"p":8.3,"f":0.4,"fib":8.3,"se":0,"image":"assets/foods/goroh-varenyy.jpg"},
 {"id":"b58","name":"Горошек зелёный","category":"Бобовые","kcal":81,"c":14.5,"p":5.4,"f":0.4,"fib":5.7,"se":0,"image":"assets/foods/goroshek-zelenyy.jpg"},
 {"id":"b53","name":"Зелёная фасоль","category":"Бобовые","kcal":31,"c":7,"p":1.8,"f":0.2,"fib":3.4,"se":0,"image":"assets/foods/zelenaya-fasol.jpg"},
@@ -45,7 +45,7 @@ window.DM_CATALOG={version:"v62.05",foods:[
 {"id":"b82","name":"Булгур варёный","category":"Крупы и гарниры","kcal":83,"c":18.6,"p":3.1,"f":0.2,"fib":4.5,"se":0,"image":"assets/foods/bulgur-varenyy.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 170287 (Bulgur, cooked)."},
 {"id":"b95","name":"Вермишель варёная","category":"Крупы и гарниры","kcal":138,"c":25,"p":4.5,"f":2,"fib":1.3,"se":0,"image":"assets/foods/vermishel-varenaya.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 169732 (Noodles, egg, enriched, cooked)."},
 {"id":"b79","name":"Гречка варёная","category":"Крупы и гарниры","kcal":92,"c":19.9,"p":3.4,"f":0.6,"fib":2.7,"se":0,"image":"assets/foods/grechka-varenaya.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 170686 (Buckwheat groats, roasted, cooked)."},
-{"id":"b3","name":"Картофель варёный","category":"Крупы и гарниры","kcal":86,"c":20.0,"p":1.7,"f":0.1,"fib":1.8,"se":0,"image":"assets/foods/kartofel-varenyy.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 170440 (Potatoes, boiled, without skin). До v62.05 стояло 17 г углеводов по российским таблицам."},
+{"id":"b3","name":"Картофель варёный","category":"Крупы и гарниры","kcal":86,"c":20.0,"p":1.7,"f":0.1,"fib":1.8,"se":0,"image":"assets/foods/kartofel-varenyy.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 170440 (Potatoes, boiled, without skin). До v62.06 стояло 17 г углеводов по российским таблицам."},
 {"id":"b97","name":"Картофель запечённый","category":"Крупы и гарниры","kcal":93,"c":21.2,"p":2.5,"f":0.1,"fib":2.2,"se":0,"image":"assets/foods/kartofel-zapechennyy.jpg"},
 {"id":"b96","name":"Картофельное пюре","category":"Крупы и гарниры","kcal":113,"c":16.8,"p":1.9,"f":4.2,"fib":1.5,"se":0,"image":"assets/foods/kartofelnoe-pyure.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 168555 (Potatoes, mashed, home-prepared, whole milk and butter added)."},
 {"id":"b84","name":"Каша кукурузная на воде","category":"Крупы и гарниры","kcal":71,"c":14.8,"p":1.7,"f":0.5,"fib":0.8,"se":0,"image":"assets/foods/kasha-kukuruznaya-na-vode.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 171655 (Corn grits, cooked with water, without salt)."},
@@ -237,8 +237,8 @@ window.DM_CATALOG={version:"v62.05",foods:[
 {"id":"b135","name":"Ананас","category":"Фрукты","kcal":50,"c":13.1,"p":0.5,"f":0.1,"fib":1.4,"se":0,"image":"assets/foods/ananas.jpg"},
 {"id":"b7","name":"Апельсин","category":"Фрукты","kcal":47,"c":11.8,"p":0.9,"f":0.1,"fib":2.4,"se":0,"image":"assets/foods/apelsin.jpg"},
 {"id":"b18","name":"Арбуз","category":"Фрукты","kcal":30,"c":7.6,"p":0.6,"f":0.2,"fib":0.4,"se":0,"image":"assets/foods/arbuz.jpg"},
-{"id":"b6","name":"Банан","category":"Фрукты","kcal":89,"c":22.8,"p":1.1,"f":0.3,"fib":2.6,"se":0,"image":"assets/foods/banan.jpg"},
-{"id":"b14","name":"Виноград","category":"Фрукты","kcal":69,"c":18.1,"p":0.7,"f":0.2,"fib":0.9,"se":0,"image":"assets/foods/vinograd.jpg"},
+{"id":"b6","name":"Банан","category":"Фрукты","kcal":89,"c":22.8,"p":1.1,"f":0.3,"fib":2.6,"se":0,"image":"assets/foods/banan.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 173944 (Bananas, raw)."},
+{"id":"b14","name":"Виноград","category":"Фрукты","kcal":69,"c":18.1,"p":0.7,"f":0.2,"fib":0.9,"se":0,"image":"assets/foods/vinograd.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 174683 (Grapes, red or green, raw)."},
 {"id":"b133","name":"Гранат","category":"Фрукты","kcal":83,"c":18.7,"p":1.7,"f":1.2,"fib":4,"se":0,"image":"assets/foods/granat.jpg"},
 {"id":"b127","name":"Грейпфрут","category":"Фрукты","kcal":42,"c":10.7,"p":0.8,"f":0.1,"fib":1.6,"se":0,"image":"assets/foods/greypfrut.jpg"},
 {"id":"b9","name":"Груша","category":"Фрукты","kcal":57,"c":15.2,"p":0.4,"f":0.1,"fib":3.1,"se":0,"image":"assets/foods/grusha.jpg"},
@@ -257,14 +257,14 @@ window.DM_CATALOG={version:"v62.05",foods:[
 {"id":"b130","name":"Помело","category":"Фрукты","kcal":38,"c":9.6,"p":0.8,"f":0,"fib":1,"se":0,"image":"assets/foods/pomelo.jpg"},
 {"id":"b13","name":"Слива","category":"Фрукты","kcal":46,"c":11.4,"p":0.7,"f":0.3,"fib":1.4,"se":0,"image":"assets/foods/sliva.jpg"},
 {"id":"b145","name":"Финики","category":"Фрукты","kcal":282,"c":75,"p":2.5,"f":0.4,"fib":8,"se":0,"image":"assets/foods/finiki.jpg"},
-{"id":"b132","name":"Хурма","category":"Фрукты","kcal":70,"c":18.6,"p":0.6,"f":0.2,"fib":3.6,"se":0,"image":"assets/foods/hurma.jpg"},
+{"id":"b132","name":"Хурма","category":"Фрукты","kcal":70,"c":18.6,"p":0.6,"f":0.2,"fib":3.6,"se":0,"image":"assets/foods/hurma.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 169941 (Persimmons, japanese, raw)."},
 {"id":"b5","name":"Яблоко","category":"Фрукты","kcal":52,"c":13.8,"p":0.3,"f":0.2,"fib":2.4,"se":0,"image":"assets/foods/yabloko.jpg"},
-{"id":"b126","name":"Яблоко зелёное","category":"Фрукты","kcal":52,"c":13.8,"p":0.3,"f":0.2,"fib":2.4,"se":0,"image":"assets/foods/yabloko-zelenoe.jpg"},
+{"id":"b126","name":"Яблоко зелёное","category":"Фрукты","kcal":58,"c":13.6,"p":0.4,"f":0.2,"fib":2.8,"se":0,"image":"assets/foods/yabloko-zelenoe.jpg","note":"Источник КБЖУ: USDA FoodData Central, FDC 168203 (Apples, raw, granny smith, with skin)."},
 {"id":"b105","name":"Блины","category":"Хлеб и выпечка","kcal":227,"c":28,"p":6.1,"f":10,"fib":0.8,"se":0,"image":"assets/foods/bliny.jpg","note":"Не проверено по источнику. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой."},
 {"id":"dish-bliny-smetana-v6069","name":"Блины со сметаной","category":"Хлеб и выпечка","kcal":209.8,"c":21.9,"p":5.2,"f":11.25,"fib":0.6,"se":0,"image":"assets/foods/bliny-so-smetanoy.jpg","isDish":true,"note":"Состав для справочного расчёта: 75% блины + 25% сметана 15%. На 100 г: 209.8 ккал · У 21.9 г · Б 5.2 г · Ж 11.25 г. При 1 ХЕ = 12 г У: 1.83 ХЕ/100 г. Ориентир для порции 200 г: 419.6 ккал · У 43.8 г · Б 10.4 г · Ж 22.5 г · 3.65 ХЕ. Не проверено по источнику. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой."},
 {"id":"dish-v5920-21","name":"Боорсоки","category":"Хлеб и выпечка","kcal":402,"c":48,"p":6,"f":20,"fib":0,"se":0,"image":"assets/foods/boorsoki.jpg","isDish":true,"note":"Не проверено по источнику. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой."},
 {"id":"b104","name":"Крекеры","category":"Хлеб и выпечка","kcal":430,"c":70,"p":8,"f":14,"fib":3,"se":0,"image":"assets/foods/krekery.jpg","note":"Не проверено по источнику. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой."},
-{"id":"b2","name":"Лаваш тонкий","category":"Хлеб и выпечка","kcal":275,"c":55,"p":8.5,"f":1.2,"fib":2.5,"se":0,"image":"assets/foods/lavash-tonkiy.jpg","note":"Не подтверждено: у распространённых марок лаваша 226–243 ккал и 48–50 г углеводов, здесь 55 г. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой."},
+{"id":"b2","name":"Лаваш тонкий","category":"Хлеб и выпечка","kcal":236,"c":49.0,"p":7.8,"f":0.9,"fib":2.5,"se":0,"image":"assets/foods/lavash-tonkiy.jpg","note":"Средние значения для покупного тонкого армянского лаваша (226–243 ккал, У 48–50 г). Точные граммы — на упаковке производителя. До v62.06 стояло 55 г углеводов."},
 {"id":"b106","name":"Оладьи","category":"Хлеб и выпечка","kcal":230,"c":30,"p":6,"f":9,"fib":1,"se":0,"image":"assets/foods/oladi.jpg","note":"Не проверено по источнику. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой."},
 {"id":"b103","name":"Сухари","category":"Хлеб и выпечка","kcal":335,"c":72,"p":11,"f":1.5,"fib":4,"se":0,"image":"assets/foods/suhari.jpg","note":"Сверено с российскими таблицами состава (сухари из пшеничного хлеба: Б 11.2, Ж 1.4, У 72.2 г)."},
 {"id":"b100","name":"Хлеб бездрожжевой","category":"Хлеб и выпечка","kcal":240,"c":45,"p":8,"f":2,"fib":5,"se":0,"image":"assets/foods/hleb-bezdrozhzhevoy.jpg","note":"Не проверено по источнику. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой."},
