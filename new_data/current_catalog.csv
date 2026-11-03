@@ -1,0 +1,378 @@
+﻿id,name,category,kcal,carbs_g,protein_g,fat_g,fiber_g,image_file
+b195,Горох варёный,Бобовые,118,21.1,8.3,0.4,8.3,goroh-varenyy.jpg
+b58,Горошек зелёный,Бобовые,81,14.5,5.4,0.4,5.7,goroshek-zelenyy.jpg
+b53,Зелёная фасоль,Бобовые,31,7,1.8,0.2,3.4,zelenaya-fasol.jpg
+b196,Маш варёный,Бобовые,105,19.2,7,0.4,7.6,mash-varenyy.jpg
+b57,Нут варёный,Бобовые,164,27.4,8.9,2.6,7.6,nut-varenyy.jpg
+b197,Соя варёная,Бобовые,173,9.9,18.2,9,6,soya-varenaya.jpg
+b194,Фасоль белая варёная,Бобовые,139,25.1,9.7,0.4,6.3,fasol-belaya-varenaya.jpg
+b193,Фасоль красная варёная,Бобовые,127,22.8,8.7,0.5,6.4,fasol-krasnaya-varenaya.jpg
+b198,Хумус,Бобовые,166,14.3,7.9,9.6,6,humus.jpg
+b55,Чечевица варёная,Бобовые,116,20.1,9,0.4,7.9,chechevitsa-varenaya.jpg
+dish-v5920-07,Ашлямфу,Готовые блюда,100,19,2,2,0,ashlyamfu.jpg
+dish-v5920-01,Бешбармак,Готовые блюда,230,17,16,10,0,beshbarmak.jpg
+b199,Вареники с картофелем,Готовые блюда,190,32,5,5,2,vareniki-s-kartofelem.jpg
+b206,Гречка с грибами,Готовые блюда,120,18,4,3.5,3,grechka-s-gribami.jpg
+b146,Куриное филе запечённое,Готовые блюда,187,0,29,7.8,0,kurinoe-file-zapechennoe.jpg
+shashlik-v5930-5,Куриные крылышки,Готовые блюда,250,2,23,17,0,kurinye-krylyshki.jpg
+dish-v5920-03,Куурдак,Готовые блюда,220,9,17,13,0,kuurdak.jpg
+dish-v5920-06,Лагман босо,Готовые блюда,170,26,10,5,0,lagman-boso.jpg
+dish-v5920-04,Лагман гюро,Готовые блюда,180,24,9,6,0,lagman-gyuro.jpg
+dish-v5920-05,Лагман жидкий,Готовые блюда,120,16,7,4,0,lagman-zhidkiy.jpg
+shashlik-v5930-4,Люля-кебаб,Готовые блюда,260,2,16,21,0,lyulya-kebab.jpg
+b208,Макароны с томатным соусом,Готовые блюда,130,23,4,2.5,2,makarony-s-tomatnym-sousom.jpg
+dish-v5920-02,Манты,Готовые блюда,210,24,10,7,0,manty.jpg
+b200,Пельмени,Готовые блюда,275,25,11,14,1.5,pelmeni.jpg
+b201,Пицца сырная,Готовые блюда,266,33,11,10,2,pitstsa-syrnaya.jpg
+dish-v5920-08,Плов,Готовые блюда,200,28,8,7,0,plov.jpg
+b210,Рататуй,Готовые блюда,60,8,1.5,2.5,2.5,ratatuy.jpg
+b207,Рис с овощами,Готовые блюда,110,20,2.5,2,1.8,ris-s-ovoschami.jpg
+b154,Свинина запечённая,Готовые блюда,260,0,27,17,0,svinina-zapechennaya.jpg
+b209,Тушёные овощи,Готовые блюда,65,9,2,2.5,3,tushenye-ovoschi.jpg
+dish-v5920-20,Фрикасе,Готовые блюда,170,6,14,10,0,frikase.jpg
+dish-v5920-09,Чучук,Готовые блюда,463,2,25,39,0,chuchuk.jpg
+shashlik-v5930-1,Шашлык из баранины,Готовые блюда,294,0,24,21,0,shashlyk-iz-baraniny.jpg
+shashlik-v5930-2,Шашлык из говядины,Готовые блюда,250,0,26,16,0,shashlyk-iz-govyadiny.jpg
+shashlik-v5930-3,Шашлык куриный,Готовые блюда,190,1,27,8,0,shashlyk-kurinyy.jpg
+b4,Батат,Крупы и гарниры,86,20.1,1.6,0.1,3,batat.jpg
+b82,Булгур варёный,Крупы и гарниры,83,18.6,3.1,0.2,4.5,bulgur-varenyy.jpg
+b95,Вермишель варёная,Крупы и гарниры,138,25,4.5,2,1.3,vermishel-varenaya.jpg
+b79,Гречка варёная,Крупы и гарниры,92,19.9,3.4,0.6,2.7,grechka-varenaya.jpg
+b3,Картофель варёный,Крупы и гарниры,86,20.0,1.7,0.1,1.8,kartofel-varenyy.jpg
+b97,Картофель запечённый,Крупы и гарниры,93,21.2,2.5,0.1,2.2,kartofel-zapechennyy.jpg
+b96,Картофельное пюре,Крупы и гарниры,113,16.8,1.9,4.2,1.5,kartofelnoe-pyure.jpg
+b84,Каша кукурузная на воде,Крупы и гарниры,71,14.8,1.7,0.5,0.8,kasha-kukuruznaya-na-vode.jpg
+b85,Каша овсяная на воде,Крупы и гарниры,71,12.0,2.5,1.5,1.7,kasha-ovsyanaya-na-vode.jpg
+b83,Киноа варёная,Крупы и гарниры,120,21.3,4.4,1.9,2.8,kinoa-varenaya.jpg
+b90,Кукуруза варёная,Крупы и гарниры,96,21,3.4,1.5,2.4,kukuruza-varenaya.jpg
+corn-grits-01,Кукурузная крупа,Крупы и гарниры,328,71,8.3,1.2,4.8,kukuruznaya-krupa.jpg
+b77,Макароны варёные,Крупы и гарниры,158,30.9,5.8,0.9,1.8,makarony-varenye.jpg
+b91,Манная каша на воде,Крупы и гарниры,80,16,2.5,0.2,0.8,mannaya-kasha-na-vode.jpg
+b80,Перловка варёная,Крупы и гарниры,123,28.2,2.3,0.4,3.8,perlovka-varenaya.jpg
+b81,Пшено варёное,Крупы и гарниры,119,23.7,3.5,1,1.3,psheno-varenoe.jpg
+b88,Рис басмати варёный,Крупы и гарниры,121,25.2,3.5,0.4,0.7,ris-basmati-varenyy.jpg
+b87,Рис бурый варёный,Крупы и гарниры,123,25.6,2.7,1,1.6,ris-buryy-varenyy.jpg
+b78,Рис варёный,Крупы и гарниры,130,28.2,2.7,0.3,0.4,ris-varenyy.jpg
+b89,Рис жасмин варёный,Крупы и гарниры,129,27,2.7,0.3,0.4,ris-zhasmin-varenyy.jpg
+b92,Рисовая каша на молоке,Крупы и гарниры,97,17,3,2,0.3,risovaya-kasha-na-moloke.jpg
+b94,Спагетти варёные,Крупы и гарниры,158,30.9,5.8,0.9,1.8,spagetti-varenye.jpg
+shoro-8,Талкан Шоро,Крупы и гарниры,244.7,58.8,9.9,3.1,0,talkan-shoro.jpg
+b72,Майонез,"Масла, соусы и приправы",680,0.6,1,75,0,mayonez.jpg
+b71,Оливковое масло,"Масла, соусы и приправы",884,0,0,100,0,olivkovoe-maslo.jpg
+shoro-9,Сары май (топлёное масло Гхи),"Масла, соусы и приправы",891,0,0,99.3,0,sary-may-toplenoe-maslo-ghi.jpg
+b73,Томатная паста,"Масла, соусы и приправы",82,18.9,4.3,0.5,4.1,tomatnaya-pasta.jpg
+cheese-19,Бри,Молочные продукты,334,0.5,20.8,27.7,0,bri.jpg
+cheese-13,Брынза,Молочные продукты,260,0.4,17.9,20.1,0,brynza.jpg
+cheese-14,Бургомистр,Молочные продукты,351,0,23.5,28.5,0,burgomistr.jpg
+cheese-04,Гауда,Молочные продукты,356,2.2,25,27.4,0,gauda.jpg
+cheese-01,Голландский,Молочные продукты,352,0.9,26.3,26.6,0,gollandskiy.jpg
+cheese-08,Грюйер,Молочные продукты,413,0.4,29.8,32.3,0,gryuyer.jpg
+cheese-18,Дорблю,Молочные продукты,353,2,21,29,0,dorblyu.jpg
+b176,Йогурт без сахара,Молочные продукты,60,4,4,3,0,yogurt-bez-sahara.jpg
+b24,Йогурт греческий 2%,Молочные продукты,73,3.9,10,2,0,yogurt-grecheskiy-2pct.jpg
+b23,Йогурт натуральный,Молочные продукты,61,4.7,3.5,3.3,0,yogurt-naturalnyy.jpg
+cheese-20,Камамбер,Молочные продукты,300,0.5,19.8,24.3,0,kamamber.jpg
+b22,Кефир 2.5%,Молочные продукты,53,4,3,2.5,0,kefir-2-5pct.jpg
+cheese-10,Костромской,Молочные продукты,343,0,25,26,0,kostromskoy.jpg
+b182,Крем-сыр,Молочные продукты,342,4.1,5.9,34,0,krem-syr.jpg
+cheese-09,Маасдам,Молочные продукты,350,0,25,27,0,maasdam.jpg
+cheese-16,Маскарпоне,Молочные продукты,429,4.1,4.8,43,0,maskarpone.jpg
+b29,Масло сливочное,Молочные продукты,748,0.5,0.5,82.5,0,maslo-slivochnoe.jpg
+b173,Молоко 1.5%,Молочные продукты,44,4.8,3,1.5,0,moloko-1-5pct.jpg
+b20,Молоко 2.5%,Молочные продукты,52,4.7,3,2.5,0,moloko-2-5pct.jpg
+b21,Молоко 3.2%,Молочные продукты,59,4.7,3,3.2,0,moloko-3-2pct.jpg
+b172,Молоко обезжиренное,Молочные продукты,34,5,3.4,0.1,0,moloko-obezzhirennoe.jpg
+cheese-23,Монтерей Джек,Молочные продукты,373,0.7,24.5,30.3,0,monterey-dzhek.jpg
+cheese-21,Мюнстер,Молочные продукты,368,1.1,23.4,30,0,myunster.jpg
+b181,Пармезан,Молочные продукты,392,3.2,35.8,25.8,0,parmezan.jpg
+cheese-11,Пошехонский,Молочные продукты,350,0.1,26,26,0,poshehonskiy.jpg
+cheese-22,Проволоне,Молочные продукты,351,2.1,25.6,26.6,0,provolone.jpg
+cheese-15,Рикотта,Молочные продукты,174,3,11.3,13,0,rikotta.jpg
+cheese-17,Рокфор,Молочные продукты,369,2,21.5,30.6,0,rokfor.jpg
+cheese-03,Российский,Молочные продукты,363,0.4,23,29.5,0,rossiyskiy.jpg
+b174,Ряженка 2.5%,Молочные продукты,54,4.2,2.9,2.5,0,ryazhenka-2-5pct.jpg
+b175,Ряженка 3.2%,Молочные продукты,67,4.2,3,3.2,0,ryazhenka-3-2pct.jpg
+b183,Сливки 10%,Молочные продукты,118,4.5,3,10,0,slivki-10pct.jpg
+b184,Сливки 20%,Молочные продукты,206,4,2.5,20,0,slivki-20pct.jpg
+b27,Сметана 15%,Молочные продукты,158,3.6,2.6,15,0,smetana-15pct.jpg
+cheese-12,Сулугуни,Молочные продукты,286,0.4,20.5,22,0,suluguni.jpg
+cheese-chechil,Сыр Чечил,Молочные продукты,313,1.5,24.5,23.0,0,syr-chechil.jpg
+b179,Сыр адыгейский,Молочные продукты,240,1.5,19,18,0,syr-adygeyskiy.jpg
+b178,Сыр моцарелла,Молочные продукты,299,2.4,22.2,22.1,0,syr-motsarella.jpg
+b28,Сыр твёрдый,Молочные продукты,350,1.3,25,27,0,syr-tverdyy.jpg
+b25,Творог 5%,Молочные продукты,121,1.8,17.2,5,0,tvorog-5pct.jpg
+b26,Творог 9%,Молочные продукты,159,2.8,16.7,9,0,tvorog-9pct.jpg
+b177,Творог обезжиренный,Молочные продукты,88,1.8,18,0.6,0,tvorog-obezzhirennyy.jpg
+cheese-02,Тильзитский,Молочные продукты,340,0.5,25,26,0,tilzitskiy.jpg
+b180,Фета,Молочные продукты,264,4.1,14.2,21.3,0,feta.jpg
+cheese-06,Чеддер,Молочные продукты,403,1.3,25,33,0,chedder.jpg
+cheese-24,Швейцарский сыр,Молочные продукты,393,1.4,27,31,0,shveytsarskiy-syr.jpg
+cheese-05,Эдам,Молочные продукты,357,1.4,25,28,0,edam.jpg
+cheese-07,Эмменталь,Молочные продукты,380,1.4,28.4,29.7,0,emmental.jpg
+cooked-meat-06,Баранина отварная,Мясо и птица,258,0,25.6,16.5,0,baranina-otvarnaya.jpg
+b159,Ветчина,Мясо и птица,145,1.5,20,6.5,0,vetchina.jpg
+b152,Говядина отварная,Мясо и птица,217,0,26,12,0,govyadina-otvarnaya.jpg
+b151,Говядина тушёная,Мясо и птица,191,0,27,8,0,govyadina-tushenaya.jpg
+b150,Индейка запечённая,Мясо и птица,136,0,29.5,2,0,indeyka-zapechennaya.jpg
+cooked-meat-03,Индейка отварная,Мясо и птица,135,0,29,1.8,0,indeyka-otvarnaya.jpg
+cooked-meat-07,Конина отварная,Мясо и птица,175,0,28.1,6.1,0,konina-otvarnaya.jpg
+cooked-meat-08,Крольчатина отварная,Мясо и птица,173,0,33,3.5,0,krolchatina-otvarnaya.jpg
+cooked-meat-02,Куриное бедро отварное,Мясо и птица,209,0,26,11,0,kurinoe-bedro-otvarnoe.jpg
+b148,Куриное бедро с кожей,Мясо и птица,209,0,26,10.9,0,kurinoe-bedro-s-kozhey.jpg
+b149,Куриное крыло,Мясо и птица,203,0,30.5,8.1,0,kurinoe-krylo.jpg
+b147,Куриное филе отварное,Мясо и птица,165,0,31,3.6,0,kurinoe-file-otvarnoe.jpg
+b156,Печень говяжья,Мясо и птица,135,4,20,3.6,0,pechen-govyazhya.jpg
+b157,Печень куриная,Мясо и птица,119,0.7,17,4.8,0,pechen-kurinaya.jpg
+cooked-meat-05,Свинина отварная,Мясо и птица,242,0,27,14,0,svinina-otvarnaya.jpg
+boiled-meat-v5933-09,Сердце отварное,Мясо и птица,148,0,24,5,0,serdtse-otvarnoe.jpg
+b158,Сосиски,Мясо и птица,301,2,12.5,27,0,sosiski.jpg
+boiled-meat-v5933-03,Телятина отварная,Мясо и птица,172,0,24,8,0,telyatina-otvarnaya.jpg
+boiled-meat-v5933-08,Язык говяжий отварной,Мясо и птица,224,0,15,17,0,yazyk-govyazhiy-otvarnoy.jpg
+shoro-2,Аралаш,Напитки,27.3,3.9,2.3,0.9,0,aralash.jpg
+shoro-4,Бозо,Напитки,32,2.3,1.6,1.8,0,bozo.jpg
+shoro-5,Бозо с облепихой,Напитки,53.5,10.2,1.9,0.4,0,bozo-s-oblepihoy.jpg
+b86,Вода,Напитки,0,0,0,0,0,voda.jpg
+shoro-3,Жарма,Напитки,12.2,2.2,0.9,0.1,0,zharma.jpg
+shoro-7,Квас,Напитки,28,7.37,0.09,0.003,0,kvas.jpg
+shoro-0,Максым,Напитки,24,5.1,0.89,0.18,0,maksym.jpg
+drink-cola-zero,Напиток Кола без сахара,Напитки,0.3,0,0,0,0,napitok-kola-bez-sahara.jpg
+drink-pepsi-zero,Напиток Пепси без сахара,Напитки,0.3,0,0,0,0,napitok-pepsi-bez-sahara.jpg
+drink-sprite-zero,Напиток Спрайт без сахара,Напитки,0.4,0.1,0,0,0,napitok-sprayt-bez-sahara.jpg
+drink-fanta-zero,Напиток Фанта без сахара,Напитки,3.0,0.5,0,0,0,napitok-fanta-bez-sahara.jpg
+b70,Сок апельсиновый,Напитки,45,10.4,0.7,0.2,0.2,sok-apelsinovyy.jpg
+b69,Сок яблочный,Напитки,46,11.3,0.1,0.1,0.2,sok-yablochnyy.jpg
+shoro-6,Тан,Напитки,29.3,1.8,1.2,1,0,tan.jpg
+shoro-1,Чалап,Напитки,29.3,2.3,1.4,1.2,0,chalap.jpg
+b54,Авокадо,Овощи и зелень,160,8.5,2,14.7,6.7,avokado.jpg
+b49,Баклажан,Овощи и зелень,25,5.9,1,0.2,3,baklazhan.jpg
+b45,Брокколи,Овощи и зелень,34,6.6,2.8,0.4,2.6,brokkoli.jpg
+b108,Брокколи варёная,Овощи и зелень,35,7.2,2.4,0.4,3.3,brokkoli-varenaya.jpg
+b124,Грибы вешенки,Овощи и зелень,33,6.1,3.3,0.4,2.3,griby-veshenki.jpg
+b74,Грибы шампиньоны,Овощи и зелень,22,3.3,3.1,0.3,1,griby-shampinony.jpg
+b48,Кабачок,Овощи и зелень,17,3.1,1.2,0.3,1,kabachok.jpg
+b44,Капуста белокочанная,Овощи и зелень,25,5.8,1.3,0.1,2.5,kapusta-belokochannaya.jpg
+b113,Капуста краснокочанная,Овощи и зелень,31,7.4,1.4,0.2,2.1,kapusta-krasnokochannaya.jpg
+b119,Кольраби,Овощи и зелень,27,6.2,1.7,0.1,3.6,kolrabi.jpg
+b75,Лук репчатый,Овощи и зелень,40,9.3,1.1,0.1,1.7,luk-repchatyy.jpg
+b123,Маслины,Овощи и зелень,116,6,0.8,10.9,1.6,masliny.jpg
+b43,Морковь,Овощи и зелень,41,9.6,0.9,0.2,2.8,morkov.jpg
+b107,Морковь варёная,Овощи и зелень,35,8.2,0.8,0.2,3,morkov-varenaya.jpg
+b41,Огурец,Овощи и зелень,15,3.6,0.7,0.1,0.5,ogurets.jpg
+b122,Оливки зелёные,Овощи и зелень,145,3.8,1,15.3,3.3,olivki-zelenye.jpg
+b111,Перец зелёный,Овощи и зелень,20,4.6,0.9,0.2,1.7,perets-zelenyy.jpg
+b110,Перец красный,Овощи и зелень,31,6,1,0.3,2.1,perets-krasnyy.jpg
+b47,Перец сладкий,Овощи и зелень,31,6,0.99,0.3,2.1,perets-sladkiy.jpg
+b116,Петрушка,Овощи и зелень,36,6.3,3,0.8,3.3,petrushka.jpg
+b42,Помидор,Овощи и зелень,18,3.9,0.9,0.2,1.2,pomidor.jpg
+b112,Помидоры черри,Овощи и зелень,18,3.9,0.9,0.2,1.2,pomidory-cherri.jpg
+b118,Редис,Овощи и зелень,16,3.4,0.7,0.1,1.6,redis.jpg
+b115,Руккола,Овощи и зелень,25,3.7,2.6,0.7,1.6,rukkola.jpg
+b50,Свёкла варёная,Овощи и зелень,44,10,1.7,0.2,2,svekla-varenaya.jpg
+b121,Сельдерей,Овощи и зелень,16,3,0.7,0.2,1.6,selderey.jpg
+b120,Спаржа,Овощи и зелень,20,3.9,2.2,0.1,2.1,sparzha.jpg
+b51,Тыква,Овощи и зелень,26,6.5,1,0.1,0.5,tykva.jpg
+b117,Укроп,Овощи и зелень,43,7,3.5,1.1,2.1,ukrop.jpg
+b46,Цветная капуста,Овощи и зелень,25,5,1.9,0.3,2,tsvetnaya-kapusta.jpg
+b109,Цветная капуста варёная,Овощи и зелень,23,4.1,1.8,0.5,2.3,tsvetnaya-kapusta-varenaya.jpg
+b76,Чеснок,Овощи и зелень,149,33.1,6.4,0.5,2.1,chesnok.jpg
+b125,Шампиньоны варёные,Овощи и зелень,28,5.3,3.1,0.3,2.2,shampinony-varenye.jpg
+b52,Шпинат,Овощи и зелень,23,3.6,2.9,0.4,2.2,shpinat.jpg
+b62,Арахис,Орехи и семена,567,16.1,25.8,49.2,8.5,arahis.jpg
+b60,Бразильский орех,Орехи и семена,659,12.3,14.3,67.1,7.5,brazilskiy-oreh.jpg
+b59,Грецкие орехи,Орехи и семена,654,13.7,15.2,65.2,6.7,gretskie-orehi.jpg
+b190,Кедровые орехи,Орехи и семена,673,13.1,13.7,68.4,3.7,kedrovye-orehi.jpg
+b187,Кешью,Орехи и семена,553,30.2,18.2,43.9,3.3,keshyu.jpg
+b192,Кунжут,Орехи и семена,573,23.4,17.7,49.7,11.8,kunzhut.jpg
+b189,Макадамия,Орехи и семена,718,13.8,7.9,75.8,8.6,makadamiya.jpg
+b61,Миндаль,Орехи и семена,579,21.6,21.2,49.9,12.5,mindal.jpg
+b188,Пекан,Орехи и семена,691,13.9,9.2,72,9.6,pekan.jpg
+b191,Семена тыквы,Орехи и семена,559,10.7,30.2,49,6,semena-tykvy.jpg
+b63,Семечки подсолнечника очищенные,Орехи и семена,584,20,20.8,51.5,8.6,semechki-podsolnechnika-ochischennye.jpg
+b186,Фисташки,Орехи и семена,562,27.2,20.2,45.3,10.3,fistashki.jpg
+b185,Фундук,Орехи и семена,628,16.7,15,60.8,9.7,funduk.jpg
+b169,Икра красная,Рыба и морепродукты,252,4,24.6,14,0,ikra-krasnaya.jpg
+b167,Кальмар варёный,Рыба и морепродукты,92,3.1,15.6,1.4,0,kalmar-varenyy.jpg
+b166,Креветки варёные,Рыба и морепродукты,99,0.2,24,0.3,0,krevetki-varenye.jpg
+b37,Лосось,Рыба и морепродукты,208,0,20.4,13.4,0,losos.jpg
+b168,Мидии варёные,Рыба и морепродукты,172,7.4,24,4.5,0,midii-varenye.jpg
+b161,Минтай,Рыба и морепродукты,72,0,15.9,0.9,0,mintay.jpg
+b36,Рыба белая,Рыба и морепродукты,100,0,20,2,0,ryba-belaya.jpg
+b165,Сельдь,Рыба и морепродукты,158,0,17.7,9.9,0,seld.jpg
+b164,Скумбрия,Рыба и морепродукты,205,0,18.6,14,0,skumbriya.jpg
+b162,Судак,Рыба и морепродукты,84,0,18.2,1.1,0,sudak.jpg
+b160,Треска,Рыба и морепродукты,82,0,17.8,0.7,0,treska.jpg
+b38,Тунец консервированный,Рыба и морепродукты,116,0,25.5,0.8,0,tunets-konservirovannyy.jpg
+b163,Форель,Рыба и морепродукты,148,0,20.5,6.5,0,forel.jpg
+b213,Винегрет,Салаты и закуски,80,10,2,3.5,2.5,vinegret.jpg
+b114,Салат айсберг,Салаты и закуски,14,3,0.9,0.1,1.2,salat-aysberg.jpg
+b211,Салат греческий,Салаты и закуски,85,5,2.5,6,2,salat-grecheskiy.jpg
+b212,Салат овощной,Салаты и закуски,45,6,1.5,2,2,salat-ovoschnoy.jpg
+kulikov-desert-v-stakanchike-primavera,Десерт в стаканчике Primavera (Куликовский),Сладости и десерты,199,17.5,4.2,12.5,0,desert-v-stakanchike-primavera-kulikovskiy.jpg
+kulikov-desert-v-stakanchike-medovik-s-orehami,Десерт в стаканчике Медовик с орехами (Куликовский),Сладости и десерты,491,44.3,7.6,32.1,0,desert-v-stakanchike-medovik-s-orehami-kulikovskiy.jpg
+kulikov-desert-v-stakanchike-medovik-so-sguschenkoy,Десерт в стаканчике Медовик со сгущёнкой (Куликовский),Сладости и десерты,427,44.0,5.6,25.7,0,desert-v-stakanchike-medovik-so-sguschenkoy-kulikovskiy.jpg
+kulikov-desert-v-stakanchike-medovik-so-slivkami,Десерт в стаканчике Медовик со сливками (Куликовский),Сладости и десерты,422,42.1,5.6,25.5,0,desert-v-stakanchike-medovik-so-slivkami-kulikovskiy.jpg
+kulikov-desert-v-stakanchike-tiramisu,Десерт в стаканчике Тирамису (Куликовский),Сладости и десерты,260,25.3,5.8,15.0,0,desert-v-stakanchike-tiramisu-kulikovskiy.jpg
+kulikov-desert-v-stakanchike-tri-shoko,Десерт в стаканчике Три шоко (Куликовский),Сладости и десерты,458,26.7,4.6,36.8,0,desert-v-stakanchike-tri-shoko-kulikovskiy.jpg
+b217,Зефир,Сладости и десерты,326,80,0.8,0.1,0,zefir.jpg
+kulikov-konfeta-shokochups,Конфета Шокочупс (Куликовский),Сладости и десерты,585,51.7,6.2,39.2,0,konfeta-shokochups-kulikovskiy.jpg
+kulikov-makaron-nutella,Макарон Nutella (Куликовский),Сладости и десерты,524,48.2,7.8,36.0,0,makaron-nutella-kulikovskiy.jpg
+kulikov-makaron-raffaello,Макарон Raffaello (Куликовский),Сладости и десерты,624,50.3,9.0,43.1,0,makaron-raffaello-kulikovskiy.jpg
+kulikov-makaron-snickers,Макарон Snickers (Куликовский),Сладости и десерты,611,54.3,9.5,39.4,0,makaron-snickers-kulikovskiy.jpg
+kulikov-makaron-babl-gam,Макарон Бабл гам (Куликовский),Сладости и десерты,478,43.7,6.3,30.8,0,makaron-babl-gam-kulikovskiy.jpg
+kulikov-makaron-assorti,Макарон ассорти (Куликовский),Сладости и десерты,387,74.2,7.7,25.1,0,makaron-assorti-kulikovskiy.jpg
+kulikov-makaron-marakuyya,Макарон маракуйя (Куликовский),Сладости и десерты,365,53.7,5.9,24.0,0,makaron-marakuyya-kulikovskiy.jpg
+kulikov-makaron-fistashkovyy-s-malinoy,Макарон фисташковый с малиной (Куликовский),Сладости и десерты,414,47.3,5.9,22.4,0,makaron-fistashkovyy-s-malinoy-kulikovskiy.jpg
+kulikov-morozhenoe-plombir-solenaya-karamel,Мороженое пломбир Солёная карамель (Куликовский),Сладости и десерты,212,20.6,3.8,12.7,0,morozhenoe-plombir-solenaya-karamel-kulikovskiy.jpg
+kulikov-morozhenoe-plombir-v-vafelnom-stakanchike,Мороженое пломбир в вафельном стаканчике (Куликовский),Сладости и десерты,252,24.8,4.5,15.0,0,morozhenoe-plombir-v-vafelnom-stakanchike-kulikovskiy.jpg
+kulikov-morozhenoe-plombir-klassicheskiy,Мороженое пломбир классический (Куликовский),Сладости и десерты,240,20.4,4.1,15.8,0,morozhenoe-plombir-klassicheskiy-kulikovskiy.jpg
+kulikov-morozhenoe-plombir-krem-bryule,Мороженое пломбир крем-брюле (Куликовский),Сладости и десерты,230,20.3,4.0,14.7,0,morozhenoe-plombir-krem-bryule-kulikovskiy.jpg
+kulikov-morozhenoe-plombir-s-fistashkoy,Мороженое пломбир с фисташкой (Куликовский),Сладости и десерты,255,21.8,4.9,16.5,0,morozhenoe-plombir-s-fistashkoy-kulikovskiy.jpg
+kulikov-morozhenoe-plombir-shokoladnyy,Мороженое пломбир шоколадный (Куликовский),Сладости и десерты,223,21.7,4.7,13.1,0,morozhenoe-plombir-shokoladnyy-kulikovskiy.jpg
+kulikov-morozhenoe-slivochnoe-popkorn-karamel,Мороженое сливочное Попкорн-карамель (Куликовский),Сладости и десерты,211,25.9,3.4,10.4,0,morozhenoe-slivochnoe-popkorn-karamel-kulikovskiy.jpg
+kulikov-myutaki-s-orehami,Мютаки с орехами (Куликовский),Сладости и десерты,443,46.8,9.6,35.4,0,myutaki-s-orehami-kulikovskiy.jpg
+b67,Мёд,Сладости и десерты,304,82.4,0.3,0,0.2,med.jpg
+b218,Пастила,Сладости и десерты,310,80,0.5,0.1,0,pastila.jpg
+kulikov-pahlava-orehovaya,Пахлава ореховая (Куликовский),Сладости и десерты,454.8,51.6,8.5,30.3,0,pahlava-orehovaya-kulikovskiy.jpg
+kulikov-pechene-medovoe,Печенье Медовое (Куликовский),Сладости и десерты,449,88.6,6.1,7.7,0,pechene-medovoe-kulikovskiy.jpg
+kulikov-pechene-pesochnoe-s-beze,Печенье Песочное с безе (Куликовский),Сладости и десерты,413,57.1,7.5,17.2,0,pechene-pesochnoe-s-beze-kulikovskiy.jpg
+kulikov-pechene-pesochnoe-s-orehom,Печенье Песочное с орехом (Куликовский),Сладости и десерты,538,53.3,9.6,31.8,0,pechene-pesochnoe-s-orehom-kulikovskiy.jpg
+b216,Печенье овсяное,Сладости и десерты,450,68.7,6.2,18.1,2.8,pechene-ovsyanoe.jpg
+kulikov-pirog-vishnevyy,Пирог Вишнёвый (Куликовский),Сладости и десерты,319,51.0,3.9,11.0,0,pirog-vishnevyy-kulikovskiy.jpg
+kulikov-pirozhnoe-zavarnoe,Пирожное Заварное (Куликовский),Сладости и десерты,491,32.9,7.4,37.6,0,pirozhnoe-zavarnoe-kulikovskiy.jpg
+kulikov-pirozhnoe-yogurtovoe-mango-marakuyya,Пирожное Йогуртовое манго-маракуйя (Куликовский),Сладости и десерты,246,32.3,3.8,11.3,0,pirozhnoe-yogurtovoe-mango-marakuyya-kulikovskiy.jpg
+kulikov-pirozhnoe-kartoshka-rulet,Пирожное Картошка рулет (Куликовский),Сладости и десерты,389,51.0,9.7,16.2,0,pirozhnoe-kartoshka-rulet-kulikovskiy.jpg
+kulikov-pirozhnoe-koltsa-tvorozhnye,Пирожное Кольца творожные (Куликовский),Сладости и десерты,267,25.3,10.0,25.7,0,pirozhnoe-koltsa-tvorozhnye-kulikovskiy.jpg
+kulikov-pirozhnoe-korzinka,Пирожное Корзинка (Куликовский),Сладости и десерты,313,68.8,4.5,10.7,0,pirozhnoe-korzinka-kulikovskiy.jpg
+kulikov-pirozhnoe-trubochki,Пирожное Трубочки (Куликовский),Сладости и десерты,372,36.7,4.0,23.2,0,pirozhnoe-trubochki-kulikovskiy.jpg
+kulikov-pirozhnoe-eskimo,Пирожное Эскимо (Куликовский),Сладости и десерты,342,54.8,9.8,20.4,0,pirozhnoe-eskimo-kulikovskiy.jpg
+kulikov-rulet-fistashkovyy-s-malinoy,Рулет фисташковый с малиной (Куликовский),Сладости и десерты,405,31.8,8.3,27.2,0,rulet-fistashkovyy-s-malinoy-kulikovskiy.jpg
+b68,Сахар,Сладости и десерты,387,99.8,0,0,0,sahar.jpg
+kulikov-tart-berry,Тарт Berry (Куликовский),Сладости и десерты,179,15.5,2.8,11.7,0,tart-berry-kulikovskiy.jpg
+kulikov-tart-gollandskiy-yablochnyy,Тарт Голландский яблочный (Куликовский),Сладости и десерты,270,41.4,4.5,9.7,0,tart-gollandskiy-yablochnyy-kulikovskiy.jpg
+kulikov-tart-orehovyy-s-karamelyu,Тарт Ореховый с карамелью (Куликовский),Сладости и десерты,519,55.2,6.7,30.0,0,tart-orehovyy-s-karamelyu-kulikovskiy.jpg
+kulikov-tart-s-orehami-i-suhofruktami,Тарт с орехами и сухофруктами (Куликовский),Сладости и десерты,444,55.9,7.7,21.1,0,tart-s-orehami-i-suhofruktami-kulikovskiy.jpg
+kulikov-tartaletka-s-golubikoy,Тарталетка с голубикой (Куликовский),Сладости и десерты,387,60.7,4.6,13.8,0,tartaletka-s-golubikoy-kulikovskiy.jpg
+kulikov-tartaletka-s-klubnikoy,Тарталетка с клубникой (Куликовский),Сладости и десерты,282,41.8,3.5,11.2,0,tartaletka-s-klubnikoy-kulikovskiy.jpg
+kulikov-tartaletki-yagodnye,Тарталетки Ягодные (Куликовский),Сладости и десерты,284,32.4,4.9,14.9,0,tartaletki-yagodnye-kulikovskiy.jpg
+kulikov-tort-nutella,Торт Nutella (Куликовский),Сладости и десерты,397,39.4,7.4,26.3,0,tort-nutella-kulikovskiy.jpg
+kulikov-tort-beze-s-vishney-i-orehami,Торт Безе с вишней и орехами (Куликовский),Сладости и десерты,386,48.2,5.3,19.0,0,tort-beze-s-vishney-i-orehami-kulikovskiy.jpg
+kulikov-tort-belyy-barhat,Торт Белый бархат (Куликовский),Сладости и десерты,384,35.1,5.0,24.3,0,tort-belyy-barhat-kulikovskiy.jpg
+kulikov-tort-vupi-pay,Торт Вупи пай (Куликовский),Сладости и десерты,387,36.1,6.6,21.3,0,tort-vupi-pay-kulikovskiy.jpg
+kulikov-tort-domashniy,Торт Домашний (Куликовский),Сладости и десерты,321,33.1,7.9,16.8,0,tort-domashniy-kulikovskiy.jpg
+kulikov-tort-yogurtovyy-mango-marakuyya,Торт Йогуртовый манго-маракуйя (Куликовский),Сладости и десерты,223,27.7,3.9,10.6,0,tort-yogurtovyy-mango-marakuyya-kulikovskiy.jpg
+kulikov-tort-kapriz,Торт Каприз (Куликовский),Сладости и десерты,394,33.2,7.5,25.9,0,tort-kapriz-kulikovskiy.jpg
+kulikov-tort-klubnichka,Торт Клубничка (Куликовский),Сладости и десерты,295,34.7,4.9,15.9,0,tort-klubnichka-kulikovskiy.jpg
+kulikov-tort-krasnyy-barhat,Торт Красный бархат (Куликовский),Сладости и десерты,327,30.6,5.9,20.3,0,tort-krasnyy-barhat-kulikovskiy.jpg
+kulikov-tort-kudryavyy-pincher,Торт Кудрявый пинчер (Куликовский),Сладости и десерты,380,51.4,6.5,22.5,0,tort-kudryavyy-pincher-kulikovskiy.jpg
+kulikov-tort-kulikovskaya-ptichka,Торт Куликовская птичка (Куликовский),Сладости и десерты,313,38.2,7.3,16.0,0,tort-kulikovskaya-ptichka-kulikovskiy.jpg
+kulikov-tort-medovik-s-bananom,Торт Медовик с бананом (Куликовский),Сладости и десерты,360,50.2,4.2,15.7,0,tort-medovik-s-bananom-kulikovskiy.jpg
+kulikov-tort-medovik-s-orehami,Торт Медовик с орехами (Куликовский),Сладости и десерты,397,46.4,6.3,26.3,0,tort-medovik-s-orehami-kulikovskiy.jpg
+kulikov-tort-medovik-so-sguschenkoy,Торт Медовик со сгущёнкой (Куликовский),Сладости и десерты,378,42.6,5.1,22.2,0,tort-medovik-so-sguschenkoy-kulikovskiy.jpg
+kulikov-tort-medovik-so-slivkami,Торт Медовик со сливками (Куликовский),Сладости и десерты,358,41.9,5.2,23.0,0,tort-medovik-so-slivkami-kulikovskiy.jpg
+kulikov-tort-molochnaya-devochka-malina-kokos,Торт Молочная девочка малина-кокос (Куликовский),Сладости и десерты,412,34.2,6.2,20.6,0,tort-molochnaya-devochka-malina-kokos-kulikovskiy.jpg
+kulikov-tort-molochnaya-devochka-slivki,Торт Молочная девочка сливки (Куликовский),Сладости и десерты,432,32.0,6.1,31.0,0,tort-molochnaya-devochka-slivki-kulikovskiy.jpg
+kulikov-tort-napoleon,Торт Наполеон (Куликовский),Сладости и десерты,369,46.5,5.3,28.5,0,tort-napoleon-kulikovskiy.jpg
+kulikov-tort-napoleon-s-varenoy-sguschenkoy,Торт Наполеон с варёной сгущёнкой (Куликовский),Сладости и десерты,509,52.0,8.0,29.9,0,tort-napoleon-s-varenoy-sguschenkoy-kulikovskiy.jpg
+kulikov-tort-nezhnyy-v-glyassazhe,Торт Нежный в гляссаже (Куликовский),Сладости и десерты,393,39.8,6.0,22.4,0,tort-nezhnyy-v-glyassazhe-kulikovskiy.jpg
+kulikov-tort-nezhnyy-so-sguschenkoy,Торт Нежный со сгущёнкой (Куликовский),Сладости и десерты,320,33.9,6.6,21.3,0,tort-nezhnyy-so-sguschenkoy-kulikovskiy.jpg
+kulikov-tort-praga,Торт Прага классик (Куликовский),Сладости и десерты,426,44.1,6.2,22.6,0,tort-praga-klassik-kulikovskiy.jpg
+kulikov-tort-smorodinka,Торт Смородинка (Куликовский),Сладости и десерты,299,39.1,5.4,18.6,0,tort-smorodinka-kulikovskiy.jpg
+kulikov-tort-snezhok,Торт Снежок (Куликовский),Сладости и десерты,362,31.2,6.3,23.6,0,tort-snezhok-kulikovskiy.jpg
+kulikov-tort-sufle-yabloko,Торт Суфле-яблоко (Куликовский),Сладости и десерты,317,27.8,5.9,19.4,0,tort-sufle-yabloko-kulikovskiy.jpg
+kulikov-tort-tvorozhnyy-mango-marakuyya,Торт Творожный манго-маракуйя (Куликовский),Сладости и десерты,277,31.0,7.2,13.8,0,tort-tvorozhnyy-mango-marakuyya-kulikovskiy.jpg
+kulikov-tort-tri-shoko,Торт Три шоко (Куликовский),Сладости и десерты,409,34.4,6.6,34.3,0,tort-tri-shoko-kulikovskiy.jpg
+kulikov-tort-fialka,Торт Фиалка (Куликовский),Сладости и десерты,315,36.5,7.1,15.0,0,tort-fialka-kulikovskiy.jpg
+kulikov-tort-fistashkovyy-s-malinoy,Торт Фисташковый с малиной (Куликовский),Сладости и десерты,343,33.9,7.7,19.7,0,tort-fistashkovyy-s-malinoy-kulikovskiy.jpg
+kulikov-tort-shvartsvald,Торт Шварцвальд (Куликовский),Сладости и десерты,302,29.8,5.3,20.3,0,tort-shvartsvald-kulikovskiy.jpg
+kulikov-tort-shokoladnyy,Торт Шоколадный (Куликовский),Сладости и десерты,363,33.8,6.7,22.4,0,tort-shokoladnyy-kulikovskiy.jpg
+kulikov-trayfl-s-bananom,Трайфл с бананом (Куликовский),Сладости и десерты,345,21.9,3.9,21.1,0,trayfl-s-bananom-kulikovskiy.jpg
+kulikov-trayfl-so-vkusom-snickers,Трайфл со вкусом Snickers (Куликовский),Сладости и десерты,402,30.8,4.1,29.1,0,trayfl-so-vkusom-snickers-kulikovskiy.jpg
+kulikov-trubochki-krem-bryule,Трубочки Крем-брюле (Куликовский),Сладости и десерты,483,44.6,6.7,30.7,0,trubochki-krem-bryule-kulikovskiy.jpg
+kulikov-chak-chak,Чак-чак (Куликовский),Сладости и десерты,336,59.5,5.1,8.6,0,chak-chak-kulikovskiy.jpg
+kulikov-chizkeyk-domashniy-s-klubnichnym-dzhemom,Чизкейк Домашний с клубничным джемом (Куликовский),Сладости и десерты,263,31.0,7.6,10.7,0,chizkeyk-domashniy-s-klubnichnym-dzhemom-kulikovskiy.jpg
+b66,Шоколад молочный,Сладости и десерты,535,59.4,7.7,29.7,3.4,shokolad-molochnyy.jpg
+b214,Шоколад тёмный 70%,Сладости и десерты,598,45.9,7.8,42.6,10.9,shokolad-temnyy-70pct.jpg
+b215,Шоколад тёмный 85%,Сладости и десерты,600,20,11,46,11,shokolad-temnyy-85pct.jpg
+kulikov-ekler-lesnoy-oreh,Эклер Лесной орех (Куликовский),Сладости и десерты,368,27.0,8.4,40.6,0,ekler-lesnoy-oreh-kulikovskiy.jpg
+kulikov-ekler-plombir,Эклер Пломбир (Куликовский),Сладости и десерты,544,30.0,8.3,43.3,0,ekler-plombir-kulikovskiy.jpg
+kulikov-ekler-fistashkovyy,Эклер фисташковый (Куликовский),Сладости и десерты,337,26.2,9.1,42.4,0,ekler-fistashkovyy-kulikovskiy.jpg
+b203,Борщ без сметаны,Супы,50,6,2.5,1.8,0,borsch-bez-smetany.jpg
+dish-v5920-12,Борщ со сметаной 15%,Супы,55.3,5.9,2.5,2.4,0,borsch-so-smetanoy-15pct.jpg
+dish-v5920-17,Окрошка с колбасой,Супы,68,6,4,4,0,okroshka-s-kolbasoy.jpg
+dish-v5920-16,Окрошка с мясом,Супы,52,5,4,2,0,okroshka-s-myasom.jpg
+dish-v5920-18,Рассольник,Супы,71,9,4,2,0,rassolnik.jpg
+b205,Суп куриный с овощами,Супы,55,4,5,2,1,sup-kurinyy-s-ovoschami.jpg
+b202,Суп овощной,Супы,45,7,1.5,1.2,1.5,sup-ovoschnoy.jpg
+dish-v5920-10,Суп с фрикадельками,Супы,65,5,5,3,0,sup-s-frikadelkami.jpg
+dish-v5920-19,Уха по царски,Супы,66,4,7,3,0,uha-po-tsarski.jpg
+dish-v5920-15,Чучвара,Супы,96,8,7,4,0,chuchvara.jpg
+dish-v5920-14,Шорпо с бараниной,Супы,63,4,6,3,0,shorpo-s-baraninoy.jpg
+dish-v5920-13,Шорпо с говядиной,Супы,58,4,6,2,0,shorpo-s-govyadinoy.jpg
+b204,Щи,Супы,38,5,2,1.2,1.5,schi.jpg
+b12,Абрикос,Фрукты,48,11.1,1.4,0.4,2,abrikos.jpg
+b135,Ананас,Фрукты,50,13.1,0.5,0.1,1.4,ananas.jpg
+b7,Апельсин,Фрукты,47,11.8,0.9,0.1,2.4,apelsin.jpg
+b18,Арбуз,Фрукты,30,7.6,0.6,0.2,0.4,arbuz.jpg
+b6,Банан,Фрукты,89,22.8,1.1,0.3,2.6,banan.jpg
+b14,Виноград,Фрукты,69,18.1,0.7,0.2,0.9,vinograd.jpg
+b133,Гранат,Фрукты,83,18.7,1.7,1.2,4,granat.jpg
+b127,Грейпфрут,Фрукты,42,10.7,0.8,0.1,1.6,greypfrut.jpg
+b9,Груша,Фрукты,57,15.2,0.4,0.1,3.1,grusha.jpg
+b19,Дыня,Фрукты,34,8.2,0.8,0.2,0.9,dynya.jpg
+b64,Изюм,Фрукты,299,79.2,3.1,0.5,3.7,izyum.jpg
+b137,Инжир,Фрукты,74,19.2,0.8,0.3,2.9,inzhir.jpg
+b10,Киви,Фрукты,61,14.7,1.1,0.5,3,kivi.jpg
+b65,Курага,Фрукты,241,62.6,3.4,0.5,7.3,kuraga.jpg
+b129,Лайм,Фрукты,30,10.5,0.7,0.2,2.8,laym.jpg
+b128,Лимон,Фрукты,29,9.3,1.1,0.3,2.8,limon.jpg
+b134,Манго,Фрукты,60,15,0.8,0.4,1.6,mango.jpg
+b8,Мандарин,Фрукты,53,13.3,0.8,0.3,1.8,mandarin.jpg
+b131,Нектарин,Фрукты,44,10.6,1.1,0.3,1.7,nektarin.jpg
+b136,Папайя,Фрукты,43,10.8,0.5,0.3,1.7,papayya.jpg
+b11,Персик,Фрукты,39,9.5,0.9,0.3,1.5,persik.jpg
+b130,Помело,Фрукты,38,9.6,0.8,0,1,pomelo.jpg
+b13,Слива,Фрукты,46,11.4,0.7,0.3,1.4,sliva.jpg
+b145,Финики,Фрукты,282,75,2.5,0.4,8,finiki.jpg
+b132,Хурма,Фрукты,70,18.6,0.6,0.2,3.6,hurma.jpg
+b5,Яблоко,Фрукты,52,13.8,0.3,0.2,2.4,yabloko.jpg
+b126,Яблоко зелёное,Фрукты,58,13.6,0.4,0.2,2.8,yabloko-zelenoe.jpg
+b105,Блины,Хлеб и выпечка,227,28,6.1,10,0.8,bliny.jpg
+dish-bliny-smetana-v6069,Блины со сметаной,Хлеб и выпечка,209.8,21.9,5.2,11.25,0.6,bliny-so-smetanoy.jpg
+dish-v5920-21,Боорсоки,Хлеб и выпечка,402,48,6,20,0,boorsoki.jpg
+kulikov-danish-s-kremom-patiser-i-malinoy,Даниш с кремом патисьер и малиной (Куликовский),Хлеб и выпечка,347,41.9,6.4,16.9,0,danish-s-kremom-patiser-i-malinoy-kulikovskiy.jpg
+b104,Крекеры,Хлеб и выпечка,430,70,8,14,3,krekery.jpg
+kulikov-kruassan-kosichka,Круассан Косичка (Куликовский),Хлеб и выпечка,460,60.6,7.2,21.0,0,kruassan-kosichka-kulikovskiy.jpg
+kulikov-kruassan-kosichka-nutella,Круассан Косичка Nutella (Куликовский),Хлеб и выпечка,486,55.6,6.5,26.9,0,kruassan-kosichka-nutella-kulikovskiy.jpg
+kulikov-kruassan-kosichka-yagodnyy,Круассан Косичка ягодный (Куликовский),Хлеб и выпечка,368,57.4,5.4,13.1,0,kruassan-kosichka-yagodnyy-kulikovskiy.jpg
+kulikov-kruassan-klassicheskiy,Круассан классический (Куликовский),Хлеб и выпечка,449,50.5,8.4,23.8,0,kruassan-klassicheskiy-kulikovskiy.jpg
+kulikov-kruassan-s-syrom,Круассан с сыром (Куликовский),Хлеб и выпечка,456,45.1,10.0,26.2,0,kruassan-s-syrom-kulikovskiy.jpg
+b2,Лаваш тонкий,Хлеб и выпечка,236,49.0,7.8,0.9,2.5,lavash-tonkiy.jpg
+kulikov-maffin-shokoladnyy,Маффин Шоколадный (Куликовский),Хлеб и выпечка,478,43.1,6.7,30.9,0,maffin-shokoladnyy-kulikovskiy.jpg
+b106,Оладьи,Хлеб и выпечка,230,30,6,9,1,oladi.jpg
+kulikov-sinnabon-s-koritsey,Синнабон с корицей (Куликовский),Хлеб и выпечка,361,59.0,6.1,11.1,0,sinnabon-s-koritsey-kulikovskiy.jpg
+kulikov-sinnabon-s-tvorogom,Синнабон с творогом (Куликовский),Хлеб и выпечка,328,44.2,7.0,13.5,0,sinnabon-s-tvorogom-kulikovskiy.jpg
+b103,Сухари,Хлеб и выпечка,335,72,11,1.5,4,suhari.jpg
+b100,Хлеб бездрожжевой,Хлеб и выпечка,240,45,8,2,5,hleb-bezdrozhzhevoy.jpg
+b98,Хлеб бородинский,Хлеб и выпечка,208,40,6.9,1.3,5.8,hleb-borodinskiy.jpg
+b99,Хлеб отрубной,Хлеб и выпечка,248,41,13,4.2,9,hleb-otrubnoy.jpg
+b0,Хлеб пшеничный,Хлеб и выпечка,266,49.4,8.8,3.3,2.7,hleb-pshenichnyy.jpg
+b1,Хлеб ржаной,Хлеб и выпечка,210,41,6.6,1.2,5.8,hleb-rzhanoy.jpg
+b102,Хлебцы гречневые,Хлеб и выпечка,350,72,10,3,5,hlebtsy-grechnevye.jpg
+b101,Хлебцы рисовые,Хлеб и выпечка,387,81,8,2.5,4,hlebtsy-risovye.jpg
+b139,Вишня,Ягоды,50,12.2,1.0,0.3,1.6,vishnya.jpg
+b140,Ежевика,Ягоды,43,9.6,1.4,0.5,5.3,ezhevika.jpg
+b15,Клубника,Ягоды,32,7.7,0.7,0.3,2,klubnika.jpg
+b144,Клюква,Ягоды,46,12.2,0.4,0.1,4.6,klyukva.jpg
+b141,Красная смородина,Ягоды,56,13.8,1.4,0.2,4.3,krasnaya-smorodina.jpg
+b143,Крыжовник,Ягоды,44,10.2,0.9,0.6,4.3,kryzhovnik.jpg
+b16,Малина,Ягоды,52,11.9,1.2,0.7,6.5,malina.jpg
+b138,Черешня,Ягоды,63,16,1.1,0.2,2.1,chereshnya.jpg
+b17,Черника,Ягоды,57,14.5,0.7,0.3,2.4,chernika.jpg
+b142,Чёрная смородина,Ягоды,63,15.4,1.4,0.4,4.3,chernaya-smorodina.jpg
+b171,Омлет,Яйца,154,1,10.6,11.5,0,omlet.jpg
+egg-extra-2,Скрэмбл,Яйца,166,1.6,10.6,12,0,skrembl.jpg
+egg-extra-1,Яичница,Яйца,196,1.1,13.6,14.8,0,yaichnitsa.jpg
+b40,Яичный белок,Яйца,52,0.7,10.9,0.2,0,yaichnyy-belok.jpg
+b170,Яйцо варёное,Яйца,155,1.1,12.6,10.6,0,yaytso-varenoe.jpg
+b39,Яйцо куриное,Яйца,143,0.7,12.6,9.5,0,yaytso-kurinoe.jpg
+egg-poached,Яйцо пашот,Яйца,143,0.7,12.5,10.0,0,yaytso-pashot.jpg
