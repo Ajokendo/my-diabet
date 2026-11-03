@@ -118,3 +118,5 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 .medHintLabel{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#64748b;margin:16px 0 5px}
 .medHintMeta{background:#f8fafc;border-radius:10px;padding:10px 12px;margin-top:14px;font-size:13px;color:#475569}
 @media(max-width:520px){.medHintOverlay{padding:10px}.medHintHead,.medHintBody{padding:15px}.medHintHead h2{font-size:19px}}
+
+.subTabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.subTabs button{border:1px solid var(--line,#dbe3ea);background:var(--card,#fff);color:inherit;border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}.subTabs button.active{background:var(--brand);border-color:var(--brand);color:#fff}
