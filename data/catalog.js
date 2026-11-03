@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v62.01",foods:[
+window.DM_CATALOG={version:"v62.02",foods:[
 {"id":"b195","name":"Горох варёный","category":"Бобовые","kcal":118,"c":21.1,"p":8.3,"f":0.4,"fib":8.3,"se":0,"image":"assets/foods/goroh-varenyy.jpg"},
 {"id":"b58","name":"Горошек зелёный","category":"Бобовые","kcal":81,"c":14.5,"p":5.4,"f":0.4,"fib":5.7,"se":0,"image":"assets/foods/goroshek-zelenyy.jpg"},
 {"id":"b53","name":"Зелёная фасоль","category":"Бобовые","kcal":31,"c":7,"p":1.8,"f":0.2,"fib":3.4,"se":0,"image":"assets/foods/zelenaya-fasol.jpg"},
@@ -11,7 +11,6 @@ window.DM_CATALOG={version:"v62.01",foods:[
 {"id":"b57","name":"Нут варёный","category":"Бобовые","kcal":164,"c":27.4,"p":8.9,"f":2.6,"fib":7.6,"se":0,"image":"assets/foods/nut-varenyy.jpg"},
 {"id":"b197","name":"Соя варёная","category":"Бобовые","kcal":173,"c":9.9,"p":18.2,"f":9,"fib":6,"se":0,"image":"assets/foods/soya-varenaya.jpg"},
 {"id":"b194","name":"Фасоль белая варёная","category":"Бобовые","kcal":139,"c":25.1,"p":9.7,"f":0.4,"fib":6.3,"se":0,"image":"assets/foods/fasol-belaya-varenaya.jpg"},
-{"id":"b56","name":"Фасоль варёная","category":"Бобовые","kcal":127,"c":22.8,"p":8.7,"f":0.5,"fib":6.4,"se":0,"image":"assets/foods/fasol-varenaya.jpg"},
 {"id":"b193","name":"Фасоль красная варёная","category":"Бобовые","kcal":127,"c":22.8,"p":8.7,"f":0.5,"fib":6.4,"se":0,"image":"assets/foods/fasol-krasnaya-varenaya.jpg"},
 {"id":"b198","name":"Хумус","category":"Бобовые","kcal":166,"c":14.3,"p":7.9,"f":9.6,"fib":6,"se":0,"image":"assets/foods/humus.jpg"},
 {"id":"b55","name":"Чечевица варёная","category":"Бобовые","kcal":116,"c":20.1,"p":9,"f":0.4,"fib":7.9,"se":0,"image":"assets/foods/chechevitsa-varenaya.jpg"},
@@ -56,7 +55,6 @@ window.DM_CATALOG={version:"v62.01",foods:[
 {"id":"corn-grits-01","name":"Кукурузная крупа","category":"Крупы и гарниры","kcal":328,"c":71,"p":8.3,"f":1.2,"fib":4.8,"se":0,"image":"assets/foods/kukuruznaya-krupa.jpg"},
 {"id":"b77","name":"Макароны варёные","category":"Крупы и гарниры","kcal":158,"c":30.9,"p":5.8,"f":0.9,"fib":1.8,"se":0,"image":"assets/foods/makarony-varenye.jpg"},
 {"id":"b91","name":"Манная каша на воде","category":"Крупы и гарниры","kcal":80,"c":16,"p":2.5,"f":0.2,"fib":0.8,"se":0,"image":"assets/foods/mannaya-kasha-na-vode.jpg"},
-{"id":"b93","name":"Овсяные хлопья варёные","category":"Крупы и гарниры","kcal":68,"c":12,"p":2.4,"f":1.4,"fib":1.7,"se":0,"image":"assets/foods/ovsyanye-hlopya-varenye.jpg"},
 {"id":"b80","name":"Перловка варёная","category":"Крупы и гарниры","kcal":123,"c":28.2,"p":2.3,"f":0.4,"fib":3.8,"se":0,"image":"assets/foods/perlovka-varenaya.jpg"},
 {"id":"b81","name":"Пшено варёное","category":"Крупы и гарниры","kcal":119,"c":23.7,"p":3.5,"f":1,"fib":1.3,"se":0,"image":"assets/foods/psheno-varenoe.jpg"},
 {"id":"b88","name":"Рис басмати варёный","category":"Крупы и гарниры","kcal":121,"c":25.2,"p":3.5,"f":0.4,"fib":0.7,"se":0,"image":"assets/foods/ris-basmati-varenyy.jpg"},
@@ -125,19 +123,16 @@ window.DM_CATALOG={version:"v62.01",foods:[
 {"id":"b150","name":"Индейка запечённая","category":"Мясо и птица","kcal":136,"c":0,"p":29.5,"f":2,"fib":0,"se":0,"image":"assets/foods/indeyka-zapechennaya.jpg"},
 {"id":"cooked-meat-03","name":"Индейка отварная","category":"Мясо и птица","kcal":135,"c":0,"p":29,"f":1.8,"fib":0,"se":0,"image":"assets/foods/indeyka-otvarnaya.jpg"},
 {"id":"cooked-meat-07","name":"Конина отварная","category":"Мясо и птица","kcal":175,"c":0,"p":28.1,"f":6.1,"fib":0,"se":0,"image":"assets/foods/konina-otvarnaya.jpg"},
-{"id":"b155","name":"Кролик","category":"Мясо и птица","kcal":173,"c":0,"p":33,"f":3.5,"fib":0,"se":0,"image":"assets/foods/krolik.jpg"},
 {"id":"cooked-meat-08","name":"Крольчатина отварная","category":"Мясо и птица","kcal":173,"c":0,"p":33,"f":3.5,"fib":0,"se":0,"image":"assets/foods/krolchatina-otvarnaya.jpg"},
 {"id":"cooked-meat-02","name":"Куриное бедро отварное","category":"Мясо и птица","kcal":209,"c":0,"p":26,"f":11,"fib":0,"se":0,"image":"assets/foods/kurinoe-bedro-otvarnoe.jpg"},
 {"id":"b148","name":"Куриное бедро с кожей","category":"Мясо и птица","kcal":209,"c":0,"p":26,"f":10.9,"fib":0,"se":0,"image":"assets/foods/kurinoe-bedro-s-kozhey.jpg"},
 {"id":"b149","name":"Куриное крыло","category":"Мясо и птица","kcal":203,"c":0,"p":30.5,"f":8.1,"fib":0,"se":0,"image":"assets/foods/kurinoe-krylo.jpg"},
 {"id":"b147","name":"Куриное филе отварное","category":"Мясо и птица","kcal":165,"c":0,"p":31,"f":3.6,"fib":0,"se":0,"image":"assets/foods/kurinoe-file-otvarnoe.jpg"},
-{"id":"cooked-meat-09","name":"Курица отварная","category":"Мясо и птица","kcal":165,"c":0,"p":31,"f":3.6,"fib":0,"se":0,"image":"assets/foods/kuritsa-otvarnaya.jpg"},
 {"id":"b156","name":"Печень говяжья","category":"Мясо и птица","kcal":135,"c":4,"p":20,"f":3.6,"fib":0,"se":0,"image":"assets/foods/pechen-govyazhya.jpg"},
 {"id":"b157","name":"Печень куриная","category":"Мясо и птица","kcal":119,"c":0.7,"p":17,"f":4.8,"fib":0,"se":0,"image":"assets/foods/pechen-kurinaya.jpg"},
 {"id":"cooked-meat-05","name":"Свинина отварная","category":"Мясо и птица","kcal":242,"c":0,"p":27,"f":14,"fib":0,"se":0,"image":"assets/foods/svinina-otvarnaya.jpg"},
 {"id":"boiled-meat-v5933-09","name":"Сердце отварное","category":"Мясо и птица","kcal":148,"c":0,"p":24,"f":5,"fib":0,"se":0,"image":"assets/foods/serdtse-otvarnoe.jpg"},
 {"id":"b158","name":"Сосиски","category":"Мясо и птица","kcal":301,"c":2,"p":12.5,"f":27,"fib":0,"se":0,"image":"assets/foods/sosiski.jpg"},
-{"id":"b153","name":"Телятина","category":"Мясо и птица","kcal":172,"c":0,"p":24,"f":8,"fib":0,"se":0,"image":"assets/foods/telyatina.jpg"},
 {"id":"boiled-meat-v5933-03","name":"Телятина отварная","category":"Мясо и птица","kcal":172,"c":0,"p":24,"f":8,"fib":0,"se":0,"image":"assets/foods/telyatina-otvarnaya.jpg"},
 {"id":"boiled-meat-v5933-08","name":"Язык говяжий отварной","category":"Мясо и птица","kcal":224,"c":0,"p":15,"f":17,"fib":0,"se":0,"image":"assets/foods/yazyk-govyazhiy-otvarnoy.jpg"},
 {"id":"shoro-2","name":"Аралаш","category":"Напитки","kcal":27.3,"c":3.9,"p":2.3,"f":0.9,"fib":0,"se":0,"image":"assets/foods/aralash.jpg","brand":"ШОРО","isShoro":true,"composition":"Вода артезианская, натуральное коровье молоко, ячмень, пшеница, кукуруза, топленое сливочное масло, мука пшеничная, соль, чистые культуры молочнокислых бактерий, пробиотические культуры, дрожжи.","vitamins":"В1, В2, РР, C","minerals":"K, Ca, Mg, P, Fe, Zn","source":"https://www.shoro.kg/ru/products/drinks/aralash-shoro-2/","sourceLabel":"Официальная страница ШОРО"},

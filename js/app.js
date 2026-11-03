@@ -20,7 +20,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир 2.5%',200],['Яблоко',100],['Грецкие орехи',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v62.01';
+const APP_VERSION='v62.02';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -84,7 +84,9 @@ const CATALOG_RENAMES={
   'Свинина постная':'Свинина отварная','Баранина постная':'Баранина отварная',
   'Гюро лагман':'Лагман гюро','Босо лагман':'Лагман босо','Лагман жидкий (старое название)':'Лагман жидкий',
   'Индейка бедро':'Индейка запечённая','Борщ':'Борщ без сметаны','Борщ со сметаной':'Борщ со сметаной 15%',
-  'Семечки подсолнечника':'Семечки подсолнечника очищенные'
+  'Семечки подсолнечника':'Семечки подсолнечника очищенные',
+  // v62.02: объединены дубли с одинаковыми КБЖУ
+  'Фасоль варёная':'Фасоль красная варёная','Овсяные хлопья варёные':'Каша овсяная на воде','Кролик':'Крольчатина отварная','Курица отварная':'Куриное филе отварное','Телятина':'Телятина отварная'
 };
 const CATALOG_BY_ID=new Map(window.DM_CATALOG.foods.map(f=>[f.id,f]));
 const CATALOG_BY_NAME=new Map(window.DM_CATALOG.foods.map(f=>[f.name,f]));
