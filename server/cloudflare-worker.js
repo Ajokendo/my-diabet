@@ -1,9 +1,12 @@
-// Cloudflare Worker: распознавание еды по фото для «Мой диабет».
-// Секреты (Settings → Variables and Secrets): ANTHROPIC_API_KEY (обязательно), PHOTO_ACCESS_CODE (желательно).
-// Необязательная переменная ANTHROPIC_MODEL (по умолчанию claude-sonnet-5-5).
+// Cloudflare Worker «Мой диабет»: распознавание еды по фото + семейная синхронизация.
+//
+// Настройки воркера (Settings):
+//   Секреты:   ANTHROPIC_API_KEY (для фото), PHOTO_ACCESS_CODE (код для фото, желательно).
+//   Переменная (необязательно): ANTHROPIC_MODEL (по умолчанию claude-sonnet-5-5).
+//   Binding:   D1 database, имя переменной DB (для синхронизации). Таблицы создаются сами.
 const REFS={card:'банковская карта 85,6 × 54 мм',plate:'тарелка/пиала, внешний диаметр {d} мм',none:null};
-const CORS={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, X-Access-Code','Access-Control-Allow-Methods':'POST, OPTIONS'};
-const J=(s,o)=>new Response(JSON.stringify(o),{status:s,headers:{...CORS,'Content-Type':'application/json; charset=utf-8'}});
+const CORS={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, X-Access-Code, Authorization','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS'};
+const J=(s,o)=>new Response(JSON.stringify(o),{status:s,headers:{...CORS,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
 function buildPrompt(b){
   const names=(Array.isArray(b.catalog)?b.catalog:[]).slice(0,800).map(String);
   let ref=REFS[b.reference?.type]||null;
@@ -19,15 +22,11 @@ ${ref?`На фото есть ориентир известного размер
 Каталог: ${names.join('; ')}`;
 }
 
-
-export default{async fetch(req,env){
-  const url=new URL(req.url);
-  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});
-  if(req.method==='GET')return J(200,{ok:true,service:'my-diabet food-photo'});
-  if(req.method!=='POST'||url.pathname!=='/v1/food-photo')return J(404,{error:'Не найдено'});
+/* ---------- Распознавание фото ---------- */
+async function foodPhoto(req,env){
+  let b;try{b=await req.json()}catch{return J(400,{error:'Неверный запрос.'})}
   if(env.PHOTO_ACCESS_CODE&&req.headers.get('X-Access-Code')!==env.PHOTO_ACCESS_CODE)return J(401,{error:'Неверный код доступа.'});
   if(!env.ANTHROPIC_API_KEY)return J(503,{error:'Не задан ANTHROPIC_API_KEY.'});
-  let b;try{b=await req.json()}catch{return J(400,{error:'Неверный запрос.'})}
   const imgs=(Array.isArray(b.images)?b.images:[]).slice(0,2).filter(x=>x&&x.data);if(!imgs.length)return J(400,{error:'Нет фото.'});
   const model=env.ANTHROPIC_MODEL||'claude-sonnet-5-5';
   const content=imgs.map(x=>({type:'image',source:{type:'base64',media_type:x.mediaType||'image/jpeg',data:String(x.data).replace(/^data:[^,]+,/,'')}}));content.push({type:'text',text:buildPrompt(b)});
@@ -37,4 +36,103 @@ export default{async fetch(req,env){
   let out;try{out=JSON.parse(m[0])}catch{return J(502,{error:'Ответ модели не разобран.'})}
   out.items=(Array.isArray(out.items)?out.items:[]).map(x=>({name:String(x.name||''),catalogName:x.catalogName?String(x.catalogName):null,grams:Math.max(0,Math.round(+x.grams||0)),confidence:['low','medium','high'].includes(x.confidence)?x.confidence:'low',note:String(x.note||'')}));
   out.warnings=Array.isArray(out.warnings)?out.warnings.map(String):[];out.model=model;return J(200,out);
+}
+
+/* ---------- Синхронизация ---------- */
+const SCHEMA=[
+ "CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,email TEXT UNIQUE NOT NULL,display_name TEXT,pw_hash TEXT NOT NULL,salt TEXT NOT NULL,created_at TEXT NOT NULL)",
+ "CREATE TABLE IF NOT EXISTS sessions(token_hash TEXT PRIMARY KEY,user_id TEXT NOT NULL,created_at TEXT NOT NULL,expires_at TEXT NOT NULL)",
+ "CREATE TABLE IF NOT EXISTS patients(id TEXT PRIMARY KEY,display_name TEXT,created_at TEXT NOT NULL,seq INTEGER NOT NULL DEFAULT 0)",
+ "CREATE TABLE IF NOT EXISTS members(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,patient_id TEXT NOT NULL,role TEXT NOT NULL,display_name TEXT,status TEXT NOT NULL,created_at TEXT NOT NULL,UNIQUE(user_id,patient_id))",
+ "CREATE TABLE IF NOT EXISTS invitations(code TEXT PRIMARY KEY,patient_id TEXT NOT NULL,role TEXT NOT NULL,display_name TEXT,created_by TEXT NOT NULL,created_at TEXT NOT NULL,expires_at TEXT NOT NULL,status TEXT NOT NULL,accepted_by TEXT)",
+ "CREATE TABLE IF NOT EXISTS records(patient_id TEXT NOT NULL,rtype TEXT NOT NULL,rid TEXT NOT NULL,version INTEGER NOT NULL,payload TEXT,deleted INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL,updated_by TEXT,seq INTEGER NOT NULL,PRIMARY KEY(patient_id,rtype,rid))",
+ "CREATE INDEX IF NOT EXISTS records_seq ON records(patient_id,seq)"
+];
+let schemaReady=false;
+async function ensureSchema(env){if(schemaReady)return;await env.DB.batch(SCHEMA.map(s=>env.DB.prepare(s)));schemaReady=true}
+const now=()=>new Date().toISOString();
+const rnd=n=>{const a=new Uint8Array(n);crypto.getRandomValues(a);return a};
+const b64u=a=>btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const hex=a=>[...new Uint8Array(a)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const uid=p=>p+'_'+hex(rnd(12));
+async function sha256(s){return hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))}
+async function pbkdf2(pw,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:new TextEncoder().encode(salt),iterations:100000},k,256))}
+function safeEq(a,b){if(a.length!==b.length)return false;let r=0;for(let i=0;i<a.length;i++)r|=a.charCodeAt(i)^b.charCodeAt(i);return r===0}
+const ROLES={guardian:{write:true,invite:true},patient:{write:true,invite:true},viewer:{write:false,invite:false}};
+const ROLE_RU={guardian:'Родитель',patient:'Пациент',viewer:'Только просмотр'};
+const CODE_ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const newCode=()=>[...rnd(8)].map(x=>CODE_ALPH[x%CODE_ALPH.length]).join('');
+
+async function issueSession(env,userId){const t=b64u(rnd(32));await env.DB.prepare('INSERT INTO sessions VALUES(?,?,?,?)').bind(await sha256(t),userId,now(),new Date(Date.now()+180*864e5).toISOString()).run();return t}
+async function authUser(req,env){const h=req.headers.get('Authorization')||'';if(!h.startsWith('Bearer '))return null;const s=await env.DB.prepare('SELECT s.user_id,s.expires_at,u.email,u.display_name FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=?').bind(await sha256(h.slice(7))).first();if(!s||s.expires_at<now())return null;return {id:s.user_id,email:s.email,displayName:s.display_name}}
+async function patientsOf(env,userId){const r=await env.DB.prepare("SELECT p.id,p.display_name,m.role FROM members m JOIN patients p ON p.id=m.patient_id WHERE m.user_id=? AND m.status='active' ORDER BY m.created_at").bind(userId).all();return r.results.map(x=>({id:x.id,displayName:x.display_name,role:x.role}))}
+async function roleIn(env,userId,pid){const m=await env.DB.prepare("SELECT role FROM members WHERE user_id=? AND patient_id=? AND status='active'").bind(userId,pid).first();return m?m.role:null}
+async function body(req){try{return await req.json()}catch{return {}}}
+
+async function sync(req,env,path){
+  if(!env.DB)return J(503,{error:'База синхронизации не подключена (D1 binding DB).'});
+  await ensureSchema(env);
+  const M=req.method;
+  if(M==='POST'&&path==='/v1/auth/register'){
+    const b=await body(req),email=String(b.email||'').trim().toLowerCase(),pw=String(b.password||''),name=String(b.displayName||'').trim()||email.split('@')[0];
+    if(!email.includes('@')||pw.length<8)return J(400,{error:'Введите email и пароль не короче 8 символов.'});
+    if(await env.DB.prepare('SELECT 1 FROM users WHERE email=?').bind(email).first())return J(409,{error:'Аккаунт с таким email уже есть — войдите.'});
+    const salt=hex(rnd(16)),u={id:uid('usr'),email,displayName:name};
+    const ops=[env.DB.prepare('INSERT INTO users VALUES(?,?,?,?,?,?)').bind(u.id,email,name,await pbkdf2(pw,salt),salt,now())];
+    let patients=[];
+    if(b.createPatient!==false){const pid=uid('pat'),pname=String(b.patientName||name).trim()||'Пациент';ops.push(env.DB.prepare('INSERT INTO patients(id,display_name,created_at,seq) VALUES(?,?,?,0)').bind(pid,pname,now()),env.DB.prepare('INSERT INTO members VALUES(?,?,?,?,?,?,?)').bind(uid('mem'),u.id,pid,b.role==='guardian'?'guardian':'patient',name,'active',now()));patients=[{id:pid,displayName:pname,role:b.role==='guardian'?'guardian':'patient'}]}
+    await env.DB.batch(ops);
+    return J(201,{token:await issueSession(env,u.id),user:u,patients});
+  }
+  if(M==='POST'&&path==='/v1/auth/login'){
+    const b=await body(req),email=String(b.email||'').trim().toLowerCase(),u=await env.DB.prepare('SELECT * FROM users WHERE email=?').bind(email).first();
+    if(!u||!safeEq(await pbkdf2(String(b.password||''),u.salt),u.pw_hash))return J(401,{error:'Неверный email или пароль.'});
+    return J(200,{token:await issueSession(env,u.id),user:{id:u.id,email:u.email,displayName:u.display_name},patients:await patientsOf(env,u.id)});
+  }
+  const user=await authUser(req,env);if(!user)return J(401,{error:'Нужно войти заново.'});
+  if(M==='POST'&&path==='/v1/auth/logout'){const h=req.headers.get('Authorization').slice(7);await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(await sha256(h)).run();return J(200,{ok:true})}
+  if(M==='GET'&&path==='/v1/me')return J(200,{user,patients:await patientsOf(env,user.id)});
+  const pm=path.match(/^\/v1\/patients\/([^/]+)\/(members|invitations)$/);
+  if(pm){const pid=decodeURIComponent(pm[1]),role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа.'});
+    if(M==='GET'&&pm[2]==='members'){const r=await env.DB.prepare("SELECT m.id,m.role,m.display_name,m.created_at,u.email FROM members m JOIN users u ON u.id=m.user_id WHERE m.patient_id=? AND m.status='active' ORDER BY m.created_at").bind(pid).all();return J(200,{members:r.results.map(x=>({id:x.id,role:x.role,roleLabel:ROLE_RU[x.role]||x.role,displayName:x.display_name,email:x.email,since:x.created_at}))})}
+    if(M==='POST'&&pm[2]==='invitations'){if(!ROLES[role].invite)return J(403,{error:'Недостаточно прав для приглашения.'});const b=await body(req),r=ROLES[b.role]?b.role:'guardian',code=newCode(),exp=new Date(Date.now()+7*864e5).toISOString();await env.DB.prepare('INSERT INTO invitations VALUES(?,?,?,?,?,?,?,?,NULL)').bind(code,pid,r,String(b.displayName||'').slice(0,60),user.id,now(),exp,'pending').run();return J(201,{invitation:{code,role:r,roleLabel:ROLE_RU[r],expiresAt:exp}})}
+  }
+  const im=path.match(/^\/v1\/invitations\/([^/]+)\/accept$/);
+  if(im&&M==='POST'){const code=decodeURIComponent(im[1]).trim().toUpperCase(),inv=await env.DB.prepare('SELECT * FROM invitations WHERE code=?').bind(code).first();
+    if(!inv||inv.status!=='pending'||inv.expires_at<now())return J(400,{error:'Код приглашения неверный или устарел.'});
+    const ex=await roleIn(env,user.id,inv.patient_id);
+    const ops=[env.DB.prepare("UPDATE invitations SET status='accepted',accepted_by=? WHERE code=?").bind(user.id,code)];
+    if(!ex)ops.push(env.DB.prepare('INSERT INTO members VALUES(?,?,?,?,?,?,?)').bind(uid('mem'),user.id,inv.patient_id,inv.role,inv.display_name||user.displayName,'active',now()));
+    await env.DB.batch(ops);const p=await env.DB.prepare('SELECT id,display_name FROM patients WHERE id=?').bind(inv.patient_id).first();
+    return J(200,{ok:true,patient:{id:p.id,displayName:p.display_name,role:ex||inv.role}});
+  }
+  if(M==='POST'&&(path==='/v2/sync/push'||path==='/v2/sync/pull')){
+    const b=await body(req),pid=String(b.patientId||''),role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа к пациенту.'});
+    if(path==='/v2/sync/push'){
+      if(!ROLES[role].write)return J(403,{error:'Только просмотр.'});
+      const ev=(Array.isArray(b.events)?b.events:[]).slice(0,300).filter(e=>e&&e.recordType&&e.recordId!=null);
+      if(!ev.length)return J(200,{accepted:[]});
+      const p=await env.DB.prepare('UPDATE patients SET seq=seq+? WHERE id=? RETURNING seq').bind(ev.length,pid).first();let seq=p.seq-ev.length;const t=now(),ops=[],acc=[];
+      for(const e of ev){seq++;const del=e.operation==='delete'?1:0,payload=del?null:JSON.stringify(e.payload??null);if(payload&&payload.length>200000)continue;
+        ops.push(env.DB.prepare('INSERT INTO records(patient_id,rtype,rid,version,payload,deleted,updated_at,updated_by,seq) VALUES(?,?,?,1,?,?,?,?,?) ON CONFLICT(patient_id,rtype,rid) DO UPDATE SET version=version+1,payload=excluded.payload,deleted=excluded.deleted,updated_at=excluded.updated_at,updated_by=excluded.updated_by,seq=excluded.seq').bind(pid,String(e.recordType),String(e.recordId),payload,del,t,user.id,seq));
+        acc.push({clientEventId:e.clientEventId||null,recordType:String(e.recordType),recordId:String(e.recordId),sequence:seq});}
+      if(ops.length)await env.DB.batch(ops);return J(200,{accepted:acc,cursor:seq});
+    }
+    const cur=Number(b.cursor||0),lim=Math.min(Number(b.limit||500),1000);
+    const r=await env.DB.prepare('SELECT rtype,rid,version,payload,deleted,updated_at,updated_by,seq FROM records WHERE patient_id=? AND seq>? ORDER BY seq LIMIT ?').bind(pid,cur,lim).all();
+    const changes=r.results.map(x=>({recordType:x.rtype,recordId:x.rid,version:x.version,payload:x.payload?JSON.parse(x.payload):null,deleted:!!x.deleted,updatedAt:x.updated_at,updatedBy:x.updated_by,sequence:x.seq}));
+    return J(200,{changes,cursor:changes.length?changes[changes.length-1].sequence:cur,hasMore:changes.length===lim});
+  }
+  return J(404,{error:'Не найдено'});
+}
+
+export default{async fetch(req,env){
+  const path=new URL(req.url).pathname;
+  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});
+  try{
+    if(req.method==='GET'&&(path==='/'||path==='/health'))return J(200,{ok:true,service:'my-diabet food-photo',sync:!!env.DB});
+    if(path==='/v1/food-photo'&&req.method==='POST')return await foodPhoto(req,env);
+    if(path.startsWith('/v1/')||path.startsWith('/v2/'))return await sync(req,env,path);
+    return J(404,{error:'Не найдено'});
+  }catch(e){return J(500,{error:'Ошибка сервера: '+(e&&e.message||e)})}
 }};
