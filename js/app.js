@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир 2.5%',200],['Яблоко',100],['Грецкие орехи',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v62.19';
+const APP_VERSION='v62.20';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -575,7 +575,7 @@ let tc=0,tp=0,tf=0;const rows=photoItems.map((x,i)=>{const f=db.foods.find(f=>f.
 return `<tr><td><b>${x.name.replace(/</g,'&lt;')}</b><br><select class="select" style="min-width:180px" onchange="photoItems[${i}].foodId=this.value;photoRender()"><option value="">— выберите из базы —</option>${opts.map(o=>`<option value="${o.id}"${o.id===x.foodId?' selected':''}>${o.name}</option>`).join('')}</select><div class="muted" style="font-size:12px">${x.note.replace(/</g,'&lt;')}</div></td><td><input type="number" class="input" style="width:80px" value="${x.grams}" onchange="photoItems[${i}].grams=Math.max(0,+this.value||0);photoRender()"> г<div class="muted" style="font-size:12px">уверенность: ${conf[x.confidence]||x.confidence}</div></td><td>${z?z.c.toFixed(1)+' г<br><b>'+(z.c/db.settings.xe).toFixed(2)+' ХЕ</b>':'—'}</td><td><button class="btn small secondary" onclick="photoItems.splice(${i},1);photoRender()">✕</button></td></tr>`}).join('');
 if(j)photoRender.last=j;const J=photoRender.last||{};
 phResult.innerHTML=(J.referenceFound===false&&phRef.value!=='none'?'<div class="notice">Ориентир на фото не найден — вес оценён приблизительно.</div>':'')+(J.warnings?.length?`<div class="notice">${J.warnings.map(w=>w.replace(/</g,'&lt;')).join('<br>')}</div>`:'')+
-`<table class="tbl" style="width:100%"><thead><tr><th>Блюдо</th><th>Вес</th><th>Углеводы</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="muted">Еда не распознана.</div></td></tr>'}</tbody></table>
+`<table class="tbl phTbl" style="width:100%"><thead><tr><th>Блюдо</th><th>Вес</th><th>Углеводы</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="muted">Еда не распознана.</div></td></tr>'}</tbody></table>
 <div class="mini" style="margin-top:10px"><b>Итого: ${tc.toFixed(1)} г углеводов · ${(tc/db.settings.xe).toFixed(2)} ХЕ · ${bje(tp,tf).toFixed(1)} БЖЕ</b></div>
 <div class="notice" style="margin-top:10px"><b>Проверьте вес!</b> Камера ошибается, особенно с высотой горки и скрытыми слоями. Если есть весы — взвесьте.</div>
 <label class="row" style="margin-top:10px;gap:8px"><input type="checkbox" id="phOk" onchange="phAdd.disabled=!this.checked"> Я проверил(а) блюда и вес</label>
