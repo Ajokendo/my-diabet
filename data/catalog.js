@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v63.02",foods:[
+window.DM_CATALOG={version:"v63.03",foods:[
 {"id":"b195","name":"Горох варёный","category":"Бобовые","kcal":118,"c":21.1,"p":8.3,"f":0.4,"fib":8.3,"se":0,"image":"assets/foods/goroh-varenyy.jpg"},
 {"id":"b196","name":"Маш варёный","category":"Бобовые","kcal":105,"c":19.2,"p":7,"f":0.4,"fib":7.6,"se":0,"image":"assets/foods/mash-varenyy.jpg"},
 {"id":"b57","name":"Нут варёный","category":"Бобовые","kcal":164,"c":27.4,"p":8.9,"f":2.6,"fib":7.6,"se":0,"image":"assets/foods/nut-varenyy.jpg"},
@@ -173,9 +173,9 @@ window.DM_CATALOG={version:"v63.02",foods:[
 {"id":"b169","name":"Икра красная","category":"Рыба и морепродукты","kcal":252,"c":4,"p":24.6,"f":14,"fib":0,"se":0,"image":"assets/foods/ikra-krasnaya.jpg"},
 {"id":"b167","name":"Кальмар варёный","category":"Рыба и морепродукты","kcal":92,"c":3.1,"p":15.6,"f":1.4,"fib":0,"se":0,"image":"assets/foods/kalmar-varenyy.jpg"},
 {"id":"b166","name":"Креветки варёные","category":"Рыба и морепродукты","kcal":99,"c":0.2,"p":24,"f":0.3,"fib":0,"se":0,"image":"assets/foods/krevetki-varenye.jpg"},
-{"id":"b37","name":"Лосось","category":"Рыба и морепродукты","kcal":208,"c":0,"p":20.4,"f":13.4,"fib":0,"se":0,"image":"assets/foods/losos.jpg"},
+{"id":"b37","name":"Лосось запечённый","category":"Рыба и морепродукты","kcal":206,"c":0,"p":22.1,"f":12.4,"fib":0,"se":0,"image":"assets/foods/losos.jpg","source":"https://getfoodfacts.com/food/fish-salmon-atlantic-farmed-cooked-dry-heat-175168","sourceLabel":"USDA FDC 175168 (атлантический, фермерский, запечённый без масла)","note":"Вес готовой рыбы. Запечена без масла и панировки; масло добавьте отдельно."},
 {"id":"b168","name":"Мидии варёные","category":"Рыба и морепродукты","kcal":172,"c":7.4,"p":24,"f":4.5,"fib":0,"se":0,"image":"assets/foods/midii-varenye.jpg"},
-{"id":"b163","name":"Форель","category":"Рыба и морепродукты","kcal":148,"c":0,"p":20.5,"f":6.5,"fib":0,"se":0,"image":"assets/foods/forel.jpg"},
+{"id":"b163","name":"Форель запечённая","category":"Рыба и морепродукты","kcal":168,"c":0,"p":23.8,"f":7.4,"fib":0,"se":0,"image":"assets/foods/forel.jpg","source":"https://happyforks.com/food/trout/758","sourceLabel":"USDA (радужная, фермерская, запечённая без масла)","note":"Вес готовой рыбы. Запечена без масла и панировки; масло добавьте отдельно."},
 {"id":"b213","name":"Винегрет","category":"Салаты и закуски","kcal":80,"c":10,"p":2,"f":3.5,"fib":2.5,"se":0,"image":"assets/foods/vinegret.jpg"},
 {"id":"b114","name":"Салат айсберг","category":"Салаты и закуски","kcal":14,"c":3,"p":0.9,"f":0.1,"fib":1.2,"se":0,"image":"assets/foods/salat-aysberg.jpg"},
 {"id":"b211","name":"Салат греческий","category":"Салаты и закуски","kcal":85,"c":5,"p":2.5,"f":6,"fib":2,"se":0,"image":"assets/foods/salat-grecheskiy.jpg"},
