@@ -135,3 +135,7 @@ body.scrolled .stickyHead h1{font-size:22px;margin:0}
 @media(max-width:950px){.grid>.card{grid-column:span 12!important}.main{max-width:100vw;overflow-x:clip}.tablewrap,.tbl{max-width:100%}.tablewrap{overflow-x:auto}.app{display:block}}
 
 @media(max-width:700px){.phTbl thead{display:none}.phTbl,.phTbl tbody,.phTbl tr,.phTbl td{display:block;width:100%;box-sizing:border-box}.phTbl tr{border:1px solid var(--line);border-radius:12px;padding:10px;margin:10px 0;position:relative}.phTbl td{padding:4px 0;border:0;white-space:normal;overflow-wrap:anywhere}.phTbl td *{white-space:normal}.phTbl td:last-child{position:absolute;top:8px;right:8px;width:auto}.phTbl select{max-width:100%;width:100%}.phTbl td>b{display:block;padding-right:34px}}
+
+.statusLow{display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#16834b;padding:7px 11px;border-radius:999px;font-weight:800;margin-top:10px}
+.statusLow{background:#fde8e8!important;color:#b42318!important}
+.statusHigh{display:inline-flex;align-items:center;gap:6px;background:#fff1d6;color:#a15c00;padding:7px 11px;border-radius:999px;font-weight:800;margin-top:10px}
