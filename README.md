@@ -70,3 +70,10 @@ ANTHROPIC_API_KEY=sk-ant-... PHOTO_ACCESS_CODE=придумайте-код node 
 - В приложении: адрес сервера (по умолчанию `http://localhost:8787`).
 
 Модель только предлагает блюда и вес; углеводы, ХЕ и БЖЕ считаются по базе приложения. Перед добавлением в меню пользователь обязан подтвердить вес.
+
+### Сервер распознавания в Cloudflare (бесплатно, без своего компьютера)
+
+1. Зарегистрируйтесь на dash.cloudflare.com → **Workers & Pages → Create → Worker** → «Hello World» → Deploy.
+2. **Edit code** → замените весь код содержимым `server/cloudflare-worker.js` → **Deploy**.
+3. **Settings → Variables and Secrets** → добавьте секреты `ANTHROPIC_API_KEY` (ключ с console.anthropic.com) и `PHOTO_ACCESS_CODE` (любой код).
+4. В приложении: «Фото еды → Настройки сервера» → адрес `https://<имя>.<аккаунт>.workers.dev` и тот же код доступа.
