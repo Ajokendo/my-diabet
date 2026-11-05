@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир 2.5%',200],['Яблоко',100],['Грецкие орехи',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v62.18';
+const APP_VERSION='v62.19';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -567,7 +567,7 @@ const P=db.settings.photo={ref:phRef.value,plateMm:+phPlate.value||0,server:phSe
 if(P.ref==='plate'&&!P.plateMm)return alert('Укажите диаметр тарелки.');
 const base=(P.server||cloudBase()).replace(/\/$/,'');phGo.disabled=true;phResult.innerHTML='Распознаю… обычно 5–15 секунд.';
 try{const r=await fetch(base+'/v1/food-photo',{method:'POST',headers:{'Content-Type':'application/json','X-Access-Code':P.code||''},body:JSON.stringify({images:photoData.map(d=>({mediaType:'image/jpeg',data:d.split(',')[1]})),reference:{type:P.ref,diameterMm:P.plateMm},catalog:db.foods.filter(isFoodVisible).map(f=>f.name)})});
-const j=await r.json();if(!r.ok)throw new Error(j.error||('Ошибка '+r.status));photoShow(j)}catch(e){phResult.innerHTML=`<div class="notice">Не получилось: ${String(e.message||e).replace(/</g,'&lt;')}<br><span class="muted">Проверьте, что сервер запущен и на нём задан ключ API.</span></div>`}finally{phGo.disabled=false}}
+const j=await r.json();if(!r.ok)throw new Error(j.error||('Ошибка '+r.status));photoShow(j)}catch(e){const net=/Failed to fetch|NetworkError|Load failed/i.test(String(e.message||e));phResult.innerHTML=net?`<div class="notice"><b>Сервер распознавания не подключён или недоступен.</b><br><span class="muted">Укажите его адрес в «Настройках сервера» (например, https://….workers.dev). Без него можно добавить блюда вручную в «Питании».</span></div>`:`<div class="notice">Не получилось: ${String(e.message||e).replace(/</g,'&lt;')}</div>`}finally{phGo.disabled=false}}
 let photoItems=[];
 function photoShow(j){photoItems=j.items.map((x,i)=>{const f=x.catalogName&&db.foods.find(f=>f.name===x.catalogName);return{...x,foodId:f?f.id:'',i}});photoRender(j)}
 function photoRender(j){const conf={low:'⚠️ низкая',medium:'средняя',high:'высокая'},opts=db.foods.filter(isFoodVisible).slice().sort((a,b)=>a.name.localeCompare(b.name,'ru'));
