@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v63.08",foods:[
+window.DM_CATALOG={version:"v63.09",foods:[
 {"id":"b195","name":"Горох варёный","category":"Бобовые","kcal":118,"c":21.1,"p":8.3,"f":0.4,"fib":8.3,"se":0,"image":"assets/foods/goroh-varenyy.jpg"},
 {"id":"b58","name":"Зеленый горох","category":"Бобовые","kcal":81,"c":14.5,"p":5.4,"f":0.4,"fib":5.7,"se":0,"image":"assets/foods/zelenyy-goroh.jpg","note":"Свежий или замороженный.","sourceLabel":"USDA: peas, green, raw"},
 {"id":"b247","name":"Зеленый горох вареный","category":"Бобовые","kcal":84,"c":15.6,"p":5.4,"f":0.2,"fib":5.5,"se":0,"image":"assets/foods/zelenyy-goroh-varenyy.jpg","sourceLabel":"USDA: peas, green, cooked, boiled"},
