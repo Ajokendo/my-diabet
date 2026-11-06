@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир 2.5%',200],['Яблоко',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.05';
+const APP_VERSION='v63.06';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -162,7 +162,8 @@ const CATALOG_RENAMES={
   'Шашлык из говядины':'Шашлык говядина',
   'Шашлык куриный':'Шашлык из курицы',
   'Люля-кебаб':'Шашлык люля-кебаб',
-  'Яичница':'Яичница глазунья'
+  'Яичница':'Яичница глазунья',
+  'Горошек зелёный':'Зеленый горох','Торт Куликовская птичка (Куликовский)':'Торт Куликовская птичка'
 };
 const CATALOG_BY_ID=new Map(window.DM_CATALOG.foods.map(f=>[f.id,f]));
 const CATALOG_BY_NAME=new Map(window.DM_CATALOG.foods.map(f=>[f.name,f]));
