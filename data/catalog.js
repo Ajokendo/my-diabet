@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v63.03",foods:[
+window.DM_CATALOG={version:"v63.04",foods:[
 {"id":"b195","name":"Горох варёный","category":"Бобовые","kcal":118,"c":21.1,"p":8.3,"f":0.4,"fib":8.3,"se":0,"image":"assets/foods/goroh-varenyy.jpg"},
 {"id":"b196","name":"Маш варёный","category":"Бобовые","kcal":105,"c":19.2,"p":7,"f":0.4,"fib":7.6,"se":0,"image":"assets/foods/mash-varenyy.jpg"},
 {"id":"b57","name":"Нут варёный","category":"Бобовые","kcal":164,"c":27.4,"p":8.9,"f":2.6,"fib":7.6,"se":0,"image":"assets/foods/nut-varenyy.jpg"},
