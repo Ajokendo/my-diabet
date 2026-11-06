@@ -1,5 +1,7 @@
 ﻿id,name,category,kcal,carbs_g,protein_g,fat_g,fiber_g,image_file
 b195,Горох варёный,Бобовые,118,21.1,8.3,0.4,8.3,goroh-varenyy.jpg
+b58,Зеленый горох,Бобовые,81,14.5,5.4,0.4,5.7,zelenyy-goroh.jpg
+b247,Зеленый горох вареный,Бобовые,84,15.6,5.4,0.2,5.5,zelenyy-goroh-varenyy.jpg
 b196,Маш варёный,Бобовые,105,19.2,7,0.4,7.6,mash-varenyy.jpg
 b57,Нут варёный,Бобовые,164,27.4,8.9,2.6,7.6,nut-varenyy.jpg
 b197,Соя варёная,Бобовые,173,9.9,18.2,9,6,soya-varenaya.jpg
@@ -8,11 +10,15 @@ b193,Фасоль красная варёная,Бобовые,127,22.8,8.7,0.5,
 b198,Хумус,Бобовые,166,14.3,7.9,9.6,6,humus.jpg
 b55,Чечевица варёная,Бобовые,116,20.1,9,0.4,7.9,chechevitsa-varenaya.jpg
 dish-v5920-07,Ашлямфу,Готовые блюда,100,19,2,2,0,ashlyamfu.jpg
+b240,Баклажаны с помидорами,Готовые блюда,76,6.5,1.2,5,2.5,baklazhany-s-pomidorami.jpg
 dish-v5920-01,Бешбармак,Готовые блюда,230,17,16,10,0,beshbarmak.jpg
 b222,Бифштекс без яйца,Готовые блюда,210,1,19,14,0,bifshteks-bez-yaytsa.jpg
 b221,Бифштекс с яйцом,Готовые блюда,235,1.5,18.5,16.8,0,bifshteks-s-yaytsom.jpg
 b199,Вареники с картофелем,Готовые блюда,190,32,5,5,2,vareniki-s-kartofelem.jpg
 b206,Гречка с грибами,Готовые блюда,120,18,4,3.5,3,grechka-s-gribami.jpg
+b232,Котлеты из говядины,Готовые блюда,225,7,16,15,0.5,kotlety-iz-govyadiny.jpg
+b233,Котлеты из индейки,Готовые блюда,195,7,18,10.6,0.5,kotlety-iz-indeyki.jpg
+b234,Котлеты куриные,Готовые блюда,190,6,17,11,0.5,kotlety-kurinye.jpg
 b146,Куриное филе запечённое,Готовые блюда,187,0,29,7.8,0,kurinoe-file-zapechennoe.jpg
 shashlik-v5930-5,Куриные крылышки запеченные,Готовые блюда,250,2,23,17,0,kurinye-krylyshki.jpg
 dish-v5920-03,Куурдак,Готовые блюда,220,9,17,13,0,kuurdak.jpg
@@ -21,10 +27,13 @@ dish-v5920-04,Лагман гюро,Готовые блюда,180,24,9,6,0,lagma
 dish-v5920-05,Лагман жидкий,Готовые блюда,120,16,7,4,0,lagman-zhidkiy.jpg
 b208,Макароны с томатом,Готовые блюда,130,23,4,2.5,2,makarony-s-tomatnym-sousom.jpg
 dish-v5920-02,Манты с мясом,Готовые блюда,210,24,10,7,0,manty.jpg
+b237,Манты с тыквой,Готовые блюда,175,24,4,7,1.5,manty-s-tykvoy.jpg
+b239,Мясо по-французски,Готовые блюда,240,3.5,14,19,0.5,myaso-po-frantsuzski.jpg
 b200,Пельмени вареные,Готовые блюда,275,25,11,14,1.5,pelmeni.jpg
 b220,Пельмени жареные,Готовые блюда,310,26,10.5,18,1.2,pelmeni-zharenye.jpg
 b201,Пицца сырная,Готовые блюда,266,33,11,10,2,pitstsa-syrnaya.jpg
 dish-v5920-08,Плов с мясом баранины,Готовые блюда,200,28,8,7,0,plov.jpg
+b238,Плов с мясом курицы,Готовые блюда,155,17,8,6,1,plov-s-myasom-kuritsy.jpg
 b210,Рататуй,Готовые блюда,60,8,1.5,2.5,2.5,ratatuy.jpg
 b207,Рис с овощами,Готовые блюда,110,20,2.5,2,1.8,ris-s-ovoschami.jpg
 b154,Свинина запечённая,Готовые блюда,260,0,27,17,0,svinina-zapechennaya.jpg
@@ -96,12 +105,16 @@ cooked-meat-06,Баранина отварная,Мясо и птица,258,0,25
 b159,Ветчина,Мясо и птица,145,1.5,20,6.5,0,vetchina.jpg
 b152,Говядина отварная,Мясо и птица,217,0,26,12,0,govyadina-otvarnaya.jpg
 b151,Говядина тушёная,Мясо и птица,191,0,27,8,0,govyadina-tushenaya.jpg
+b243,Докторская колбаса,Мясо и птица,257,1.5,12.8,22.2,0,doktorskaya-kolbasa.jpg
+b244,Докторская колбаса жареная,Мясо и птица,290,1.7,14.5,25,0,doktorskaya-kolbasa-zharenaya.jpg
 b150,Индейка запечённая,Мясо и птица,136,0,29.5,2,0,indeyka-zapechennaya.jpg
 cooked-meat-03,Индейка отварная,Мясо и птица,135,0,29,1.8,0,indeyka-otvarnaya.jpg
 cooked-meat-07,Конина отварная,Мясо и птица,175,0,28.1,6.1,0,konina-otvarnaya.jpg
 cooked-meat-08,Крольчатина отварная,Мясо и птица,173,0,33,3.5,0,krolchatina-otvarnaya.jpg
 cooked-meat-02,Куриное бедро отварное,Мясо и птица,209,0,26,11,0,kurinoe-bedro-otvarnoe.jpg
 b149,Куриное крыло,Мясо и птица,203,0,30.5,8.1,0,kurinoe-krylo.jpg
+b235,Куриные бедра запеченные,Мясо и птица,229,0,23.3,14.7,0,kurinye-bedra-zapechennye.jpg
+b236,Куриные ножки запеченные,Мясо и птица,216,0,27,11.2,0,kurinye-nozhki-zapechennye.jpg
 b147,Курица отварная,Мясо и птица,165,0,31,3.6,0,kurinoe-file-otvarnoe.jpg
 cooked-meat-05,Свинина отварная,Мясо и птица,242,0,27,14,0,svinina-otvarnaya.jpg
 b158,Сосиски,Мясо и птица,301,2,12.5,27,0,sosiski.jpg
@@ -170,13 +183,18 @@ b167,Кальмар варёный,Рыба и морепродукты,92,3.1,1
 b166,Креветки варёные,Рыба и морепродукты,99,0.2,24,0.3,0,krevetki-varenye.jpg
 b37,Лосось,Рыба и морепродукты,206,0,22.1,12.4,0,losos.jpg
 b168,Мидии варёные,Рыба и морепродукты,172,7.4,24,4.5,0,midii-varenye.jpg
+b246,Рыба в кусочках запеченная,Рыба и морепродукты,168,0,23.8,7.4,0,ryba-v-kusochkah-zapechennaya.jpg
 b163,Форель запечённая,Рыба и морепродукты,168,0,23.8,7.4,0,forel.jpg
+b245,Шашлык из рыбы,Рыба и морепродукты,180,0.5,23,9.5,0,shashlyk-iz-ryby.jpg
 b211,Греческий салат,Салаты и закуски,85,5,2.5,6,2,salat-grecheskiy.jpg
 b114,Салат айсберг,Салаты и закуски,14,3,0.9,0.1,1.2,salat-aysberg.jpg
 b213,Салат винегрет,Салаты и закуски,80,10,2,3.5,2.5,vinegret.jpg
 b228,Салат из капусты,Салаты и закуски,46,6.2,1.4,1.8,2,salat-iz-kapusty.jpg
+b248,Салат из морковки,Салаты и закуски,101,8.5,1,7,2.4,salat-iz-morkovki.jpg
+b241,Салат мимоза,Салаты и закуски,212,5.8,8,17.4,0.8,salat-mimoza.jpg
 b212,Салат овощной,Салаты и закуски,45,6,1.5,2,2,salat-ovoschnoy.jpg
 b229,Салат оливье,Салаты и закуски,198,7.5,4.2,17.5,1.2,salat-olive.jpg
+b242,Сельдь под шубой,Салаты и закуски,178,6.5,6.5,14,1.2,seld-pod-shuboy.jpg
 kulikov-chak-chak,Десерт чак-чак,Сладости и десерты,336,59.5,5.1,8.6,0,chak-chak-kulikovskiy.jpg
 kulikov-morozhenoe-plombir-solenaya-karamel,Мороженое пломбир Солёная карамель (Куликовский),Сладости и десерты,212,20.6,3.8,12.7,0,morozhenoe-plombir-solenaya-karamel-kulikovskiy.jpg
 kulikov-morozhenoe-plombir-v-vafelnom-stakanchike,Мороженое пломбир в вафельном стаканчике (Куликовский),Сладости и десерты,252,24.8,4.5,15.0,0,morozhenoe-plombir-v-vafelnom-stakanchike-kulikovskiy.jpg
@@ -192,6 +210,7 @@ kulikov-pirozhnoe-zavarnoe,Пирожное Заварное (Куликовск
 b68,Сахар,Сладости и десерты,387,99.8,0,0,0,sahar.jpg
 kulikov-tort-yogurtovyy-mango-marakuyya,Торт Йогуртовый манго-маракуйя (Куликовский),Сладости и десерты,223,27.7,3.9,10.6,0,tort-yogurtovyy-mango-marakuyya-kulikovskiy.jpg
 kulikov-tort-kudryavyy-pincher,Торт Кудрявый пинчер (Куликовский),Сладости и десерты,380,51.4,6.5,22.5,0,tort-kudryavyy-pincher-kulikovskiy.jpg
+kulikov-tort-kulikovskaya-ptichka,Торт Куликовская птичка,Сладости и десерты,313,38.2,7.3,16.0,0,tort-kulikovskaya-ptichka.jpg
 kulikov-tort-medovik-s-bananom,Торт Медовик с бананом (Куликовский),Сладости и десерты,360,50.2,4.2,15.7,0,tort-medovik-s-bananom-kulikovskiy.jpg
 kulikov-tort-napoleon,Торт Наполеон,Сладости и десерты,369,46.5,5.3,28.5,0,tort-napoleon-kulikovskiy.jpg
 kulikov-tort-nezhnyy-v-glyassazhe,Торт Нежный в гляссаже (Куликовский),Сладости и десерты,393,39.8,6.0,22.4,0,tort-nezhnyy-v-glyassazhe-kulikovskiy.jpg
@@ -297,5 +316,6 @@ egg-extra-2,Скрембл,Яйца,166,1.6,10.6,12,0,skrembl.jpg
 egg-extra-1,Яичница глазунья,Яйца,196,1.1,13.6,14.8,0,yaichnitsa.jpg
 b40,Яичный белок,Яйца,52,0.7,10.9,0.2,0,yaichnyy-belok.jpg
 b170,Яйцо варёное,Яйца,155,1.1,12.6,10.6,0,yaytso-varenoe.jpg
+b249,Яйцо всмятку,Яйца,155,1.1,12.6,10.6,0,yaytso-vsmyatku.jpg
 b39,Яйцо куриное,Яйца,143,0.7,12.6,9.5,0,yaytso-kurinoe.jpg
 egg-poached,Яйцо пашот,Яйца,143,0.7,12.5,10.0,0,yaytso-pashot.jpg
