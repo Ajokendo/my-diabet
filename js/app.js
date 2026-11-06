@@ -18,10 +18,10 @@ const recipes=[
 ['Нут с овощами',[['Нут варёный',160],['Помидор',100],['Огурец',100],['Масло оливковое',5]]],
 ['Творожная миска с бананом',[['Творог 5%',150],['Банан',70]]],
 ['Картофель с курицей',[['Картофель отварной',180],['Курица отварная',120],['Капуста белокочанная',100]]],
-['Кефир с яблоком и орехами',[['Кефир 2.5%',200],['Яблоко',100],['Орех грецкий',15]]]
+['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.09';
+const APP_VERSION='v63.10';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -104,7 +104,7 @@ const CATALOG_RENAMES={
   'Сыр Чечил':'Сыр чечил',
   'Тильзитский':'Сыр тильзитский',
   'Швейцарский сыр':'Сыр швейцарский',
-  'Крем-сыр':'Сыр сливочный (крем-сыр)',
+  'Крем-сыр':'Сыр сливочный',
   'Бразильский орех':'Орех бразильский',
   'Грецкие орехи':'Орех грецкий',
   'Кедровые орехи':'Орех кедровый',
@@ -177,7 +177,16 @@ const CATALOG_RENAMES={
   'Уха по царски':'Суп уха по царски',
   'Шорпо с бараниной':'Суп шорпо из баранины',
   'Шорпо с говядиной':'Суп шорпо из говядины',
-  'Щи':'Суп щи'
+  'Щи':'Суп щи',
+  'Айран 1,5%':'Айран',
+  'Йогурт греческий 2%':'Йогурт греческий',
+  'Кефир 2.5%':'Кефир',
+  'Кофе чёрный без сахара':'Кофе черный',
+  'Тушёные овощи':'Овощи тушеные',
+  'Сыр сливочный (крем-сыр)':'Сыр сливочный',
+  'Фрикасе':'Фрикасе куриное',
+  'Борщ без картофеля':'Суп борщ без картофеля',
+  'Чучвара':'Суп чучвара'
 };
 const CATALOG_BY_ID=new Map(window.DM_CATALOG.foods.map(f=>[f.id,f]));
 const CATALOG_BY_NAME=new Map(window.DM_CATALOG.foods.map(f=>[f.name,f]));
