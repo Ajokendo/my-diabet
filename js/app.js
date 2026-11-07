@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.21';
+const APP_VERSION='v63.22';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -675,7 +675,7 @@ try{makeStickyHead(document.querySelector('.section.active')?.id||'dashboard')}c
 
 let photoData=null;
 const PHOTO_DEFAULT_SERVER='https://my-diabet.ajokendo.workers.dev';
-function photoInit(){db.settings.photo=db.settings.photo||{};const P=db.settings.photo,m=document.getElementById('phMeal');if(/localhost|127\.0\.0\.1/.test(P.server||''))P.server='';if(m&&!m.options.length)m.innerHTML=meals.map(x=>`<option>${x}</option>`).join('');phRef.value=P.ref||'card';phPlate.value=P.plateMm||'';phServer.value=P.server||PHOTO_DEFAULT_SERVER;phCode.value=P.code||'';photoRefUi()}
+function photoInit(){db.settings.photo=db.settings.photo||{};const P=db.settings.photo,m=document.getElementById('phMeal');if(/localhost|127\.0\.0\.1/.test(P.server||''))P.server='';if(m&&!m.options.length)m.innerHTML=meals.map(x=>`<option>${x}</option>`).join('');phRef.value=P.ref||'card';phPlate.value=P.plateMm||'';phServer.value=P.server||PHOTO_DEFAULT_SERVER;phCode.value=P.code||'';const st=document.getElementById('phSettings');if(st&&!P.code)st.open=true;photoRefUi()}
 function photoRefUi(){phPlateBox.style.display=phRef.value==='plate'?'':'none'}
 function photoShrink(file,max=1280){return new Promise((ok,bad)=>{const img=new Image();img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);ok(c.toDataURL('image/jpeg',0.82))};img.onerror=()=>bad(new Error('Не удалось открыть фото'));img.src=URL.createObjectURL(file)})}
 async function photoPreview(){const fs=[phTop.files[0],phSide.files[0]].filter(Boolean);photoData=await Promise.all(fs.map(f=>photoShrink(f)));phPrev.innerHTML=photoData.map(d=>`<img src="${d}" style="height:90px;border-radius:10px">`).join('')}
