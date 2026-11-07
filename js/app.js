@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.18';
+const APP_VERSION='v63.19';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -115,14 +115,13 @@ const CATALOG_RENAMES={
   'Кешью':'Орех кешью',
   'Фундук':'Орех фундук',
   'Миндаль':'Орех миндаль',
-  'Арахис':'Орех арахис',
-  'Семена тыквы':'Семечки тыквенные',
-  'Семечки подсолнечника очищенные':'Семечки подсолнечника',
+  'Семена тыквы':'Семена тыквенные',
+  'Семечки подсолнечника очищенные':'Семена подсолнечника',
   'Оливковое масло':'Масло оливковое',
   'Цветная капуста варёная':'Цветная капуста вареная',
   'Помидоры черри':'Помидор черри',
   'Красная смородина':'Смородина красная',
-  'Чёрная смородина':'Смородина чёрная',
+  'Чёрная смородина':'Смородина',
   'Форель':'Форель запечённая',
   'Блины со сметаной':'Блинчики со сметаной',
   'Блины':'Блинчики',
@@ -200,7 +199,11 @@ const CATALOG_RENAMES={
   'Рисовая каша на молоке':'Каша рисовая на молоке',
   'Перец сладкий':'Перец болгарский сладкий',
   'Тыква':'Тыква варёная',
-  'Яблоко':'Яблоко красное'
+  'Яблоко':'Яблоко красное',
+  'Орех арахис':'Арахис',
+  'Семечки подсолнечника':'Семена подсолнечника',
+  'Семечки тыквенные':'Семена тыквенные',
+  'Смородина чёрная':'Смородина'
 };
 const CATALOG_BY_ID=new Map(window.DM_CATALOG.foods.map(f=>[f.id,f]));
 const CATALOG_BY_NAME=new Map(window.DM_CATALOG.foods.map(f=>[f.name,f]));
