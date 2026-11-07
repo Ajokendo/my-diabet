@@ -1,5 +1,7 @@
 # Мой диабет
 
+**Сайт:** https://my-diabet.pages.dev/ (Cloudflare Pages). Обновление: Workers & Pages → my-diabet → Create deployment → загрузить zip.
+
 Веб-приложение для конструктора питания и поддержки самоконтроля диабета. Работает без сборки: достаточно открыть `index.html` в браузере.
 
 ## Структура
