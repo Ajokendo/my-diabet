@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v63.13",foods:[
+window.DM_CATALOG={version:"v63.14",foods:[
 {"id":"b195","name":"Горох варёный","category":"Бобовые","kcal":118,"c":21.1,"p":8.3,"f":0.4,"fib":8.3,"se":0,"image":"assets/foods/goroh-varenyy.jpg"},
 {"id":"b58","name":"Зеленый горох","category":"Бобовые","kcal":81,"c":14.5,"p":5.4,"f":0.4,"fib":5.7,"se":0,"image":"assets/foods/zelenyy-goroh.jpg","note":"Свежий или замороженный.","sourceLabel":"USDA: peas, green, raw"},
 {"id":"b247","name":"Зеленый горох вареный","category":"Бобовые","kcal":84,"c":15.6,"p":5.4,"f":0.2,"fib":5.5,"se":0,"image":"assets/foods/zelenyy-goroh-varenyy.jpg","sourceLabel":"USDA: peas, green, cooked, boiled"},
@@ -94,7 +94,7 @@ window.DM_CATALOG={version:"v63.13",foods:[
 {"id":"shoro-8","name":"Талкан Шоро","category":"Крупы и гарниры","kcal":244.7,"c":58.8,"p":9.9,"f":3.1,"fib":0,"se":0,"image":"assets/foods/talkan-shoro.jpg","brand":"ШОРО","isShoro":true,"composition":"Перемолотые злаки из ячменя, пшеницы и кукурузы.","vitamins":"E, PP, B1, B2, фолиевая кислота (Вс), бета-каротин","minerals":"K, P, Mg, Ca, Na, Fe, Zn, Mn, Cu","source":"https://shoro.kg/new/products/newproducts/talkan.html","sourceLabel":"Официальный сайт ШОРО","note":"На 100 г по официальному сайту. ХЕ рассчитаны по углеводам: 58,8 / 12 = 4,9 ХЕ."},
 {"id":"b72","name":"Майонез","category":"Масла, соусы и приправы","kcal":680,"c":0.6,"p":1,"f":75,"fib":0,"se":0,"image":"assets/foods/mayonez.jpg"},
 {"id":"b71","name":"Масло оливковое","category":"Масла, соусы и приправы","kcal":884,"c":0,"p":0,"f":100,"fib":0,"se":0,"image":"assets/foods/olivkovoe-maslo.jpg"},
-{"id":"shoro-9","name":"Сары май (топлёное масло Гхи)","category":"Масла, соусы и приправы","kcal":891,"c":0,"p":0,"f":99.3,"fib":0,"se":0,"image":"assets/foods/sary-may-toplenoe-maslo-ghi.jpg","brand":"ШОРО","isShoro":true,"composition":"Высококачественное натуральное сливочное масло; массовая доля молочного жира 99,3%.","vitamins":"E, A, бета-каротин","minerals":"P, Ca, K, Fe","source":"https://shoro.kg/new/products/newproducts/sarymai.html","sourceLabel":"Официальный сайт ШОРО","note":"На 100 г по официальному сайту. Белки на странице не указаны; в базе временно 0 г как отсутствующее значение, а не подтверждённый ноль. ХЕ = 0 по указанным углеводам."},
+{"id":"shoro-9","name":"Масло топлёное (сары май)","category":"Молочные продукты","kcal":891,"c":0,"p":0,"f":99.3,"fib":0,"se":0,"image":"assets/foods/sary-may-toplenoe-maslo-ghi.jpg","brand":"ШОРО","isShoro":true,"composition":"Высококачественное натуральное сливочное масло; массовая доля молочного жира 99,3%.","vitamins":"E, A, бета-каротин","minerals":"P, Ca, K, Fe","source":"https://shoro.kg/new/products/newproducts/sarymai.html","sourceLabel":"Официальный сайт ШОРО","note":"На 100 г по официальному сайту. Белки на странице не указаны; в базе временно 0 г как отсутствующее значение, а не подтверждённый ноль. ХЕ = 0 по указанным углеводам."},
 {"id":"b73","name":"Томатная паста","category":"Масла, соусы и приправы","kcal":82,"c":18.9,"p":4.3,"f":0.5,"fib":4.1,"se":0,"image":"assets/foods/tomatnaya-pasta.jpg"},
 {"id":"b176","name":"Йогурт без сахара","category":"Молочные продукты","kcal":60,"c":4,"p":4,"f":3,"fib":0,"se":0,"image":"assets/foods/yogurt-bez-sahara.jpg"},
 {"id":"b24","name":"Йогурт греческий","category":"Молочные продукты","kcal":73,"c":3.9,"p":10,"f":2,"fib":0,"se":0,"image":"assets/foods/yogurt-grecheskiy-2pct.jpg"},
@@ -108,7 +108,7 @@ window.DM_CATALOG={version:"v63.13",foods:[
 {"id":"b175","name":"Ряженка 3.2%","category":"Молочные продукты","kcal":67,"c":4.2,"p":3,"f":3.2,"fib":0,"se":0,"image":"assets/foods/ryazhenka-3-2pct.jpg"},
 {"id":"b183","name":"Сливки 10%","category":"Молочные продукты","kcal":118,"c":4.5,"p":3,"f":10,"fib":0,"se":0,"image":"assets/foods/slivki-10pct.jpg"},
 {"id":"b184","name":"Сливки 20%","category":"Молочные продукты","kcal":206,"c":4,"p":2.5,"f":20,"fib":0,"se":0,"image":"assets/foods/slivki-20pct.jpg"},
-{"id":"b29","name":"Сливочное масло","category":"Молочные продукты","kcal":748,"c":0.5,"p":0.5,"f":82.5,"fib":0,"se":0,"image":"assets/foods/maslo-slivochnoe.jpg"},
+{"id":"b29","name":"Масло сливочное","category":"Молочные продукты","kcal":748,"c":0.5,"p":0.5,"f":82.5,"fib":0,"se":0,"image":"assets/foods/maslo-slivochnoe.jpg"},
 {"id":"b275","name":"Сметана","category":"Молочные продукты","kcal":204,"c":3.4,"p":2.5,"f":20,"fib":0,"se":0,"image":"assets/foods/smetana.jpg","note":"Жирность 20%."},
 {"id":"b27","name":"Сметана 15%","category":"Молочные продукты","kcal":158,"c":3.6,"p":2.6,"f":15,"fib":0,"se":0,"image":"assets/foods/smetana-15pct.jpg"},
 {"id":"b179","name":"Сыр адыгейский","category":"Молочные продукты","kcal":240,"c":1.5,"p":19,"f":18,"fib":0,"se":0,"image":"assets/foods/syr-adygeyskiy.jpg"},
