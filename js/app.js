@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.17';
+const APP_VERSION='v63.18';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -228,7 +228,7 @@ function syncCatalog(db){
   db.appMeta=db.appMeta||{};db.appMeta.appVersion=APP_VERSION;db.appMeta.catalogVersion=window.DM_CATALOG.version;
 }
 function isFoodVisible(f){return !!f&&!f.hidden}
-function foodSrc(f){const p=f&&f.image;if(!p)return '';return /^assets\//.test(p)?p+'?v='+APP_VERSION:p}
+function foodSrc(f){const p=f&&f.image;if(!p)return '';if(!/^assets\//.test(p))return p;const c=CATALOG_BY_NAME.get(f.name);const h=f.h||(c&&c.image===p&&c.h);return p+'?h='+(h||APP_VERSION)}
 function foodIcon(name){const f=db.foods.find(x=>x.name===name);const p=foodSrc(f);if(!p)return '🍽️';return `<img src="${p}" alt="${name}" loading="lazy" style="object-fit:contain;width:100%;height:100%;background:#fff;border-radius:12px;" onerror="this.onerror=null;this.src='assets/foods/_fallback.jpg';this.alt='Изображение недоступно';">`}
 syncCatalog(db);
 if(!db.profile)db.profile={name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5};if(!db.profile.waterHabit)db.profile.waterHabit={enabled:false,volumeMl:200,meals:['Завтрак','Перекус 1','Обед','Перекус 2','Ужин','Перекус 3']};if(db.profile.icr===undefined)db.profile.icr=db.settings.icr||'';if(db.profile.isf===undefined)db.profile.isf=db.settings.isf||'';if(db.profile.target===undefined)db.profile.target=db.settings.target||5.5;if(!db.settings)db.settings={xe:12,target:5.5,icr:'',isf:'',carb:0};if(!Array.isArray(db.recipes))db.recipes=[];db.recipes.forEach(r=>{if(Array.isArray(r.ingredients))r.ingredients.forEach(i=>{if(Array.isArray(i)){if(i[0]==='Овсянка сухая'){i[0]='Каша овсяная на воде';i[1]=250}else if(i[0]==='Гречка сухая'){i[0]='Гречка варёная';i[1]=Math.round(i[1]*3)}else if(i[0]==='Рис сухой'){i[0]='Рис варёный';i[1]=Math.round(i[1]*3)}else if(i[0]==='Макароны сухие'){i[0]='Макароны варёные';i[1]=Math.round(i[1]*3)}}})});
@@ -713,7 +713,12 @@ if(!x){el.textContent='—';st.className='statusGood';st.textContent='● Дан
 const g=+x.g;el.textContent=g.toFixed(1);const when=(x.date===day?'сегодня':x.date)+(x.time?' в '+x.time:'');
 const [cls,txt]=g<3.9?['statusLow','● Низкая — ниже 3,9']:g>10?['statusHigh','● Выше 10']:['statusGood','● В диапазоне 3,9–10'];st.className=cls;st.textContent=txt+' · '+when}
 
-if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('sw.js').catch(()=>{});
+// Фоновая подкачка всех фото продуктов (≈6 МБ один раз), чтобы разделы открывались сразу. Не качаем в режиме экономии трафика.
+const prefetchPhotos=()=>{try{if(navigator.connection&&(navigator.connection.saveData||/2g/.test(navigator.connection.effectiveType||'')))return;
+const urls=[...new Set(db.foods.filter(isFoodVisible).map(foodSrc).filter(u=>u&&u.startsWith('assets/')))];
+navigator.serviceWorker.ready.then(r=>{(navigator.serviceWorker.controller||r.active)?.postMessage({type:'prefetch',urls})})}catch(e){}};
+window.addEventListener('load',()=>setTimeout(()=>(window.requestIdleCallback||setTimeout)(prefetchPhotos),2500))}
 let installEvt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;showInstallBtn()});
 function showInstallBtn(){if(document.getElementById('installBtn'))return;const b=document.createElement('button');b.id='installBtn';b.className='btn';b.textContent='📲 Установить приложение';b.style.cssText='position:fixed;right:16px;bottom:16px;z-index:50;box-shadow:0 8px 20px rgba(0,0,0,.2)';b.onclick=async()=>{if(!installEvt)return;installEvt.prompt();await installEvt.userChoice.catch(()=>{});installEvt=null;b.remove()};document.body.appendChild(b)}
 window.addEventListener('appinstalled',()=>document.getElementById('installBtn')?.remove());

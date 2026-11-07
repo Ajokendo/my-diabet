@@ -1,0 +1,4 @@
+/assets/foods/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/icons/*
+  Cache-Control: public, max-age=604800
