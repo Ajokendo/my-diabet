@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v63.11",foods:[
+window.DM_CATALOG={version:"v63.13",foods:[
 {"id":"b195","name":"Горох варёный","category":"Бобовые","kcal":118,"c":21.1,"p":8.3,"f":0.4,"fib":8.3,"se":0,"image":"assets/foods/goroh-varenyy.jpg"},
 {"id":"b58","name":"Зеленый горох","category":"Бобовые","kcal":81,"c":14.5,"p":5.4,"f":0.4,"fib":5.7,"se":0,"image":"assets/foods/zelenyy-goroh.jpg","note":"Свежий или замороженный.","sourceLabel":"USDA: peas, green, raw"},
 {"id":"b247","name":"Зеленый горох вареный","category":"Бобовые","kcal":84,"c":15.6,"p":5.4,"f":0.2,"fib":5.5,"se":0,"image":"assets/foods/zelenyy-goroh-varenyy.jpg","sourceLabel":"USDA: peas, green, cooked, boiled"},
@@ -156,10 +156,10 @@ window.DM_CATALOG={version:"v63.11",foods:[
 {"id":"b226","name":"Кофе со сливками без сахара","category":"Напитки","kcal":45,"c":1.2,"p":0.8,"f":4,"fib":0,"se":0,"image":"assets/foods/kofe-so-slivkami-bez-sahara.jpg","note":"Примерно 200 мл кофе + 30 мл сливок 10–20%. Сахар не учтён: 1 ч. л. — +5 г углеводов."},
 {"id":"b225","name":"Кофе черный","category":"Напитки","kcal":1,"c":0,"p":0.1,"f":0,"fib":0,"se":0,"image":"assets/foods/kofe-chernyy-bez-sahara.jpg","source":"https://fdc.nal.usda.gov/food-details/171890/nutrients","sourceLabel":"USDA FDC 171890","note":"Заваренный кофе без сахара и молока. Каждая чайная ложка сахара — +5 г углеводов."},
 {"id":"shoro-0","name":"Максым","category":"Напитки","kcal":24,"c":5.1,"p":0.89,"f":0.18,"fib":0,"se":0,"image":"assets/foods/maksym.jpg","brand":"ШОРО","isShoro":true,"composition":"Вода артезианская, ячмень, кукуруза, пшеница, топленое сливочное масло, мука пшеничная, соль, дрожжи.","vitamins":"В1, В2, РР","minerals":"K, Ca, Mg, P","source":"https://www.shoro.kg/ru/products/drinks/maksyim/","sourceLabel":"Официальная страница ШОРО"},
-{"id":"b260","name":"Минеральная вода Арашан","category":"Напитки","kcal":0,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/mineralnaya-voda-arashan.jpg","note":"Без калорий и углеводов."},
-{"id":"b261","name":"Минеральная вода Байтик","category":"Напитки","kcal":0,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/mineralnaya-voda-baytik.jpg","note":"Без калорий и углеводов."},
-{"id":"b262","name":"Минеральная вода Боржоми","category":"Напитки","kcal":0,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/mineralnaya-voda-borzhomi.jpg","note":"Без калорий и углеводов."},
-{"id":"b263","name":"Минеральная вода Жалал-Абад","category":"Напитки","kcal":0,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/mineralnaya-voda-zhalal-abad.jpg","note":"Без калорий и углеводов."},
+{"id":"b260","name":"Вода минеральная Арашан","category":"Напитки","kcal":0,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/mineralnaya-voda-arashan.jpg","note":"Без калорий и углеводов."},
+{"id":"b261","name":"Вода минеральная Байтик","category":"Напитки","kcal":0,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/mineralnaya-voda-baytik.jpg","note":"Без калорий и углеводов."},
+{"id":"b262","name":"Вода минеральная Боржоми","category":"Напитки","kcal":0,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/mineralnaya-voda-borzhomi.jpg","note":"Без калорий и углеводов."},
+{"id":"b263","name":"Вода минеральная Жалал-Абад","category":"Напитки","kcal":0,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/mineralnaya-voda-zhalal-abad.jpg","note":"Без калорий и углеводов."},
 {"id":"drink-cola-zero","name":"Напиток Кола без сахара","category":"Напитки","kcal":0.3,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/napitok-kola-bez-sahara.jpg","note":"Источник КБЖУ: данные производителя (Coca-Cola Zero Sugar)."},
 {"id":"drink-pepsi-zero","name":"Напиток Пепси без сахара","category":"Напитки","kcal":0.3,"c":0,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/napitok-pepsi-bez-sahara.jpg","note":"Источник КБЖУ: данные производителя (Pepsi Zero Sugar)."},
 {"id":"drink-sprite-zero","name":"Напиток Спрайт без сахара","category":"Напитки","kcal":0.4,"c":0.1,"p":0,"f":0,"fib":0,"se":0,"image":"assets/foods/napitok-sprayt-bez-sahara.jpg","note":"Источник КБЖУ: данные производителя (Sprite Zero Sugar)."},

@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.12';
+const APP_VERSION='v63.13';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -80,6 +80,10 @@ function foodCategoryByName(n){
 // Старые названия → актуальные. Нужны, чтобы меню, избранное и рецепты,
 // сохранённые в прежних версиях, указывали на актуальные карточки.
 const CATALOG_RENAMES={
+  'Минеральная вода Арашан':'Вода минеральная Арашан',
+  'Минеральная вода Байтик':'Вода минеральная Байтик',
+  'Минеральная вода Боржоми':'Вода минеральная Боржоми',
+  'Минеральная вода Жалал-Абад':'Вода минеральная Жалал-Абад',
   'Куриная грудка':'Курица отварная',
   'Куриное бедро без кожи':'Куриное бедро отварное',
   'Индейка филе':'Индейка отварная',
