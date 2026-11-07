@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v63.19",foods:[
+window.DM_CATALOG={version:"v63.20",foods:[
 {"id":"b58","name":"Зеленый горох","category":"Бобовые","kcal":81,"c":14.5,"p":5.4,"f":0.4,"fib":5.7,"se":0,"image":"assets/foods/zelenyy-goroh.webp","note":"Свежий или замороженный.","sourceLabel":"USDA: peas, green, raw","h":"0bdab7e1"},
 {"id":"b247","name":"Зеленый горох вареный","category":"Бобовые","kcal":84,"c":15.6,"p":5.4,"f":0.2,"fib":5.5,"se":0,"image":"assets/foods/zelenyy-goroh-varenyy.webp","sourceLabel":"USDA: peas, green, cooked, boiled","h":"b0af40cc"},
 {"id":"b196","name":"Маш варёный","category":"Бобовые","kcal":105,"c":19.2,"p":7,"f":0.4,"fib":7.6,"se":0,"image":"assets/foods/mash-varenyy.webp","h":"03473486"},
@@ -203,16 +203,16 @@ window.DM_CATALOG={version:"v63.19",foods:[
 {"id":"b125","name":"Шампиньоны варёные","category":"Овощи и зелень","kcal":28,"c":5.3,"p":3.1,"f":0.3,"fib":2.2,"se":0,"image":"assets/foods/shampinony-varenye.webp","h":"59dd948e"},
 {"id":"b298","name":"Шампиньоны запечённые","category":"Овощи и зелень","kcal":46,"c":4.5,"p":3.6,"f":1.6,"fib":2.2,"se":0,"image":"assets/foods/shampinony-zapechennye.webp","note":"Запечённые с небольшим количеством масла. Усреднённо.","h":"fab8b0bb"},
 {"id":"b52","name":"Шпинат","category":"Овощи и зелень","kcal":23,"c":3.6,"p":2.9,"f":0.4,"fib":2.2,"se":0,"image":"assets/foods/shpinat.webp","h":"40666b09"},
-{"id":"b62","name":"Арахис","category":"Орехи и семена","kcal":567,"c":16.1,"p":25.8,"f":49.2,"fib":8.5,"se":0,"image":"assets/foods/arahis.webp","h":"609f4c90"},
 {"id":"b192","name":"Кунжут","category":"Орехи и семена","kcal":573,"c":23.4,"p":17.7,"f":49.7,"fib":11.8,"se":0,"image":"assets/foods/kunzhut.webp","h":"07ee6bb2"},
+{"id":"b62","name":"Орех арахис","category":"Орехи и семена","kcal":567,"c":16.1,"p":25.8,"f":49.2,"fib":8.5,"se":0,"image":"assets/foods/oreh-arahis.webp","h":"609f4c90"},
 {"id":"b60","name":"Орех бразильский","category":"Орехи и семена","kcal":659,"c":12.3,"p":14.3,"f":67.1,"fib":7.5,"se":1917,"image":"assets/foods/brazilskiy-oreh.webp","h":"9c0a44ed"},
 {"id":"b59","name":"Орех грецкий","category":"Орехи и семена","kcal":654,"c":13.7,"p":15.2,"f":65.2,"fib":6.7,"se":0,"image":"assets/foods/gretskie-orehi.webp","h":"3d286730"},
 {"id":"b190","name":"Орех кедровый","category":"Орехи и семена","kcal":673,"c":13.1,"p":13.7,"f":68.4,"fib":3.7,"se":0,"image":"assets/foods/kedrovye-orehi.webp","h":"dc42b811"},
 {"id":"b187","name":"Орех кешью","category":"Орехи и семена","kcal":553,"c":30.2,"p":18.2,"f":43.9,"fib":3.3,"se":0,"image":"assets/foods/keshyu.webp","h":"d3bee908"},
 {"id":"b61","name":"Орех миндаль","category":"Орехи и семена","kcal":579,"c":21.6,"p":21.2,"f":49.9,"fib":12.5,"se":0,"image":"assets/foods/mindal.webp","h":"ab02ad66"},
 {"id":"b185","name":"Орех фундук","category":"Орехи и семена","kcal":628,"c":16.7,"p":15,"f":60.8,"fib":9.7,"se":0,"image":"assets/foods/funduk.webp","h":"e66066f6"},
-{"id":"b63","name":"Семена подсолнечника","category":"Орехи и семена","kcal":584,"c":20,"p":20.8,"f":51.5,"fib":8.6,"se":0,"image":"assets/foods/semena-podsolnechnika.webp","h":"7a750c00"},
-{"id":"b191","name":"Семена тыквенные","category":"Орехи и семена","kcal":559,"c":10.7,"p":30.2,"f":49,"fib":6,"se":0,"image":"assets/foods/semena-tykvennye.webp","h":"207834dc"},
+{"id":"b63","name":"Семечки подсолнечника","category":"Орехи и семена","kcal":584,"c":20,"p":20.8,"f":51.5,"fib":8.6,"se":0,"image":"assets/foods/semechki-podsolnechnika.webp","h":"7a750c00"},
+{"id":"b191","name":"Семечки тыквенные","category":"Орехи и семена","kcal":559,"c":10.7,"p":30.2,"f":49,"fib":6,"se":0,"image":"assets/foods/semechki-tykvennye.webp","h":"207834dc"},
 {"id":"b186","name":"Фисташки","category":"Орехи и семена","kcal":562,"c":27.2,"p":20.2,"f":45.3,"fib":10.3,"se":0,"image":"assets/foods/fistashki.webp","h":"1aa76755"},
 {"id":"b169","name":"Икра красная","category":"Рыба и морепродукты","kcal":252,"c":4,"p":24.6,"f":14,"fib":0,"se":0,"image":"assets/foods/ikra-krasnaya.webp","h":"6764e233"},
 {"id":"b167","name":"Кальмар варёный","category":"Рыба и морепродукты","kcal":92,"c":3.1,"p":15.6,"f":1.4,"fib":0,"se":0,"image":"assets/foods/kalmar-varenyy.webp","h":"f3cd75ab"},
@@ -356,8 +356,8 @@ window.DM_CATALOG={version:"v63.19",foods:[
 {"id":"b144","name":"Клюква","category":"Ягоды","kcal":46,"c":12.2,"p":0.4,"f":0.1,"fib":4.6,"se":0,"image":"assets/foods/klyukva.webp","h":"aba58acc"},
 {"id":"b143","name":"Крыжовник","category":"Ягоды","kcal":44,"c":10.2,"p":0.9,"f":0.6,"fib":4.3,"se":0,"image":"assets/foods/kryzhovnik.webp","h":"cbd098df"},
 {"id":"b16","name":"Малина","category":"Ягоды","kcal":52,"c":11.9,"p":1.2,"f":0.7,"fib":6.5,"se":0,"image":"assets/foods/malina.webp","h":"420de352"},
-{"id":"b142","name":"Смородина","category":"Ягоды","kcal":63,"c":15.4,"p":1.4,"f":0.4,"fib":4.3,"se":0,"image":"assets/foods/smorodina.webp","h":"c5e2e2ab"},
 {"id":"b141","name":"Смородина красная","category":"Ягоды","kcal":56,"c":13.8,"p":1.4,"f":0.2,"fib":4.3,"se":0,"image":"assets/foods/krasnaya-smorodina.webp","h":"dd3356ef"},
+{"id":"b142","name":"Смородина чёрная","category":"Ягоды","kcal":63,"c":15.4,"p":1.4,"f":0.4,"fib":4.3,"se":0,"image":"assets/foods/smorodina-chernaya.webp","h":"c5e2e2ab"},
 {"id":"b138","name":"Черешня","category":"Ягоды","kcal":63,"c":16,"p":1.1,"f":0.2,"fib":2.1,"se":0,"image":"assets/foods/chereshnya.webp","h":"70f97f15"},
 {"id":"b17","name":"Черника","category":"Ягоды","kcal":57,"c":14.5,"p":0.7,"f":0.3,"fib":2.4,"se":0,"image":"assets/foods/chernika.webp","h":"888d33e0"},
 {"id":"b171","name":"Омлет","category":"Яйца","kcal":154,"c":1,"p":10.6,"f":11.5,"fib":0,"se":0,"image":"assets/foods/omlet.webp","h":"74c67e3b"},
