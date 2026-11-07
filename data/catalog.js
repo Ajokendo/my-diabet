@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v63.16",foods:[
+window.DM_CATALOG={version:"v63.17",foods:[
 {"id":"b58","name":"Зеленый горох","category":"Бобовые","kcal":81,"c":14.5,"p":5.4,"f":0.4,"fib":5.7,"se":0,"image":"assets/foods/zelenyy-goroh.jpg","note":"Свежий или замороженный.","sourceLabel":"USDA: peas, green, raw"},
 {"id":"b247","name":"Зеленый горох вареный","category":"Бобовые","kcal":84,"c":15.6,"p":5.4,"f":0.2,"fib":5.5,"se":0,"image":"assets/foods/zelenyy-goroh-varenyy.jpg","sourceLabel":"USDA: peas, green, cooked, boiled"},
 {"id":"b196","name":"Маш варёный","category":"Бобовые","kcal":105,"c":19.2,"p":7,"f":0.4,"fib":7.6,"se":0,"image":"assets/foods/mash-varenyy.jpg"},
@@ -135,7 +135,6 @@ window.DM_CATALOG={version:"v63.16",foods:[
 {"id":"cooked-meat-07","name":"Конина отварная","category":"Мясо и птица","kcal":175,"c":0,"p":28.1,"f":6.1,"fib":0,"se":0,"image":"assets/foods/konina-otvarnaya.jpg"},
 {"id":"cooked-meat-08","name":"Крольчатина отварная","category":"Мясо и птица","kcal":173,"c":0,"p":33,"f":3.5,"fib":0,"se":0,"image":"assets/foods/krolchatina-otvarnaya.jpg"},
 {"id":"cooked-meat-02","name":"Куриное бедро отварное","category":"Мясо и птица","kcal":209,"c":0,"p":26,"f":11,"fib":0,"se":0,"image":"assets/foods/kurinoe-bedro-otvarnoe.jpg"},
-{"id":"b149","name":"Куриное крыло","category":"Мясо и птица","kcal":203,"c":0,"p":30.5,"f":8.1,"fib":0,"se":0,"image":"assets/foods/kurinoe-krylo.jpg"},
 {"id":"b235","name":"Куриные бедра запеченные","category":"Мясо и птица","kcal":229,"c":0,"p":23.3,"f":14.7,"fib":0,"se":0,"image":"assets/foods/kurinye-bedra-zapechennye.jpg","note":"С кожей, без маринада с сахаром. Вес готового мяса без костей.","sourceLabel":"USDA: chicken thigh, meat and skin, roasted"},
 {"id":"shashlik-v5930-5","name":"Куриные крылышки запеченные","category":"Мясо и птица","kcal":250,"c":2,"p":23,"f":17,"fib":0,"se":0,"image":"assets/foods/kurinye-krylyshki.jpg","isDish":true,"nutritionEstimate":true},
 {"id":"b299","name":"Куриные крылышки отварные","category":"Мясо и птица","kcal":180,"c":0,"p":18,"f":12,"fib":0,"se":0,"image":"assets/foods/kurinye-krylyshki-otvarnye.jpg","note":"Отварные с кожей. Усреднённо."},
