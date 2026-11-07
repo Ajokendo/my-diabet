@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v63.15",foods:[
+window.DM_CATALOG={version:"v63.16",foods:[
 {"id":"b58","name":"Зеленый горох","category":"Бобовые","kcal":81,"c":14.5,"p":5.4,"f":0.4,"fib":5.7,"se":0,"image":"assets/foods/zelenyy-goroh.jpg","note":"Свежий или замороженный.","sourceLabel":"USDA: peas, green, raw"},
 {"id":"b247","name":"Зеленый горох вареный","category":"Бобовые","kcal":84,"c":15.6,"p":5.4,"f":0.2,"fib":5.5,"se":0,"image":"assets/foods/zelenyy-goroh-varenyy.jpg","sourceLabel":"USDA: peas, green, cooked, boiled"},
 {"id":"b196","name":"Маш варёный","category":"Бобовые","kcal":105,"c":19.2,"p":7,"f":0.4,"fib":7.6,"se":0,"image":"assets/foods/mash-varenyy.jpg"},
@@ -187,8 +187,6 @@ window.DM_CATALOG={version:"v63.15",foods:[
 {"id":"b297","name":"Огурец солёный","category":"Овощи и зелень","kcal":12,"c":2.4,"p":0.3,"f":0.2,"fib":1.2,"se":0,"image":"assets/foods/ogurets-solenyy.jpg","note":"Много соли. Источник КБЖУ: USDA (Pickles, dill)."},
 {"id":"b122","name":"Оливки зелёные","category":"Овощи и зелень","kcal":145,"c":3.8,"p":1,"f":15.3,"fib":3.3,"se":0,"image":"assets/foods/olivki-zelenye.jpg"},
 {"id":"b47","name":"Перец болгарский сладкий","category":"Овощи и зелень","kcal":31,"c":6,"p":0.99,"f":0.3,"fib":2.1,"se":0,"image":"assets/foods/perets-bolgarskiy-sladkiy.jpg"},
-{"id":"b111","name":"Перец зелёный","category":"Овощи и зелень","kcal":20,"c":4.6,"p":0.9,"f":0.2,"fib":1.7,"se":0,"image":"assets/foods/perets-zelenyy.jpg"},
-{"id":"b110","name":"Перец красный","category":"Овощи и зелень","kcal":31,"c":6,"p":1,"f":0.3,"fib":2.1,"se":0,"image":"assets/foods/perets-krasnyy.jpg"},
 {"id":"b294","name":"Перец сладкий тушёный","category":"Овощи и зелень","kcal":57,"c":6.5,"p":1.1,"f":3,"fib":1.8,"se":0,"image":"assets/foods/perets-sladkiy-tushenyy.jpg","note":"Тушёный с растительным маслом. Усреднённо."},
 {"id":"b116","name":"Петрушка","category":"Овощи и зелень","kcal":36,"c":6.3,"p":3,"f":0.8,"fib":3.3,"se":0,"image":"assets/foods/petrushka.jpg"},
 {"id":"b42","name":"Помидор","category":"Овощи и зелень","kcal":18,"c":3.9,"p":0.9,"f":0.2,"fib":1.2,"se":0,"image":"assets/foods/pomidor.jpg"},
