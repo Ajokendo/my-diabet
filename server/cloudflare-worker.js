@@ -5,7 +5,7 @@
 //   Переменная (необязательно): ANTHROPIC_MODEL (по умолчанию claude-sonnet-5-5).
 //   Binding:   D1 database, имя переменной DB (для синхронизации). Таблицы создаются сами.
 const REFS={card:'банковская карта 85,6 × 54 мм',plate:'тарелка/пиала, внешний диаметр {d} мм',none:null};
-const CORS={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, X-Access-Code, Authorization','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS'};
+const CORS={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, X-Access-Code, Authorization, api-secret','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS'};
 const J=(s,o)=>new Response(JSON.stringify(o),{status:s,headers:{...CORS,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
 function buildPrompt(b){
   const names=(Array.isArray(b.catalog)?b.catalog:[]).slice(0,800).map(String);
@@ -49,7 +49,9 @@ const SCHEMA=[
  "CREATE TABLE IF NOT EXISTS members(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,patient_id TEXT NOT NULL,role TEXT NOT NULL,display_name TEXT,status TEXT NOT NULL,created_at TEXT NOT NULL,UNIQUE(user_id,patient_id))",
  "CREATE TABLE IF NOT EXISTS invitations(code TEXT PRIMARY KEY,patient_id TEXT NOT NULL,role TEXT NOT NULL,display_name TEXT,created_by TEXT NOT NULL,created_at TEXT NOT NULL,expires_at TEXT NOT NULL,status TEXT NOT NULL,accepted_by TEXT)",
  "CREATE TABLE IF NOT EXISTS records(patient_id TEXT NOT NULL,rtype TEXT NOT NULL,rid TEXT NOT NULL,version INTEGER NOT NULL,payload TEXT,deleted INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL,updated_by TEXT,seq INTEGER NOT NULL,PRIMARY KEY(patient_id,rtype,rid))",
- "CREATE INDEX IF NOT EXISTS records_seq ON records(patient_id,seq)"
+ "CREATE INDEX IF NOT EXISTS records_seq ON records(patient_id,seq)",
+ "CREATE TABLE IF NOT EXISTS cgm_keys(key_hash TEXT PRIMARY KEY,patient_id TEXT NOT NULL,created_at TEXT NOT NULL)",
+ "CREATE TABLE IF NOT EXISTS cgm(patient_id TEXT NOT NULL,ts INTEGER NOT NULL,mgdl REAL NOT NULL,direction TEXT,device TEXT,PRIMARY KEY(patient_id,ts))"
 ];
 let schemaReady=false;
 async function ensureSchema(env){if(schemaReady)return;await env.DB.batch(SCHEMA.map(s=>env.DB.prepare(s)));schemaReady=true}
@@ -58,6 +60,7 @@ const rnd=n=>{const a=new Uint8Array(n);crypto.getRandomValues(a);return a};
 const b64u=a=>btoa(String.fromCharCode(...a)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const hex=a=>[...new Uint8Array(a)].map(x=>x.toString(16).padStart(2,'0')).join('');
 const uid=p=>p+'_'+hex(rnd(12));
+async function sha1(s){return hex(await crypto.subtle.digest('SHA-1',new TextEncoder().encode(s)))}
 async function sha256(s){return hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))}
 async function pbkdf2(pw,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:new TextEncoder().encode(salt),iterations:100000},k,256))}
 function safeEq(a,b){if(a.length!==b.length)return false;let r=0;for(let i=0;i<a.length;i++)r|=a.charCodeAt(i)^b.charCodeAt(i);return r===0}
@@ -109,6 +112,17 @@ async function sync(req,env,path){
     await env.DB.batch(ops);const p=await env.DB.prepare('SELECT id,display_name FROM patients WHERE id=?').bind(inv.patient_id).first();
     return J(200,{ok:true,patient:{id:p.id,displayName:p.display_name,role:ex||inv.role}});
   }
+  const cm=path.match(/^\/v1\/patients\/([^/]+)\/(cgm|cgm-key)$/);
+  if(cm){const role=await roleIn(env,user.id,cm[1]);if(!role)return J(403,{error:'Нет доступа к этому дневнику.'});
+    if(cm[2]==='cgm-key'&&M==='POST'){if(!ROLES[role].write)return J(403,{error:'Нужны права на запись.'});
+      const secret=[...rnd(16)].map(x=>'abcdefghijkmnpqrstuvwxyz23456789'[x%32]).join('');
+      await env.DB.batch([env.DB.prepare('DELETE FROM cgm_keys WHERE patient_id=?').bind(cm[1]),env.DB.prepare('INSERT INTO cgm_keys VALUES(?,?,?)').bind(await sha1(secret),cm[1],now())]);
+      const host=new URL(req.url).host;return J(200,{secret,url:`https://${secret}@${host}/api/v1/`})}
+    if(cm[2]==='cgm'&&M==='GET'){const q=new URL(req.url).searchParams;const since=Math.max(+q.get('since')||0,Date.now()-14*864e5);
+      const r=await env.DB.prepare('SELECT ts,mgdl,direction FROM cgm WHERE patient_id=? AND ts>? ORDER BY ts LIMIT 5000').bind(cm[1],since).all();
+      const k=await env.DB.prepare('SELECT created_at FROM cgm_keys WHERE patient_id=?').bind(cm[1]).first();
+      return J(200,{connected:!!k,readings:r.results.map(x=>({t:x.ts,g:Math.round(x.mgdl/18.016*10)/10,d:x.direction||''}))})}
+  }
   if(M==='POST'&&(path==='/v2/sync/push'||path==='/v2/sync/pull')){
     const b=await body(req),pid=String(b.patientId||''),role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа к пациенту.'});
     if(path==='/v2/sync/push'){
@@ -129,12 +143,42 @@ async function sync(req,env,path){
   return J(404,{error:'Не найдено'});
 }
 
+
+/* ---------- Приём данных сенсора от xDrip+ (совместимо с Nightscout REST API v1) ---------- */
+async function nightscout(req,env,path){
+  if(!env.DB)return J(503,{error:'D1 не подключена'});await ensureSchema(env);
+  const u=new URL(req.url);let key=(req.headers.get('api-secret')||u.searchParams.get('secret')||'').trim().toLowerCase();
+  const tok=u.searchParams.get('token');if(!key&&tok)key=await sha1(tok);
+  const k=key?await env.DB.prepare('SELECT patient_id FROM cgm_keys WHERE key_hash=?').bind(key).first():null;
+  const p=path.replace(/\.json$/,'');
+  if(p==='/api/v1/status')return J(200,{status:'ok',name:'my-diabet',version:'15.0.0',apiEnabled:true,careportalEnabled:false,authorized:!!k,settings:{units:'mmol'}});
+  if(p==='/api/v1/verifyauth')return J(k?200:401,{message:k?{canRead:true,canWrite:true,isAdmin:true,message:'OK'}:{message:'UNAUTHORIZED'}});
+  if(!k)return J(401,{status:401,message:'Неверный ключ (API secret).'});
+  const pid=k.patient_id,M=req.method;
+  if((p==='/api/v1/entries'||p==='/api/v1/entries/sgv')&&M==='POST'){
+    let b=await body(req);if(!Array.isArray(b))b=[b];
+    const rows=b.filter(e=>e&&(e.type==='sgv'||e.sgv!=null)&&+e.sgv>=20&&+e.sgv<=600&&+(e.date||Date.parse(e.dateString||''))>0).slice(0,2000);
+    if(rows.length)await env.DB.batch(rows.map(e=>env.DB.prepare('INSERT OR REPLACE INTO cgm VALUES(?,?,?,?,?)').bind(pid,Math.round(+(e.date||Date.parse(e.dateString))),+e.sgv,String(e.direction||''),String(e.device||'').slice(0,60))));
+    if(Math.random()<0.02)await env.DB.prepare('DELETE FROM cgm WHERE ts<?').bind(Date.now()-180*864e5).run();
+    return J(200,rows);
+  }
+  if((p==='/api/v1/entries'||p==='/api/v1/entries/sgv'||p==='/api/v1/entries/current')&&M==='GET'){
+    const n=Math.min(+u.searchParams.get('count')||(p.endsWith('current')?1:10),1000);
+    const r=await env.DB.prepare('SELECT ts,mgdl,direction,device FROM cgm WHERE patient_id=? ORDER BY ts DESC LIMIT ?').bind(pid,n).all();
+    return J(200,r.results.map(x=>({_id:pid+'-'+x.ts,type:'sgv',sgv:x.mgdl,date:x.ts,dateString:new Date(x.ts).toISOString(),direction:x.direction,device:x.device})));
+  }
+  // лечение, статус устройства и прочее xDrip+ тоже отправляет — принимаем и не храним
+  if(M==='POST'||M==='PUT')return J(200,[]);
+  return J(200,[]);
+}
+
 export default{async fetch(req,env){
   const path=new URL(req.url).pathname;
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});
   try{
     if(req.method==='GET'&&(path==='/'||path==='/health'))return J(200,{ok:true,service:'my-diabet food-photo',sync:!!env.DB});
     if(path==='/v1/food-photo'&&req.method==='POST')return await foodPhoto(req,env);
+    if(path.startsWith('/api/v1/'))return await nightscout(req,env,path);
     if(path.startsWith('/v1/')||path.startsWith('/v2/'))return await sync(req,env,path);
     return J(404,{error:'Не найдено'});
   }catch(e){return J(500,{error:'Ошибка сервера: '+(e&&e.message||e)})}

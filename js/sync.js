@@ -151,6 +151,7 @@ ${lastError?`<div class="notice" style="margin-top:8px">${esc(lastError)}</div>`
 <div class="card s6"><h3>Пригласить в дневник</h3>${c.role==='viewer'?'<p class="muted">У вас доступ только для просмотра.</p>':`<div class="two"><div><label>Кого</label><input id="s2InvName" class="input" placeholder="например, Мама"></div><div><label>Права</label><select id="s2InvRole" class="select"><option value="guardian">Родитель — видит и вносит</option><option value="patient">Пациент — видит и вносит</option><option value="viewer">Только просмотр (например, врач)</option></select></div></div><button class="btn" style="margin-top:10px" onclick="DMSync.invite()">Создать код приглашения</button><div id="s2InvOut"></div>`}
 <h3 style="margin-top:18px">Подключиться к другому дневнику</h3><div class="row" style="gap:8px"><input id="s2JoinCode" class="input" placeholder="код" style="max-width:180px;text-transform:uppercase"><button class="btn secondary" onclick="DMSync.acceptCode()">Подключиться</button></div></div></div>`;
   members();
+  try{window.DMCgm&&DMCgm.paintFamily();window.DMCgm&&DMCgm.refresh()}catch(e){}
 }
 function modeUi(){document.getElementById('s2CodeBox').style.display=v('s2Mode')==='join'?'':'none'}
 
