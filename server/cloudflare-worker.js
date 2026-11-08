@@ -50,6 +50,7 @@ const SCHEMA=[
  "CREATE TABLE IF NOT EXISTS invitations(code TEXT PRIMARY KEY,patient_id TEXT NOT NULL,role TEXT NOT NULL,display_name TEXT,created_by TEXT NOT NULL,created_at TEXT NOT NULL,expires_at TEXT NOT NULL,status TEXT NOT NULL,accepted_by TEXT)",
  "CREATE TABLE IF NOT EXISTS records(patient_id TEXT NOT NULL,rtype TEXT NOT NULL,rid TEXT NOT NULL,version INTEGER NOT NULL,payload TEXT,deleted INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL,updated_by TEXT,seq INTEGER NOT NULL,PRIMARY KEY(patient_id,rtype,rid))",
  "CREATE INDEX IF NOT EXISTS records_seq ON records(patient_id,seq)",
+ "CREATE TABLE IF NOT EXISTS links(code_hash TEXT PRIMARY KEY,status TEXT NOT NULL,user_id TEXT,patient_id TEXT,token TEXT,created_at TEXT NOT NULL,expires_at TEXT NOT NULL)",
  "CREATE TABLE IF NOT EXISTS cgm_keys(key_hash TEXT PRIMARY KEY,patient_id TEXT NOT NULL,created_at TEXT NOT NULL)",
  "CREATE TABLE IF NOT EXISTS cgm(patient_id TEXT NOT NULL,ts INTEGER NOT NULL,mgdl REAL NOT NULL,direction TEXT,device TEXT,PRIMARY KEY(patient_id,ts))"
 ];
@@ -95,7 +96,24 @@ async function sync(req,env,path){
     if(!u||!safeEq(await pbkdf2(String(b.password||''),u.salt),u.pw_hash))return J(401,{error:'Неверный email или пароль.'});
     return J(200,{token:await issueSession(env,u.id),user:{id:u.id,email:u.email,displayName:u.display_name},patients:await patientsOf(env,u.id)});
   }
+  /* Вход на другом устройстве по QR-коду (как WhatsApp Web): компьютер показывает код, телефон с входом подтверждает */
+  if(M==='POST'&&path==='/v1/link/start'){const code=b64u(rnd(24));await env.DB.prepare("INSERT INTO links VALUES(?,'pending',NULL,NULL,NULL,?,?)").bind(await sha256(code),now(),new Date(Date.now()+180e3).toISOString()).run();
+    if(Math.random()<0.1)await env.DB.prepare('DELETE FROM links WHERE expires_at<?').bind(new Date(Date.now()-600e3).toISOString()).run();return J(200,{code,expiresIn:180})}
+  const lm=path.match(/^\/v1\/link\/([A-Za-z0-9_-]{20,64})$/);
+  if(M==='GET'&&lm){const h=await sha256(lm[1]);const r=await env.DB.prepare('SELECT * FROM links WHERE code_hash=?').bind(h).first();
+    if(!r||r.expires_at<now()&&r.status!=='approved')return J(410,{error:'Код устарел. Обновите QR-код.'});
+    if(r.status!=='approved')return J(200,{status:'pending'});
+    await env.DB.prepare('DELETE FROM links WHERE code_hash=?').bind(h).run();
+    const u=await env.DB.prepare('SELECT id,email,display_name FROM users WHERE id=?').bind(r.user_id).first();
+    const pts=await patientsOf(env,r.user_id);const pt=pts.find(x=>x.id===r.patient_id)||pts[0]||null;
+    return J(200,{status:'approved',token:r.token,user:{id:u.id,email:u.email,displayName:u.display_name},patients:pts,patient:pt})}
   const user=await authUser(req,env);if(!user)return J(401,{error:'Нужно войти заново.'});
+  const la=path.match(/^\/v1\/link\/([A-Za-z0-9_-]{20,64})\/approve$/);
+  if(M==='POST'&&la){const b=await body(req);const h=await sha256(la[1]);const r=await env.DB.prepare('SELECT * FROM links WHERE code_hash=?').bind(h).first();
+    if(!r||r.status!=='pending'||r.expires_at<now())return J(410,{error:'QR-код устарел. Обновите его на компьютере и отсканируйте снова.'});
+    const pid=String(b.patientId||'');if(pid&&!(await roleIn(env,user.id,pid)))return J(403,{error:'Нет доступа к этому дневнику.'});
+    const t=await issueSession(env,user.id);await env.DB.prepare("UPDATE links SET status='approved',user_id=?,patient_id=?,token=? WHERE code_hash=?").bind(user.id,pid||null,t,h).run();return J(200,{ok:true})}
+
   if(M==='POST'&&path==='/v1/auth/logout'){const h=req.headers.get('Authorization').slice(7);await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(await sha256(h)).run();return J(200,{ok:true})}
   if(M==='GET'&&path==='/v1/me')return J(200,{user,patients:await patientsOf(env,user.id)});
   const pm=path.match(/^\/v1\/patients\/([^/]+)\/(members|invitations)$/);
