@@ -74,7 +74,7 @@ async function loadGmi(){if(!ready()||Date.now()-gmiAt<(gmi?30*60e3:60e3))return
   try{const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${Date.now()-14*864e5}`);const r=j.readings||[];
     if(!r.length){gmi=null;return}
     const mean=r.reduce((a,x)=>a+x.g,0)/r.length,days=(Date.now()-r[0].t)/864e5,cover=Math.min(100,r.length/(Math.max(days,1/24)*288)*100);
-    gmi={v:3.31+0.02392*mean*18.016,mean,days,cover,n:r.length};paintGlucose()}catch(e){}}
+    gmi={v:3.31+0.02392*mean*18.016,mean,days,cover,n:r.length,tbr:r.filter(x=>x.g<3.9).length/r.length*100,tbr54:r.filter(x=>x.g<3).length/r.length*100,tir:r.filter(x=>x.g>=3.9&&x.g<=10).length/r.length*100,tar:r.filter(x=>x.g>10).length/r.length*100,tar139:r.filter(x=>x.g>13.9).length/r.length*100,sd:Math.sqrt(r.reduce((a,x)=>a+(x.g-mean)**2,0)/r.length)};paintGlucose()}catch(e){}}
 function gmiHtml(){if(!gmi)return '';const ok=gmi.days>=13.5&&gmi.cover>=70;
   return `<div class="notice" style="margin-top:10px;background:#f0fdfa;border-color:#99f6e4"><b>Расчётный HbA1c (GMI): ${gmi.v.toFixed(1)}%</b> · средняя глюкоза ${gmi.mean.toFixed(1)} ммоль/л за ${gmi.days<1?'менее суток':Math.floor(gmi.days)+' дн.'} (данных ${Math.round(gmi.cover)}%).<br><span class="muted">${ok?'Посчитано по данным сенсора за 14 дней. ':'Пока мало данных — показатель станет надёжным после 14 дней работы сенсора. '}Это оценка, а не лабораторный анализ: настоящий HbA1c сдают в лаборатории и записывают в «Анализы».</span></div>`}
 function paintGlucose(){
@@ -123,6 +123,7 @@ function paint(){try{paintDashboard()}catch(e){}try{paintGlucose();loadGmi()}cat
 function start(){loadCache();paint();refresh(true);clearInterval(timer);timer=setInterval(()=>{if(document.visibilityState==='visible')refresh()},60e3);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refresh(true)})}
 
-window.DMCgm={refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
+function reportHtml(){if(!gmi)return '';const f=v=>Math.round(v)+'%';return `<div class="reportSection" style="margin-top:18px"><h2>Данные сенсора (CGM) за последние ${gmi.days<1?'сутки':Math.min(14,Math.floor(gmi.days))+' дн.'}</h2><p>Средняя глюкоза: <b>${gmi.mean.toFixed(1)} ммоль/л</b> · стандартное отклонение ${gmi.sd.toFixed(1)} · коэффициент вариации ${Math.round(gmi.sd/gmi.mean*100)}% · расчётный HbA1c (GMI): <b>${gmi.v.toFixed(1)}%</b> · полнота данных ${Math.round(gmi.cover)}%.</p><p>Время в диапазоне 3,9–10: <b>${f(gmi.tir)}</b> · ниже 3,9: ${f(gmi.tbr)} (из них ниже 3,0: ${f(gmi.tbr54)}) · выше 10: ${f(gmi.tar)} (из них выше 13,9: ${f(gmi.tar139)}).</p><p class="muted">Источник: сенсор через xDrip+. GMI — расчётная оценка, не лабораторный HbA1c.</p></div>`}
+window.DMCgm={reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));else setTimeout(start,300);
 })();
