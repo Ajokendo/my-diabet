@@ -68,7 +68,15 @@ function chartSvg(hours){
 }
 function stats(hours){const from=Date.now()-hours*3600e3,p=readings.filter(x=>x.t>=from);if(!p.length)return null;const n=p.length,avg=p.reduce((s,x)=>s+x.g,0)/n;
   return {n,avg,low:p.filter(x=>x.g<3.9).length/n*100,inr:p.filter(x=>x.g>=3.9&&x.g<=10).length/n*100,high:p.filter(x=>x.g>10).length/n*100,min:Math.min(...p.map(x=>x.g)),max:Math.max(...p.map(x=>x.g))}}
-let hoursSel=6;
+let hoursSel=6,gmi=null,gmiAt=0;
+/* Расчётный HbA1c (GMI, Bergenstal 2018): GMI % = 3,31 + 0,02392 × средняя глюкоза в мг/дл. Надёжен при 14+ днях данных и покрытии ≥70%. */
+async function loadGmi(){if(!ready()||Date.now()-gmiAt<(gmi?30*60e3:60e3))return;gmiAt=Date.now();
+  try{const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${Date.now()-14*864e5}`);const r=j.readings||[];
+    if(!r.length){gmi=null;return}
+    const mean=r.reduce((a,x)=>a+x.g,0)/r.length,days=(Date.now()-r[0].t)/864e5,cover=Math.min(100,r.length/(Math.max(days,1/24)*288)*100);
+    gmi={v:3.31+0.02392*mean*18.016,mean,days,cover,n:r.length};paintGlucose()}catch(e){}}
+function gmiHtml(){if(!gmi)return '';const ok=gmi.days>=13.5&&gmi.cover>=70;
+  return `<div class="notice" style="margin-top:10px;background:#f0fdfa;border-color:#99f6e4"><b>Расчётный HbA1c (GMI): ${gmi.v.toFixed(1)}%</b> · средняя глюкоза ${gmi.mean.toFixed(1)} ммоль/л за ${gmi.days<1?'менее суток':Math.floor(gmi.days)+' дн.'} (данных ${Math.round(gmi.cover)}%).<br><span class="muted">${ok?'Посчитано по данным сенсора за 14 дней. ':'Пока мало данных — показатель станет надёжным после 14 дней работы сенсора. '}Это оценка, а не лабораторный анализ: настоящий HbA1c сдают в лаборатории и записывают в «Анализы».</span></div>`}
 function paintGlucose(){
   const sec=document.getElementById('glucose');if(!sec)return;let box=document.getElementById('cgmCard');
   if(!box){const grid=sec.querySelector('.grid');if(!grid)return;box=document.createElement('div');box.id='cgmCard';box.className='card s12';grid.prepend(box)}
@@ -80,7 +88,7 @@ function paintGlucose(){
 <div class="row" style="gap:6px">${[3,6,12,24].map(h=>`<button class="btn ${h===hoursSel?'':'secondary'}" style="padding:6px 10px" onclick="DMCgm.hours(${h})">${h} ч</button>`).join('')}</div></div>
 ${chartSvg(hoursSel)}
 ${s?`<div class="kpi" style="margin-top:6px"><div class="mini"><span class="muted">Среднее</span><b>${s.avg.toFixed(1)}</b></div><div class="mini"><span class="muted">В диапазоне 3,9–10</span><b>${Math.round(s.inr)}%</b></div><div class="mini"><span class="muted">Ниже 3,9</span><b style="color:#dc2626">${Math.round(s.low)}%</b></div><div class="mini"><span class="muted">Выше 10</span><b style="color:#d97706">${Math.round(s.high)}%</b></div><div class="mini"><span class="muted">Мин / макс</span><b>${s.min.toFixed(1)} / ${s.max.toFixed(1)}</b></div></div>`:''}
-${!L.fresh?`<div class="notice" style="margin-top:8px">Сенсор не присылал данные ${ago(L.age)}. Проверьте xDrip+ на телефоне сына и интернет.</div>`:''}`;
+${gmiHtml()}${!L.fresh?`<div class="notice" style="margin-top:8px">Сенсор не присылал данные ${ago(L.age)}. Проверьте xDrip+ на телефоне сына и интернет.</div>`:''}`;
 }
 
 /* Расчёт дозы: подставляем свежий сахар с сенсора, если поле пустое */
@@ -111,7 +119,7 @@ ${canWrite?`<button class="btn ${connected?'secondary':''}" onclick="DMCgm.conne
 <div id="cgmConnect" style="margin-top:10px">${connectHtml}</div>`;
 }
 
-function paint(){try{paintDashboard()}catch(e){}try{paintGlucose()}catch(e){}try{fillCalc()}catch(e){}}
+function paint(){try{paintDashboard()}catch(e){}try{paintGlucose();loadGmi()}catch(e){}try{fillCalc()}catch(e){}}
 function start(){loadCache();paint();refresh(true);clearInterval(timer);timer=setInterval(()=>{if(document.visibilityState==='visible')refresh()},60e3);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refresh(true)})}
 
