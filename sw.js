@@ -2,7 +2,7 @@
 // Код и данные (html/js/css/каталог) — сначала сеть, при отсутствии сети — кэш, чтобы обновления приходили сразу.
 // Фото продуктов — сначала кэш. Запросы к другим сайтам (распознавание фото) не кэшируются.
 const CACHE='dm-v3';
-const SHELL=['./','index.html','css/app.css','js/app.js','js/sync.js','js/cgm.js','data/catalog.js','core/domain.js','core/family.js','adapters/runtime.js','adapters/storage.js','adapters/backup.js','adapters/cloud.js','manifest.webmanifest','assets/icons/icon-192.png','assets/foods/_fallback.jpg'];
+const SHELL=['./','index.html','css/app.css','js/app.js','js/sync.js','js/cgm.js','js/docs.js','data/catalog.js','core/domain.js','core/family.js','adapters/runtime.js','adapters/storage.js','adapters/backup.js','adapters/cloud.js','manifest.webmanifest','assets/icons/icon-192.png','assets/foods/_fallback.jpg'];
 // Фоновая подкачка фото: страница присылает список, качаем по 4 штуки, пропуская уже сохранённые.
 self.addEventListener('message',e=>{const d=e.data||{};if(d.type!=='prefetch'||!Array.isArray(d.urls))return;
   e.waitUntil(caches.open(CACHE).then(async c=>{const q=d.urls.slice();const keep=new Set(q.map(u=>new URL(u,self.registration.scope).href));
