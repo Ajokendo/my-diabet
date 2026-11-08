@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.23';
+const APP_VERSION='v63.24';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -80,10 +80,10 @@ function foodCategoryByName(n){
 // Старые названия → актуальные. Нужны, чтобы меню, избранное и рецепты,
 // сохранённые в прежних версиях, указывали на актуальные карточки.
 const CATALOG_RENAMES={
-  'Минеральная вода Арашан':'Вода минеральная Арашан',
-  'Минеральная вода Байтик':'Вода минеральная Байтик',
-  'Минеральная вода Боржоми':'Вода минеральная Боржоми',
-  'Минеральная вода Жалал-Абад':'Вода минеральная Жалал-Абад',
+  'Минеральная вода Арашан':'Вода минеральная «Арашан»',
+  'Минеральная вода Байтик':'Вода минеральная «Байтик»',
+  'Минеральная вода Боржоми':'Вода минеральная «Боржоми»',
+  'Минеральная вода Жалал-Абад':'Вода минеральная «Жалал-Абад»',
   'Куриная грудка':'Курица отварная',
   'Куриное бедро без кожи':'Куриное бедро отварное',
   'Индейка филе':'Индейка отварная',
@@ -100,13 +100,13 @@ const CATALOG_RENAMES={
   'Кролик':'Крольчатина отварная',
   'Телятина':'Телятина отварная',
   'Брынза':'Сыр брынза',
-  'Бургомистр':'Сыр бургомистр',
-  'Гауда':'Сыр гауда',
-  'Голландский':'Сыр голландский',
-  'Пармезан':'Сыр пармезан',
+  'Бургомистр':'Сыр «Бургомистр»',
+  'Гауда':'Сыр «Гауда»',
+  'Голландский':'Сыр «Голландский»',
+  'Пармезан':'Сыр «Пармезан»',
   'Сулугуни':'Сыр сулугуни',
   'Сыр Чечил':'Сыр чечил',
-  'Тильзитский':'Сыр тильзитский',
+  'Тильзитский':'Сыр «Тильзитский»',
   'Швейцарский сыр':'Сыр швейцарский',
   'Крем-сыр':'Сыр сливочный',
   'Бразильский орех':'Орех бразильский',
@@ -126,7 +126,7 @@ const CATALOG_RENAMES={
   'Блины со сметаной':'Блинчики со сметаной',
   'Блины':'Блинчики',
   'Салат греческий':'Греческий салат',
-  'Чак-чак (Куликовский)':'Десерт чак-чак',
+  'Чак-чак (Куликовский)':'Десерт «Чак-чак»',
   'Картофель варёный':'Картофель отварной',
   'Картофельное пюре':'Картофель пюре',
   'Куриные крылышки':'Куриные крылышки запеченные',
@@ -145,20 +145,20 @@ const CATALOG_RENAMES={
   'Гарнир сложный':'Сложный гарнир',
   'Спагетти варёные':'Спагетти',
   'Мампар':'Суп мампар',
-  'Торт Белый бархат (Куликовский)':'Торт белый бархат',
-  'Торт Вупи пай (Куликовский)':'Торт вупи-пай',
-  'Торт Домашний (Куликовский)':'Торт домашний',
-  'Торт Красный бархат (Куликовский)':'Торт красный бархат',
-  'Торт Медовик с орехами (Куликовский)':'Торт медовик с орехами',
-  'Торт Медовик со сгущёнкой (Куликовский)':'Торт медовик со сгущенкой',
-  'Торт Медовик со сливками (Куликовский)':'Торт медовик со сливками',
-  'Торт Наполеон (Куликовский)':'Торт Наполеон',
-  'Торт Прага классик (Куликовский)':'Торт Прага',
-  'Торт Снежок (Куликовский)':'Торт снежок',
-  'Торт Творожный манго-маракуйя (Куликовский)':'Торт творожный манго-маракуйя',
-  'Торт Три шоко (Куликовский)':'Торт три шоко',
-  'Торт Фисташковый с малиной (Куликовский)':'Торт фисташковый с малиной',
-  'Торт Шоколадный (Куликовский)':'Торт шоколадный',
+  'Торт Белый бархат (Куликовский)':'Торт «Белый бархат»',
+  'Торт Вупи пай (Куликовский)':'Торт «Вупи-пай»',
+  'Торт Домашний (Куликовский)':'Торт «Домашний»',
+  'Торт Красный бархат (Куликовский)':'Торт «Красный бархат»',
+  'Торт Медовик с орехами (Куликовский)':'Торт «Медовик с орехами»',
+  'Торт Медовик со сгущёнкой (Куликовский)':'Торт «Медовик со сгущенкой»',
+  'Торт Медовик со сливками (Куликовский)':'Торт «Медовик со сливками»',
+  'Торт Наполеон (Куликовский)':'Торт «Наполеон»',
+  'Торт Прага классик (Куликовский)':'Торт «Прага»',
+  'Торт Снежок (Куликовский)':'Торт «Снежок»',
+  'Торт Творожный манго-маракуйя (Куликовский)':'Торт «Творожный манго-маракуйя»',
+  'Торт Три шоко (Куликовский)':'Торт «Три шоко»',
+  'Торт Фисташковый с малиной (Куликовский)':'Торт «Фисташковый с малиной»',
+  'Торт Шоколадный (Куликовский)':'Торт «Шоколадный»',
   'Хлеб пшеничный':'Хлеб пшеничный белый',
   'Капуста цветная варёная':'Цветная капуста вареная',
   'Шашлык из баранины':'Шашлык баранина',
@@ -166,10 +166,9 @@ const CATALOG_RENAMES={
   'Шашлык куриный':'Шашлык из курицы',
   'Люля-кебаб':'Шашлык люля-кебаб',
   'Яичница':'Яичница глазунья',
-  'Горошек зелёный':'Зеленый горох',
-  'Торт Куликовская птичка (Куликовский)':'Торт Куликовская птичка',
+  'Торт Куликовская птичка (Куликовский)':'Торт «Куликовская птичка»',
   'Борщ со сметаной 15%':'Борщ со сметаной',
-  'Трайфл с бананом (Куликовский)':'Десерт трайфл с бананом',
+  'Трайфл с бананом (Куликовский)':'Десерт «Трайфл»',
   'Круассан классический (Куликовский)':'Круассан классический',
   'Круассан Косичка (Куликовский)':'Круассан косичка',
   'Круассан с сыром (Куликовский)':'Круассан с сыром',
@@ -189,7 +188,6 @@ const CATALOG_RENAMES={
   'Тушёные овощи':'Овощи тушеные',
   'Сыр сливочный (крем-сыр)':'Сыр сливочный',
   'Фрикасе':'Фрикасе куриное',
-  'Борщ без картофеля':'Суп борщ без картофеля',
   'Чучвара':'Суп чучвара',
   'Батат':'Батат варёный',
   'Виноград':'Виноград зелёный',
@@ -203,7 +201,59 @@ const CATALOG_RENAMES={
   'Арахис':'Орех арахис',
   'Семена подсолнечника':'Семечки подсолнечника',
   'Семена тыквенные':'Семечки тыквенные',
-  'Смородина':'Смородина чёрная'
+  'Смородина':'Смородина чёрная',
+  'Пицца Quattro':'Пицца «Quattro»',
+  'Пицца Американа':'Пицца «Американа»',
+  'Пицца Богатырская':'Пицца «Богатырская»',
+  'Пицца Гавайская':'Пицца «Гавайская»',
+  'Пицца Итальянка':'Пицца «Итальянка»',
+  'Пицца Маргарита':'Пицца «Маргарита»',
+  'Пицца Мусульманская':'Пицца «Мусульманская»',
+  'Пицца Невада':'Пицца «Невада»',
+  'Пицца Пикколо (детская)':'Пицца «Пикколо» (детская)',
+  'Пицца Радость гурмана':'Пицца «Радость гурмана»',
+  'Пицца Супер Куриная':'Пицца «Супер куриная»',
+  'Пицца Чили':'Пицца «Чили»',
+  'Пицца вегетарианская':'Пицца «Вегетарианская»',
+  'Пицца пепперони':'Пицца «Пепперони»',
+  'Пицца супер мясная':'Пицца «Супер мясная»',
+  'Пицца сырная':'Пицца «Сырная»',
+  'Сыр бургомистр':'Сыр «Бургомистр»',
+  'Сыр гауда':'Сыр «Гауда»',
+  'Сыр голландский':'Сыр «Голландский»',
+  'Сыр моцарелла':'Сыр «Моцарелла»',
+  'Сыр пармезан':'Сыр «Пармезан»',
+  'Сыр тильзитский':'Сыр «Тильзитский»',
+  'Вода минеральная Арашан':'Вода минеральная «Арашан»',
+  'Вода минеральная Байтик':'Вода минеральная «Байтик»',
+  'Вода минеральная Боржоми':'Вода минеральная «Боржоми»',
+  'Вода минеральная Жалал-Абад':'Вода минеральная «Жалал-Абад»',
+  'Напиток Кола без сахара':'Напиток Coca-Cola без сахара',
+  'Напиток Пепси без сахара':'Напиток Pepsi без сахара',
+  'Напиток Спрайт без сахара':'Напиток Sprite без сахара',
+  'Напиток Фанта без сахара':'Напиток Fanta без сахара',
+  'Десерт чак-чак':'Десерт «Чак-чак»',
+  'Десерт трайфл с бананом':'Десерт «Трайфл»',
+  'Пирожное Заварное (Куликовский)':'Пирожное заварное (Куликовский)',
+  'Торт Йогуртовый манго-маракуйя (Куликовский)':'Торт «Йогуртовый манго-маракуйя» (Куликовский)',
+  'Торт Кудрявый пинчер (Куликовский)':'Торт «Кудрявый пинчер» (Куликовский)',
+  'Торт Куликовская птичка':'Торт «Куликовская птичка»',
+  'Торт Наполеон':'Торт «Наполеон»',
+  'Торт Прага':'Торт «Прага»',
+  'Торт белый бархат':'Торт «Белый бархат»',
+  'Торт вупи-пай':'Торт «Вупи-пай»',
+  'Торт домашний':'Торт «Домашний»',
+  'Торт красный бархат':'Торт «Красный бархат»',
+  'Торт медовик с орехами':'Торт «Медовик с орехами»',
+  'Торт медовик со сгущенкой':'Торт «Медовик со сгущенкой»',
+  'Торт медовик со сливками':'Торт «Медовик со сливками»',
+  'Торт снежок':'Торт «Снежок»',
+  'Торт творожный манго-маракуйя':'Торт «Творожный манго-маракуйя»',
+  'Торт три шоко':'Торт «Три шоко»',
+  'Торт фисташковый с малиной':'Торт «Фисташковый с малиной»',
+  'Торт шоколадный':'Торт «Шоколадный»',
+  'Суп борщ без картофеля':'Борщ без картофеля',
+  'Зеленый горох вареный':'Горох зеленый вареный'
 };
 const CATALOG_BY_ID=new Map(window.DM_CATALOG.foods.map(f=>[f.id,f]));
 const CATALOG_BY_NAME=new Map(window.DM_CATALOG.foods.map(f=>[f.name,f]));
@@ -394,7 +444,7 @@ function renderFoods(){
   const q=((document.getElementById('foodsQ')?.value)||'').trim().toLowerCase();
   const foods=Array.isArray(db.foods)?db.foods.filter(isFoodVisible):[];
   const cats=['Все','Хлеб и выпечка','Крупы и гарниры','Мясо и птица','Рыба и морепродукты','Яйца','Овощи и зелень','Бобовые','Фрукты','Ягоды','Орехи и семена','Молочные продукты','Супы','Салаты и закуски','Готовые блюда','Масла, соусы и приправы','Напитки','Сладости и десерты','Мои продукты','Другое'];
-  const filtered=foods.filter(f=>{const matchQ=!q||(String(f.name||'')+' '+String(f.brand||'')).toLowerCase().replace(/ё/g,'е').includes(q.replace(/ё/g,'е'));const matchCat=foodCatalogCategory==='Все'||catalogCategory(f)===foodCatalogCategory;return matchQ&&matchCat}).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ru',{sensitivity:'base',numeric:true}));
+  const filtered=foods.filter(f=>{const matchQ=!q||(String(f.name||'')+' '+String(f.brand||'')).toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е'));const matchCat=foodCatalogCategory==='Все'||catalogCategory(f)===foodCatalogCategory;return matchQ&&matchCat}).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ru',{sensitivity:'base',numeric:true}));
   const catsEl=document.getElementById('foodCategories');if(catsEl)catsEl.innerHTML=cats.map(c=>`<button type="button" class="catalogCat ${c===foodCatalogCategory?'active':''}" onclick="setFoodCatalogCategory('${c.replace(/'/g,"\\'")}')">${c}</button>`).join('');
   const countEl=document.getElementById('foodCount');if(countEl)countEl.textContent=`${filtered.length} поз.`;
   const grid=document.getElementById('foodCatalogGrid');if(!grid)return;
@@ -409,9 +459,9 @@ function renderRecipeIngredients(){let el=document.getElementById('rIngredients'
 function addRecipeIngredient(){let sel=document.getElementById('rFood'),g=+document.getElementById('rGram').value||0;if(!sel||!g)return;let f=db.foods.find(x=>x.id===sel.value);if(!f)return;(window.newRecipeIngredients||=[]).push({name:f.name,g});renderRecipeIngredients()}
 function removeRecipeIngredient(i){window.newRecipeIngredients.splice(i,1);renderRecipeIngredients()}
 function saveCustomRecipe(){let name=(document.getElementById('rName').value||'').trim(),a=window.newRecipeIngredients||[],serv=Math.max(1,+document.getElementById('rServ').value||1);if(!name||!a.length)return alert('Укажите название и добавьте ингредиенты.');(db.recipes||=[]).push({name,ingredients:a.map(x=>[x.name,x.g]),servings:serv});save();window.newRecipeIngredients=[];document.getElementById('rName').value='';renderRecipeIngredients();renderRecipes();alert('Рецепт сохранён')}
-function renderRecipes(){let q=(document.getElementById('recipeQ')?.value||'').toLowerCase(),arr=allRecipes().filter(r=>(Array.isArray(r)?r[0]:r.name).toLowerCase().includes(q));recipeCount.textContent=arr.length+' рецептов';recipeList.innerHTML=arr.map((r,i)=>{let name=Array.isArray(r)?r[0]:r.name,ings=Array.isArray(r)?r[1]:r.ingredients,t=recipeTotals(ings);return `<div class="mini" style="margin-bottom:8px"><div class="row" style="justify-content:space-between"><b>${name}</b><span class="pill">${t.k.toFixed(0)} ккал · ${t.c.toFixed(1)} г У · ${(t.c/db.settings.xe).toFixed(2)} ХЕ</span></div><p class="muted">${ings.map(x=>x[0]+' '+x[1]+' г').join(' · ')}</p><div class="row">${favoriteStar(isFavoriteRecipe(r),`toggleFavoriteRecipe(${i})`)}<button class="btn small" onclick="addRecipe(${i})">Добавить в меню</button></div></div>`}).join('');renderRecipePicker();renderRecipeIngredients()}
+function renderRecipes(){let q=(document.getElementById('recipeQ')?.value||'').toLowerCase(),arr=allRecipes().filter(r=>(Array.isArray(r)?r[0]:r.name).toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е')));recipeCount.textContent=arr.length+' рецептов';recipeList.innerHTML=arr.map((r,i)=>{let name=Array.isArray(r)?r[0]:r.name,ings=Array.isArray(r)?r[1]:r.ingredients,t=recipeTotals(ings);return `<div class="mini" style="margin-bottom:8px"><div class="row" style="justify-content:space-between"><b>${name}</b><span class="pill">${t.k.toFixed(0)} ккал · ${t.c.toFixed(1)} г У · ${(t.c/db.settings.xe).toFixed(2)} ХЕ</span></div><p class="muted">${ings.map(x=>x[0]+' '+x[1]+' г').join(' · ')}</p><div class="row">${favoriteStar(isFavoriteRecipe(r),`toggleFavoriteRecipe(${i})`)}<button class="btn small" onclick="addRecipe(${i})">Добавить в меню</button></div></div>`}).join('');renderRecipePicker();renderRecipeIngredients()}
 function addRecipe(i){let r=allRecipes()[i],ings=Array.isArray(r)?r[1]:r.ingredients,m='Обед';let projected=(getMenu()[m]||[]).map(it=>db.foods.find(x=>x.id===it.foodId)?.name).filter(Boolean).concat(ings.map(x=>x[0]));let groups=projected.map(foodGroup).filter(Boolean);if(groups.includes('grain')&&groups.includes('bread')){alert('Этот рецепт нельзя добавить в выбранный приём пищи по правилу конструктора: крупа и хлеб/выпечка не выбираются одновременно. Выберите другой приём пищи или измените состав.');return}ings.forEach(([n,g])=>{let f=db.foods.find(x=>x.name===n);if(f)m.push({id:crypto.randomUUID(),foodId:f.id,g})});save();show('menu')}
-function renderFavorites(){ensureFavorites();let q=(document.getElementById('favQ')?.value||'').toLowerCase();let foods=db.foods.filter(f=>isFavoriteFood(f.id)&&f.name.toLowerCase().includes(q));document.getElementById('favoriteFoods').innerHTML=foods.length?`<div class="foodlist">${foods.map(f=>`<div class="fooditem"><div class="foodvisual">${foodIcon(f.name)}</div><div class="foodmeta"><b>${f.name}</b><small>${f.kcal} ккал · У ${f.c} г · ${(f.c/db.settings.xe).toFixed(2)} ХЕ /100 г</small></div>${favoriteStar(true,`toggleFavoriteFood('${f.id}')`)} </div>`).join('')}</div>`:'<div class="muted">Пока нет избранных продуктов и блюд.</div>';let recipesFav=allRecipes().filter(r=>isFavoriteRecipe(r)&&String(Array.isArray(r)?r[0]:r.name).toLowerCase().includes(q));document.getElementById('favoriteRecipes').innerHTML=recipesFav.length?recipesFav.map(r=>{let name=Array.isArray(r)?r[0]:r.name,ings=Array.isArray(r)?r[1]:r.ingredients,t=recipeTotals(ings);return `<div class="mini" style="margin-bottom:8px"><div class="row" style="justify-content:space-between"><b>⭐ ${name}</b><span class="pill">${t.k.toFixed(0)} ккал · ${t.c.toFixed(1)} г У · ${(t.c/db.settings.xe).toFixed(2)} ХЕ</span></div><p class="muted">${ings.map(x=>x[0]+' '+x[1]+' г').join(' · ')}</p><div class="row">${favoriteStar(true,`toggleFavoriteRecipeByKey('${recipeKey(r).replace(/'/g,"\'")}')`)}<button class="btn small" onclick="addRecipe(${allRecipes().indexOf(r)})">Добавить в меню</button></div></div>`}).join(''):'<div class="muted">Пока нет избранных рецептов.</div>'}
+function renderFavorites(){ensureFavorites();let q=(document.getElementById('favQ')?.value||'').toLowerCase();let foods=db.foods.filter(f=>isFavoriteFood(f.id)&&f.name.toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е')));document.getElementById('favoriteFoods').innerHTML=foods.length?`<div class="foodlist">${foods.map(f=>`<div class="fooditem"><div class="foodvisual">${foodIcon(f.name)}</div><div class="foodmeta"><b>${f.name}</b><small>${f.kcal} ккал · У ${f.c} г · ${(f.c/db.settings.xe).toFixed(2)} ХЕ /100 г</small></div>${favoriteStar(true,`toggleFavoriteFood('${f.id}')`)} </div>`).join('')}</div>`:'<div class="muted">Пока нет избранных продуктов и блюд.</div>';let recipesFav=allRecipes().filter(r=>isFavoriteRecipe(r)&&String(Array.isArray(r)?r[0]:r.name).toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е')));document.getElementById('favoriteRecipes').innerHTML=recipesFav.length?recipesFav.map(r=>{let name=Array.isArray(r)?r[0]:r.name,ings=Array.isArray(r)?r[1]:r.ingredients,t=recipeTotals(ings);return `<div class="mini" style="margin-bottom:8px"><div class="row" style="justify-content:space-between"><b>⭐ ${name}</b><span class="pill">${t.k.toFixed(0)} ккал · ${t.c.toFixed(1)} г У · ${(t.c/db.settings.xe).toFixed(2)} ХЕ</span></div><p class="muted">${ings.map(x=>x[0]+' '+x[1]+' г').join(' · ')}</p><div class="row">${favoriteStar(true,`toggleFavoriteRecipeByKey('${recipeKey(r).replace(/'/g,"\'")}')`)}<button class="btn small" onclick="addRecipe(${allRecipes().indexOf(r)})">Добавить в меню</button></div></div>`}).join(''):'<div class="muted">Пока нет избранных рецептов.</div>'}
 const GLOSSARY_TERMS=[
 {id:'BJE',abbr:'БЖЕ',en:'Fat-Protein Unit (FPU)',ru:'Белково-жировая единица',cat:'nutrition',short:'Количество белков и жиров в еде, пересчитанное в единицы: 1 БЖЕ = 100 ккал, полученных из белков и жиров.',simple:'Проще говоря: ХЕ показывают, сколько в еде углеводов, а БЖЕ — сколько в ней «тяжёлой» части. Жирная и белковая еда (плов, пельмени, шашлык) может поднимать сахар позже, через 3–5 часов после еды.',detail:'Расчёт: БЖЕ = (белки, г × 4 + жиры, г × 9) / 100. Например, 100 г шашлыка с 18 г белка и 20 г жира — это (72 + 180) / 100 ≈ 2,5 БЖЕ. Учитывать ли БЖЕ при введении инсулина (например, продлённым болюсом на помпе) и как именно — решается только с лечащим врачом. Приложение показывает БЖЕ для информации и в расчёт дозы их не включает.',units:'БЖЕ',used:'Продукты, меню, «Сегодня», нутриенты',related:['XE']},
 {id:'ICR',abbr:'ICR',en:'Insulin-to-Carbohydrate Ratio',ru:'Соотношение инсулина и углеводов',cat:'insulin',short:'Параметр, используемый калькулятором для расчёта количества инсулина относительно количества углеводов.',simple:'Проще говоря: показывает, сколько граммов углеводов учитывается на 1 единицу инсулина по заданному параметру.',detail:'ICR — стандартное английское сокращение от Insulin-to-Carbohydrate Ratio. В приложении это пользовательский/медицински согласованный параметр, который участвует в расчёте болюса. Приложение не определяет и не назначает значение ICR.',units:'г углеводов/ЕД',used:'Инсулиновый калькулятор, профиль, настройки',related:['ISF','XE']},
@@ -436,7 +486,7 @@ function glossaryNorm(v){return String(v||'').toLowerCase().replace(/ё/g,'е').
 function glossaryScore(t,q){if(!q)return 1;let hay=glossaryNorm([t.id,t.abbr,t.en,t.ru,t.short,t.detail].join(' ')), nq=glossaryNorm(q);if(hay.includes(nq))return 10;let words=nq.split(' ').filter(Boolean);return words.reduce((s,w)=>s+(hay.includes(w)?1:0),0)}
 function renderGlossary(){let q=document.getElementById('glossaryQ')?.value||'';let arr=GLOSSARY_TERMS.filter(t=>glossaryCat==='all'||t.cat===glossaryCat).map(t=>({t,s:glossaryScore(t,q)})).filter(x=>!q||x.s>0).sort((a,b)=>b.s-a.s||a.t.ru.localeCompare(b.t.ru));let el=document.getElementById('glossaryList');if(!el)return;el.innerHTML=arr.length?arr.map(({t})=>`<details class="glossaryTerm" id="term-${t.id}"><summary><div><b>${t.abbr&&t.abbr!=='—'?t.abbr+' · ':''}${t.ru}</b><span class="pill">${t.en}</span></div></summary><div class="glossaryBody"><p><b>Коротко:</b> ${t.short}</p><p><b>💡 Проще:</b> ${t.simple}</p><p><b>Подробнее:</b> ${t.detail}</p><div class="row"><span class="pill">Единицы: ${t.units}</span><span class="pill">Где используется: ${t.used}</span></div>${t.related?.length?`<p class="muted">Связанные термины: ${t.related.map(x=>`<button class="linkBtn" onclick="openGlossary('${x}')">${x}</button>`).join(' · ')}</p>`:''}</div></details>`).join(''):'<div class="muted">По вашему запросу ничего не найдено. Попробуйте сокращение, английское название или русское слово.</div>'}
 function glossaryCategory(c){glossaryCat=c;renderGlossary()}
-function openGlossary(id){let t=GLOSSARY_TERMS.find(x=>x.id===id||x.abbr===id||x.en.toLowerCase()===String(id).toLowerCase());if(!t){let q=String(id).toLowerCase();t=GLOSSARY_TERMS.find(x=>x.en.toLowerCase().includes(q)||x.ru.toLowerCase().includes(q))}if(!t)return;show('glossary');glossaryCat='all';let q=document.getElementById('glossaryQ');if(q)q.value=t.abbr&&t.abbr!=='—'?t.abbr:t.ru;renderGlossary();setTimeout(()=>{let el=document.getElementById('term-'+t.id);if(el){el.open=true;el.scrollIntoView({behavior:'smooth',block:'center'})}},30)}
+function openGlossary(id){let t=GLOSSARY_TERMS.find(x=>x.id===id||x.abbr===id||x.en.toLowerCase()===String(id).toLowerCase());if(!t){let q=String(id).toLowerCase();t=GLOSSARY_TERMS.find(x=>x.en.toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е'))||x.ru.toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е')))}if(!t)return;show('glossary');glossaryCat='all';let q=document.getElementById('glossaryQ');if(q)q.value=t.abbr&&t.abbr!=='—'?t.abbr:t.ru;renderGlossary();setTimeout(()=>{let el=document.getElementById('term-'+t.id);if(el){el.open=true;el.scrollIntoView({behavior:'smooth',block:'center'})}},30)}
 
 const FAQ_ITEMS=[
 ['Как начать пользоваться приложением?','Откройте «Помощь и обучение → Быстрый старт». Затем заполните профиль, откройте базу продуктов и постепенно сформируйте своё избранное.'],
@@ -454,7 +504,7 @@ const FAQ_ITEMS=[
 ['Можно ли использовать приложение взрослому человеку?','Да. Профиль универсальный: приложение не ограничено детским возрастом. Функции включаются в зависимости от профиля и настроек пользователя.']
 ];
 function helpTab(tab){document.getElementById('helpQuick').style.display=tab==='quick'?'block':'none';document.getElementById('helpGuide').style.display=tab==='guide'?'block':'none';document.getElementById('helpFaq').style.display=tab==='faq'?'block':'none';if(tab==='faq')renderFAQ()}
-function renderFAQ(){let q=(document.getElementById('faqQ')?.value||'').trim().toLowerCase(),arr=FAQ_ITEMS.filter(x=>!q||(x[0]+' '+x[1]).toLowerCase().includes(q));let el=document.getElementById('faqList');if(!el)return;el.innerHTML=arr.length?arr.map((x,i)=>`<details class="mini" style="margin:8px 0"><summary><b>${x[0]}</b></summary><p>${x[1]}</p></details>`).join(''):'<div class="muted">По вашему запросу ничего не найдено. Попробуйте другие слова.</div>'}
+function renderFAQ(){let q=(document.getElementById('faqQ')?.value||'').trim().toLowerCase(),arr=FAQ_ITEMS.filter(x=>!q||(x[0]+' '+x[1]).toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е')));let el=document.getElementById('faqList');if(!el)return;el.innerHTML=arr.length?arr.map((x,i)=>`<details class="mini" style="margin:8px 0"><summary><b>${x[0]}</b></summary><p>${x[1]}</p></details>`).join(''):'<div class="muted">По вашему запросу ничего не найдено. Попробуйте другие слова.</div>'}
 function buildWeekFromFavorites(){ensureFavorites();let fav=db.foods.filter(f=>isFavoriteFood(f.id));if(fav.length<3){alert('Добавьте в Избранное хотя бы 3 продукта/блюда, чтобы сформировать недельную заготовку. Для лучшего разнообразия желательно больше.');return}let start=prompt('Дата начала недели (ГГГГ-ММ-ДД):',document.getElementById('day').value||today())||'';if(!/^\d{4}-\d{2}-\d{2}$/.test(start))return;let used=[];let pick=(day,meal)=>{let candidates=fav.filter(f=>!used.slice(-2).includes(f.id)&&canAddToMeal(f.id,meal));if(!candidates.length)candidates=fav.filter(f=>canAddToMeal(f.id,meal));if(!candidates.length)return null;let f=candidates[(day*3+meals.indexOf(meal))%candidates.length];used.push(f.id);return f};for(let di=0;di<7;di++){let d=new Date(start+'T12:00:00');d.setDate(d.getDate()+di);let iso=d.toISOString().slice(0,10);db.menus[iso]=Object.fromEntries(meals.map(m=>[m,[]]));['Завтрак','Обед','Ужин'].forEach((meal,mi)=>{let f=pick(di,meal);if(f)db.menus[iso][meal].push({id:crypto.randomUUID(),foodId:f.id,g:mi===0?150:120})})}db.templatePreferences=db.templatePreferences||{};db.templatePreferences.lastFavoriteWeekStart=start;db.templatePreferences.favoriteWeekGeneratedAt=new Date().toISOString();save();alert('Неделя из Избранного сформирована. Проверьте состав, порции и при необходимости измените отдельные дни.');document.getElementById('day').value=start;show('menu')}
 const WEEKLY_TEMPLATES=[
 {name:'Неделя 1 · Базовая',note:'Простая ротация круп, овощей, птицы и рыбы.',days:[['Гречка варёная','Куриная грудка','Овощи'],['Рис отварной','Индейка филе','Салат'],['Каша овсяная на воде','Творог 5%','Яйцо варёное'],['Перловка варёная','Говядина постная','Брокколи варёная'],['Булгур варёный','Лосось','Овощи'],['Макароны варёные','Куриная грудка','Огурец'],['Картофель отварной','Индейка филе','Капуста тушёная']]},
@@ -598,8 +648,8 @@ async function importEncryptedBackup(e){let f=e.target.files[0];if(!f)return;try
 
 
 function renderMenuFoodCategoryOptions(){const el=document.getElementById('foodCategoryPick');if(!el)return;const cur=el.value;const cats=[...new Set(db.foods.filter(isFoodVisible).map(f=>f.category||'Другое'))].sort((a,b)=>a.localeCompare(b,'ru'));el.innerHTML='<option value="">Все категории</option>'+cats.map(c=>`<option value="${c.replace(/"/g,'&quot;')}">${c}</option>`).join('');if(cats.includes(cur))el.value=cur;}
-function renderPicker(){const q=(document.getElementById('foodQ')?.value||'').trim().toLowerCase(),m=document.getElementById('mealPick')?.value||'Завтрак',cat=document.getElementById('foodCategoryPick')?.value||'';const fs=db.foods.filter(isFoodVisible).filter(f=>(!q||(String(f.name)+' '+String(f.brand||'')).toLowerCase().includes(q))&&(!cat||f.category===cat)).sort((a,b)=>(a.category||'').localeCompare(b.category||'','ru')||a.name.localeCompare(b.name,'ru'));document.getElementById('picker').innerHTML=fs.map(f=>`<div class="fooditem"><div class="foodvisual">${foodIcon(f.name)}</div><div class="foodmeta"><b>${f.name}</b>${f.isShoro?'<span class="pill" style="margin-left:6px">ШОРО</span>':''}<small>${f.kcal} ккал · У ${f.c} · Б ${f.p} · Ж ${f.f} /100 г · ${(f.c/db.settings.xe).toFixed(2)} ХЕ · ${bje(f.p,f.f).toFixed(2)} БЖЕ</small></div><div class="row" style="gap:4px">${favoriteStar(isFavoriteFood(f.id),`toggleFavoriteFood('${f.id}')`)}<button class="btn small" onclick="addItem('${f.id}','${m}')">+ ${m}</button></div></div>`).join('')||'<div class="fooditem">Ничего не найдено</div>'}
-function renderReplaceChoices(){const q=(document.getElementById('replaceSearch')?.value||'').trim().toLowerCase(),m=replaceState.meal,it=getMenu()[m]?.find(x=>x.id===replaceState.id),cur=it?it.foodId:'';const fs=db.foods.filter(isFoodVisible).filter(f=>f.id!==cur&&(!q||f.name.toLowerCase().includes(q))).sort((a,b)=>a.name.localeCompare(b.name,'ru'));document.getElementById('replaceChoices').innerHTML=fs.map(f=>`<button class="replaceChoice" onclick="doReplace('${f.id}')"><span class="foodvisual">${foodIcon(f.name)}</span><span><b>${f.name}</b><br><small class="muted">${f.kcal} ккал · У ${f.c} г · ${(f.c/db.settings.xe).toFixed(2)} ХЕ /100 г</small></span></button>`).join('')||'<div class="muted">Подходящих продуктов не найдено.</div>'}
+function renderPicker(){const q=(document.getElementById('foodQ')?.value||'').trim().toLowerCase(),m=document.getElementById('mealPick')?.value||'Завтрак',cat=document.getElementById('foodCategoryPick')?.value||'';const fs=db.foods.filter(isFoodVisible).filter(f=>(!q||(String(f.name)+' '+String(f.brand||'')).toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е')))&&(!cat||f.category===cat)).sort((a,b)=>(a.category||'').localeCompare(b.category||'','ru')||a.name.localeCompare(b.name,'ru'));document.getElementById('picker').innerHTML=fs.map(f=>`<div class="fooditem"><div class="foodvisual">${foodIcon(f.name)}</div><div class="foodmeta"><b>${f.name}</b>${f.isShoro?'<span class="pill" style="margin-left:6px">ШОРО</span>':''}<small>${f.kcal} ккал · У ${f.c} · Б ${f.p} · Ж ${f.f} /100 г · ${(f.c/db.settings.xe).toFixed(2)} ХЕ · ${bje(f.p,f.f).toFixed(2)} БЖЕ</small></div><div class="row" style="gap:4px">${favoriteStar(isFavoriteFood(f.id),`toggleFavoriteFood('${f.id}')`)}<button class="btn small" onclick="addItem('${f.id}','${m}')">+ ${m}</button></div></div>`).join('')||'<div class="fooditem">Ничего не найдено</div>'}
+function renderReplaceChoices(){const q=(document.getElementById('replaceSearch')?.value||'').trim().toLowerCase(),m=replaceState.meal,it=getMenu()[m]?.find(x=>x.id===replaceState.id),cur=it?it.foodId:'';const fs=db.foods.filter(isFoodVisible).filter(f=>f.id!==cur&&(!q||f.name.toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е')))).sort((a,b)=>a.name.localeCompare(b.name,'ru'));document.getElementById('replaceChoices').innerHTML=fs.map(f=>`<button class="replaceChoice" onclick="doReplace('${f.id}')"><span class="foodvisual">${foodIcon(f.name)}</span><span><b>${f.name}</b><br><small class="muted">${f.kcal} ккал · У ${f.c} г · ${(f.c/db.settings.xe).toFixed(2)} ХЕ /100 г</small></span></button>`).join('')||'<div class="muted">Подходящих продуктов не найдено.</div>'}
 function renderRecipePicker(){const el=document.getElementById('rFood');if(!el)return;el.innerHTML=db.foods.filter(isFoodVisible).sort((a,b)=>a.name.localeCompare(b.name,'ru')).map(f=>`<option value="${f.id}">${f.name}</option>`).join('')}
 renderMenuFoodCategoryOptions();
 save();
@@ -609,7 +659,7 @@ loadDay();renderPicker();initMenuBuilderControls();ensureInsulinProfileOptions()
 function showUpdateInfo(){const el=document.getElementById('updateInfo');if(!el)return;el.style.display='block';el.innerHTML='<div class="updateOk"><b>Сейчас установлена '+APP_VERSION+'.</b><br><span class="muted">Для мобильной версии проверка будет обращаться к каналу обновлений официального магазина. В этой локальной сборке внешняя проверка не выполняется.</span></div>';}function showUpdateNotes(){const el=document.getElementById('updateInfo');if(!el)return;el.style.display='block';el.innerHTML='<div class="mini"><b>v52.0</b><ul class="helpList"><li>Добавлен единый слой Family / Multi-device: аккаунт, пациент, роли, приглашения, устройства и очередь синхронизации.</li><li>Добавлен раздел «Семья и доступ».</li><li>Добавлена подготовка к единому пространству пациента на нескольких устройствах.</li><li>Зафиксирована фирменная связка «Мой диабет — Знай. Выбирай. Контролируй.».</li><li>Добавлены сведения о версии, продуктовой архитектуре и принципах интеллектуальных функций.</li><li>Юридические реквизиты намеренно оставлены на этап подготовки к рыночному запуску.</li><li>Сохранена архитектура локальных данных и медицинской истории.</li></ul></div>';}
 function openMedicalHint(id){
   let t=(typeof GLOSSARY_TERMS!=='undefined'?GLOSSARY_TERMS:[]).find(x=>x.id===id||x.abbr===id||String(x.en||'').toLowerCase()===String(id).toLowerCase());
-  if(!t){const q=String(id).toLowerCase();t=(typeof GLOSSARY_TERMS!=='undefined'?GLOSSARY_TERMS:[]).find(x=>String(x.en||'').toLowerCase().includes(q)||String(x.ru||'').toLowerCase().includes(q));}
+  if(!t){const q=String(id).toLowerCase();t=(typeof GLOSSARY_TERMS!=='undefined'?GLOSSARY_TERMS:[]).find(x=>String(x.en||'').toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е'))||String(x.ru||'').toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е')));}
   if(!t){return;}
   const overlay=document.getElementById('medicalHintOverlay'), body=document.getElementById('medicalHintBody'), title=document.getElementById('medicalHintTitle');
   if(!overlay||!body||!title)return;
