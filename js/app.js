@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.36';
+const APP_VERSION='v63.37';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
