@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.40';
+const APP_VERSION='v63.41';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -406,7 +406,8 @@ function rangeOptions(min,max,step,v,placeholder='Выберите') { let out=`
 function icrOptions(v){return rangeOptions(2.5,50,0.5,v,'Выберите ICR')}
 function isfOptions(v){return rangeOptions(0.5,15,0.5,v,'Выберите ISF')}
 function ensureInsulinProfileOptions(){const icr=document.getElementById('pICR'),isf=document.getElementById('pISF');if(icr){const v=icr.value||db?.profile?.icr||db?.settings?.icr||'';icr.innerHTML=icrOptions(v);if(v!=='')icr.value=String(v)}if(isf){const v=isf.value||db?.profile?.isf||db?.settings?.isf||'';isf.innerHTML=isfOptions(v);if(v!=='')isf.value=String(v)}}
-function sensOptions(v){return [0.5,1,1.5,2,2.5,3].map(x=>`<option value="${x}" ${+v===x?'selected':''}>${x}</option>`).join('')}
+const SENS_STEPS=Array.from({length:26},(_,i)=>Math.round((0.5+i*0.1)*10)/10);
+function sensOptions(v){return SENS_STEPS.concat(SENS_STEPS.includes(+v)||!v?[]:[+v]).sort((a,b)=>a-b).map(x=>`<option value="${x}" ${+v===x?'selected':''}>${x}</option>`).join('')}
 function waterHabitKey(m){return `${key()}|${m}`}
 function waterHabitHtml(m){const wh=db.profile?.waterHabit||{};if(!wh.enabled||!(wh.meals||[]).includes(m))return '';db.waterLog=db.waterLog||{};const done=!!db.waterLog[waterHabitKey(m)];const ml=Number(wh.volumeMl)||0;return `<div class="waterHabit"><span>💧 Вода перед приёмом пищи — ${ml} мл</span><label><input type="checkbox" ${done?'checked':''} onchange="toggleWaterHabit('${m}',this.checked)"> Выпито</label></div>`}
 function toggleWaterHabit(m,checked){db.waterLog=db.waterLog||{};const k=waterHabitKey(m);if(checked)db.waterLog[k]={done:true,timestamp:new Date().toISOString(),volumeMl:Number(db.profile?.waterHabit?.volumeMl)||0};else delete db.waterLog[k];save();renderMeals()}
