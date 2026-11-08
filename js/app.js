@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.34';
+const APP_VERSION='v63.35';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -732,6 +732,7 @@ window.addEventListener('scroll',()=>document.body.classList.toggle('scrolled',w
 try{makeStickyHead(document.querySelector('.section.active')?.id||'dashboard')}catch(e){}
 
 let photoData=null;
+function photoSaveSettings(){db.settings.photo=db.settings.photo||{};db.settings.photo.server=phServer.value.trim();db.settings.photo.code=phCode.value;save()}
 const PHOTO_DEFAULT_SERVER='https://my-diabet.ajokendo.workers.dev';
 function photoInit(){db.settings.photo=db.settings.photo||{};const P=db.settings.photo,m=document.getElementById('phMeal');if(/localhost|127\.0\.0\.1/.test(P.server||''))P.server='';if(m&&!m.options.length)m.innerHTML=meals.map(x=>`<option>${x}</option>`).join('');phRef.value=P.ref||'card';phPlate.value=P.plateMm||'';phServer.value=P.server||PHOTO_DEFAULT_SERVER;phCode.value=P.code||'';const st=document.getElementById('phSettings');if(st&&!P.code)st.open=true;photoRefUi()}
 function photoRefUi(){phPlateBox.style.display=phRef.value==='plate'?'':'none'}
