@@ -162,6 +162,21 @@ async function sync(req,env,path){
 }
 
 
+/* Терпимый разбор JSON от модели: убирает ```-обёртку и лишние запятые, а если ответ оборван — закрывает скобки на последнем целом элементе */
+function parseLoose(text){
+  let t=String(text||'').replace(/```(?:json)?/gi,'');const i=t.indexOf('{');if(i<0)return null;t=t.slice(i);
+  const tryP=x=>{try{return JSON.parse(x)}catch{return undefined}};
+  let r=tryP(t.slice(0,t.lastIndexOf('}')+1));if(r!==undefined)return r;
+  const nc=x=>x.replace(/,\s*([}\]])/g,'$1');r=tryP(nc(t.slice(0,t.lastIndexOf('}')+1)));if(r!==undefined)return r;
+  // оборванный ответ: идём по строке, запоминаем позиции запятых вне строк и стек скобок в этих точках
+  const cuts=[];let st=[],inS=false,esc=false;
+  for(let k=0;k<t.length;k++){const c=t[k];
+    if(inS){if(esc)esc=false;else if(c==='\\')esc=true;else if(c==='"')inS=false;continue}
+    if(c==='"')inS=true;else if(c==='{'||c==='[')st.push(c);else if(c==='}'||c===']')st.pop();else if(c===','&&st.length)cuts.push([k,st.slice()])}
+  for(let n=cuts.length-1,tries=0;n>=0&&tries<300;n--,tries++){const [k,s2]=cuts[n];const close=s2.slice().reverse().map(c=>c==='{'?'}':']').join('');r=tryP(nc(t.slice(0,k)+close));if(r!==undefined)return r}
+  return null;
+}
+
 /* ---------- Распознавание медицинских документов (выписки, заключения, анализы) ---------- */
 const DOC_ONE='{"docType":"выписка|заключение|анализы|рецепт|другое","date":"ГГГГ-ММ-ДД или пусто","title":"короткое название документа","institution":"учреждение","doctor":"врач","pages":[номера страниц из присланных, начиная с 1],"hospitalization":{"from":"","to":"","department":""},"diagnoses":[{"text":"диагноз как в документе","icd":"код МКБ или пусто","main":true}],"labs":[{"date":"","name":"название как в документе","code":"hba1c|...|other","value":число,"unit":"","ref":"норма, если указана"}],"insulin":[{"name":"препарат","kind":"базальный|болюсный|другое","dose":"доза и схема как в документе"}],"otherMeds":["другие назначения"],"recommendations":["рекомендации врача, коротко"],"summary":"3–5 предложений простым языком: что это за документ и главное из него","unreadable":"что не удалось прочитать, если есть"}';
 const DOC_PROMPT=`Перед тобой страницы медицинских документов пациента с сахарным диабетом: выписки из больницы, заключения эндокринолога, бланки анализов и т.п. (фото или PDF, страницы пронумерованы по порядку, начиная с 1). Фото могут быть повёрнуты, сняты под углом, с печатями поверх текста — читай внимательно.
@@ -169,7 +184,7 @@ const DOC_PROMPT=`Перед тобой страницы медицинских 
 Аккуратно перенеси данные. Ничего не придумывай: чего нет в документе — пустая строка, null или пустой массив. Не давай медицинских советов и не меняй дозы.
 Даты — ГГГГ-ММ-ДД. Числа — числом с точкой. В бланках анализов бери дату взятия/выполнения анализа, значение, единицы и референсный интервал (норму); показатели вне нормы не пропускай.
 Для анализов укажи code, если подходит: hba1c (гликированный гемоглобин, %), cpep (С-пептид), vitd (витамин D 25-OH), glu (глюкоза венозная натощак), chol (холестерин общий), ldl (ЛПНП), tg (триглицериды), creat (креатинин), tsh (ТТГ); иначе "other".
-Ответь ТОЛЬКО JSON без пояснений: {"documents":[${DOC_ONE}]}`;
+Пиши кратко: summary — до 3 предложений, рекомендации — коротко. Ответь ТОЛЬКО JSON без пояснений и без markdown-обёртки: {"documents":[${DOC_ONE}]}`;
 async function medicalDoc(req,env){
   let b;try{b=await req.json()}catch{return J(400,{error:'Неверный запрос.'})}
   if(env.PHOTO_ACCESS_CODE&&req.headers.get('X-Access-Code')!==env.PHOTO_ACCESS_CODE)return J(401,{error:'Неверный код доступа.'});
@@ -179,10 +194,11 @@ async function medicalDoc(req,env){
   const content=files.map(x=>{const mt=String(x.mediaType||'image/jpeg'),data=String(x.data).replace(/^data:[^,]+,/,'');
     return mt==='application/pdf'?{type:'document',source:{type:'base64',media_type:'application/pdf',data}}:{type:'image',source:{type:'base64',media_type:mt,data}}});
   content.push({type:'text',text:`Всего страниц: ${files.length}.\n`+DOC_PROMPT});
-  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model,max_tokens:12000,messages:[{role:'user',content}]})});
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model,max_tokens:32000,messages:[{role:'user',content}]})});
   const j=await r.json().catch(()=>({}));if(!r.ok)return J(502,{error:j?.error?.message||('Ошибка API '+r.status)});
-  const text=(j.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');const m=text.match(/\{[\s\S]*\}/);if(!m)return J(502,{error:'Ответ модели не в формате JSON.'});
-  let o;try{o=JSON.parse(m[0])}catch{return J(502,{error:'Ответ модели не разобран.'})}
+  const text=(j.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
+  const o=parseLoose(text);if(!o)return J(502,{error:'Не удалось разобрать ответ модели'+(j.stop_reason==='max_tokens'?' — документов слишком много за раз, попробуйте по 3–4 страницы.':'.')+' Попробуйте ещё раз.',stop:j.stop_reason,tail:text.slice(-300)});
+  const truncated=j.stop_reason==='max_tokens';
   const S=v=>String(v??'').trim(),A=v=>Array.isArray(v)?v:[];
   const one=o=>({docType:S(o.docType)||'другое',date:S(o.date),title:S(o.title),institution:S(o.institution),doctor:S(o.doctor),pages:A(o.pages).map(Number).filter(n=>n>=1&&n<=files.length),
     hospitalization:{from:S(o.hospitalization?.from),to:S(o.hospitalization?.to),department:S(o.hospitalization?.department)},
@@ -191,7 +207,7 @@ async function medicalDoc(req,env){
     insulin:A(o.insulin).map(x=>({name:S(x.name),kind:S(x.kind),dose:S(x.dose)})).filter(x=>x.name),
     otherMeds:A(o.otherMeds).map(S).filter(Boolean),recommendations:A(o.recommendations).map(S).filter(Boolean),summary:S(o.summary),unreadable:S(o.unreadable)});
   const docs=(Array.isArray(o.documents)?o.documents:[o]).map(one);
-  return J(200,{documents:docs,model});
+  return J(200,{documents:docs,model,truncated});
 }
 
 /* ---------- Приём данных сенсора от xDrip+ (совместимо с Nightscout REST API v1) ---------- */

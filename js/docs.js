@@ -38,7 +38,7 @@ async function recognize(){
   if(busy)return;busy=true;const out=document.getElementById('docResult');out.innerHTML=`<p class="muted">Читаю ${pages.length>1?pages.length+' страниц':'документ'}… обычно 20–90 секунд. Не закрывайте приложение.</p>`;
   try{const r=await fetch(base()+'/v1/medical-doc',{method:'POST',headers:{'Content-Type':'application/json','X-Access-Code':P().code||''},body:JSON.stringify({files:pages.map(p=>({mediaType:p.mediaType,data:p.data.split(',')[1]}))})});
     const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('Ошибка '+r.status));
-    results=(j.documents||(j.docType?[j]:[]));batchId='b'+Date.now();if(!results.length)throw new Error('В присланных страницах не найдено документов.');review()}
+    results=(j.documents||(j.docType?[j]:[]));batchId='b'+Date.now();if(!results.length)throw new Error('В присланных страницах не найдено документов.');review();if(j.truncated)out.insertAdjacentHTML('afterbegin','<div class="notice">Страниц было много, и часть данных могла не поместиться в ответ. Проверьте последний документ; если чего-то не хватает — распознайте его страницы отдельно.</div>')}
   catch(e){const net=/Failed to fetch|NetworkError|Load failed/i.test(String(e.message||e));out.innerHTML=`<div class="notice">${net?'Нет связи с сервером распознавания. Проверьте интернет.':esc(e.message)}${/код доступа/i.test(e.message)?'<br>Код доступа вводится в разделе «Фото» → «Настройки сервера и код доступа».':''}</div>`}
   finally{busy=false}
 }
