@@ -145,32 +145,35 @@ async function sync(req,env,path){
 
 
 /* ---------- Распознавание медицинских документов (выписки, заключения, анализы) ---------- */
-const DOC_PROMPT=`Перед тобой медицинский документ пациента с сахарным диабетом (выписка из больницы, заключение эндокринолога, результаты анализов и т.п.), фото или PDF, возможно несколько страниц. Аккуратно перенеси данные из документа. Ничего не придумывай: если чего-то нет в документе — оставь пустую строку, null или пустой массив. Не давай медицинских советов и не меняй дозы.
-Даты пиши в формате ГГГГ-ММ-ДД. Числа — числом (точка как десятичный разделитель).
-Для анализов укажи code из списка, если подходит: hba1c (гликированный гемоглобин, %), cpep (С-пептид), vitd (витамин D 25-OH), glu (глюкоза венозная натощак), chol (холестерин общий), ldl (ЛПНП), tg (триглицериды), creat (креатинин), tsh (ТТГ); иначе code: "other".
-Ответь ТОЛЬКО JSON без пояснений:
-{"docType":"выписка|заключение|анализы|рецепт|другое","date":"ГГГГ-ММ-ДД или пусто","title":"короткое название документа","institution":"учреждение","doctor":"врач","hospitalization":{"from":"","to":"","department":""},"diagnoses":[{"text":"диагноз как в документе","icd":"код МКБ или пусто","main":true}],"labs":[{"date":"","name":"название как в документе","code":"hba1c|...|other","value":число,"unit":"","ref":"норма, если указана"}],"insulin":[{"name":"препарат","kind":"базальный|болюсный|другое","dose":"доза и схема как в документе"}],"otherMeds":["другие назначения"],"recommendations":["рекомендации врача, коротко"],"summary":"3–5 предложений простым языком: что это за документ и главное из него","unreadable":"что не удалось прочитать, если есть"}`;
+const DOC_ONE='{"docType":"выписка|заключение|анализы|рецепт|другое","date":"ГГГГ-ММ-ДД или пусто","title":"короткое название документа","institution":"учреждение","doctor":"врач","pages":[номера страниц из присланных, начиная с 1],"hospitalization":{"from":"","to":"","department":""},"diagnoses":[{"text":"диагноз как в документе","icd":"код МКБ или пусто","main":true}],"labs":[{"date":"","name":"название как в документе","code":"hba1c|...|other","value":число,"unit":"","ref":"норма, если указана"}],"insulin":[{"name":"препарат","kind":"базальный|болюсный|другое","dose":"доза и схема как в документе"}],"otherMeds":["другие назначения"],"recommendations":["рекомендации врача, коротко"],"summary":"3–5 предложений простым языком: что это за документ и главное из него","unreadable":"что не удалось прочитать, если есть"}';
+const DOC_PROMPT=`Перед тобой страницы медицинских документов пациента с сахарным диабетом: выписки из больницы, заключения эндокринолога, бланки анализов и т.п. (фото или PDF, страницы пронумерованы по порядку, начиная с 1). Фото могут быть повёрнуты, сняты под углом, с печатями поверх текста — читай внимательно.
+Среди страниц может быть НЕСКОЛЬКО разных документов (разные даты, учреждения, бланки лабораторий). Раздели их: каждый документ — отдельный элемент массива documents. Страницы одного документа объединяй.
+Аккуратно перенеси данные. Ничего не придумывай: чего нет в документе — пустая строка, null или пустой массив. Не давай медицинских советов и не меняй дозы.
+Даты — ГГГГ-ММ-ДД. Числа — числом с точкой. В бланках анализов бери дату взятия/выполнения анализа, значение, единицы и референсный интервал (норму); показатели вне нормы не пропускай.
+Для анализов укажи code, если подходит: hba1c (гликированный гемоглобин, %), cpep (С-пептид), vitd (витамин D 25-OH), glu (глюкоза венозная натощак), chol (холестерин общий), ldl (ЛПНП), tg (триглицериды), creat (креатинин), tsh (ТТГ); иначе "other".
+Ответь ТОЛЬКО JSON без пояснений: {"documents":[${DOC_ONE}]}`;
 async function medicalDoc(req,env){
   let b;try{b=await req.json()}catch{return J(400,{error:'Неверный запрос.'})}
   if(env.PHOTO_ACCESS_CODE&&req.headers.get('X-Access-Code')!==env.PHOTO_ACCESS_CODE)return J(401,{error:'Неверный код доступа.'});
   if(!env.ANTHROPIC_API_KEY)return J(503,{error:'Не задан ANTHROPIC_API_KEY.'});
-  const files=(Array.isArray(b.files)?b.files:[]).slice(0,8).filter(x=>x&&x.data);if(!files.length)return J(400,{error:'Нет файлов.'});
+  const files=(Array.isArray(b.files)?b.files:[]).slice(0,12).filter(x=>x&&x.data);if(!files.length)return J(400,{error:'Нет файлов.'});
   const model=env.ANTHROPIC_MODEL||'claude-sonnet-5-5';
   const content=files.map(x=>{const mt=String(x.mediaType||'image/jpeg'),data=String(x.data).replace(/^data:[^,]+,/,'');
     return mt==='application/pdf'?{type:'document',source:{type:'base64',media_type:'application/pdf',data}}:{type:'image',source:{type:'base64',media_type:mt,data}}});
-  content.push({type:'text',text:DOC_PROMPT});
-  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model,max_tokens:4000,messages:[{role:'user',content}]})});
+  content.push({type:'text',text:`Всего страниц: ${files.length}.\n`+DOC_PROMPT});
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model,max_tokens:12000,messages:[{role:'user',content}]})});
   const j=await r.json().catch(()=>({}));if(!r.ok)return J(502,{error:j?.error?.message||('Ошибка API '+r.status)});
   const text=(j.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');const m=text.match(/\{[\s\S]*\}/);if(!m)return J(502,{error:'Ответ модели не в формате JSON.'});
   let o;try{o=JSON.parse(m[0])}catch{return J(502,{error:'Ответ модели не разобран.'})}
   const S=v=>String(v??'').trim(),A=v=>Array.isArray(v)?v:[];
-  const out={docType:S(o.docType)||'другое',date:S(o.date),title:S(o.title),institution:S(o.institution),doctor:S(o.doctor),
+  const one=o=>({docType:S(o.docType)||'другое',date:S(o.date),title:S(o.title),institution:S(o.institution),doctor:S(o.doctor),pages:A(o.pages).map(Number).filter(n=>n>=1&&n<=files.length),
     hospitalization:{from:S(o.hospitalization?.from),to:S(o.hospitalization?.to),department:S(o.hospitalization?.department)},
     diagnoses:A(o.diagnoses).map(d=>({text:S(d.text),icd:S(d.icd),main:!!d.main})).filter(d=>d.text),
     labs:A(o.labs).map(l=>({date:S(l.date),name:S(l.name),code:S(l.code)||'other',value:+l.value,unit:S(l.unit),ref:S(l.ref)})).filter(l=>l.name&&Number.isFinite(l.value)),
     insulin:A(o.insulin).map(x=>({name:S(x.name),kind:S(x.kind),dose:S(x.dose)})).filter(x=>x.name),
-    otherMeds:A(o.otherMeds).map(S).filter(Boolean),recommendations:A(o.recommendations).map(S).filter(Boolean),summary:S(o.summary),unreadable:S(o.unreadable),model};
-  return J(200,out);
+    otherMeds:A(o.otherMeds).map(S).filter(Boolean),recommendations:A(o.recommendations).map(S).filter(Boolean),summary:S(o.summary),unreadable:S(o.unreadable)});
+  const docs=(Array.isArray(o.documents)?o.documents:[o]).map(one);
+  return J(200,{documents:docs,model});
 }
 
 /* ---------- Приём данных сенсора от xDrip+ (совместимо с Nightscout REST API v1) ---------- */
