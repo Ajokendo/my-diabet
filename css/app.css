@@ -242,3 +242,20 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 .catalogCats.catRows{display:flex;flex-direction:column;gap:6px}
 .catRows .catRow{display:flex;gap:6px}
 .catRows .catRow .catalogCat{flex:1 1 auto;text-align:center;white-space:nowrap}
+/* v63.65: отчёт врачу */
+.rpt{line-height:1.45}
+.rptHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid var(--blue);margin-bottom:6px}
+.rptHead h2{margin:0 0 4px;font-size:22px}.rptPatient{font-size:18px;font-weight:800;margin-bottom:2px}
+.rptH{display:flex;align-items:center;gap:10px;margin:24px 0 10px;font-size:17px;break-after:avoid}
+.rptH span{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--blue2);color:#0f766e;font-size:13px;font-weight:800;flex:none}
+.rptSub{font-weight:700;color:#334155;margin:14px 0 6px;font-size:14px}
+.rptKV{display:grid;grid-template-columns:minmax(150px,260px) 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.rptKV>div{padding:8px 12px;border-bottom:1px solid var(--line)}
+.rptKV>div:nth-last-child(-n+2){border-bottom:0}
+.rptKV .k{color:var(--muted);background:#fafcfc}
+.rptTbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px}
+.rptTbl th{text-align:left;color:#475569;font-weight:700;background:#f8fafc;padding:7px 10px;border-bottom:1px solid var(--line)}
+.rptTbl td{padding:7px 10px;border-bottom:1px solid var(--line)}
+.rptList{margin:4px 0;padding-left:22px}.rptList li{margin:2px 0}
+.rptFoot{margin-top:24px;padding-top:12px;border-top:1px solid var(--line)}
+@media(max-width:600px){.rptKV{grid-template-columns:1fr}.rptKV .k{padding-bottom:0;border-bottom:0;background:none;font-size:12px}.rptHead{flex-direction:column}.rptHead>div:last-child{text-align:left!important}}
