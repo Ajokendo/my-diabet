@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.46';
+const APP_VERSION='v63.47';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -455,13 +455,19 @@ function catalogCategory(f){
 }
 let foodCatalogCategory='Все';
 function toggleFoodAdd(){const e=document.getElementById('foodAddPanel');if(e)e.style.display=e.style.display==='none'?'block':'none'}
+/* На телефоне раскладываем категории плотнее: каждую ставим в первую строку, где для неё хватает места (порядок внутри строки сохраняется). */
+function packChips(el){if(!el)return;const kids=[...el.children];kids.forEach(c=>c.style.order='');if(window.innerWidth>950||kids.length<3)return;
+  const W=el.clientWidth,gap=parseFloat(getComputedStyle(el).columnGap)||8;if(!W)return;const rows=[];
+  kids.forEach((c,i)=>{const w=c.offsetWidth+0.5;let r=i===0?-1:rows.findIndex(x=>x.used+gap+w<=W+0.5);if(r<0){rows.push({used:w,items:[c]});}else{rows[r].used+=gap+w;rows[r].items.push(c)}});
+  let n=0;rows.forEach(r=>r.items.forEach(c=>c.style.order=String(n++)))}
+window.addEventListener('resize',()=>packChips(document.getElementById('foodCategories')));
 function setFoodCatalogCategory(c){foodCatalogCategory=c;renderFoods()}
 function renderFoods(){
   const q=((document.getElementById('foodsQ')?.value)||'').trim().toLowerCase();
   const foods=Array.isArray(db.foods)?db.foods.filter(isFoodVisible):[];
   const cats=['Все','Хлеб и выпечка','Крупы и гарниры','Мясо и птица','Рыба и морепродукты','Яйца','Овощи и зелень','Бобовые','Фрукты','Ягоды','Орехи и семена','Молочные продукты','Супы','Салаты и закуски','Готовые блюда','Масла, соусы и приправы','Напитки','Сладости и десерты','Мои продукты','Другое'];
   const filtered=foods.filter(f=>{const matchQ=!q||(String(f.name||'')+' '+String(f.brand||'')).toLowerCase().replace(/[«»"„“]/g,'').replace(/ё/g,'е').includes(q.replace(/[«»"„“]/g,'').replace(/ё/g,'е'));const matchCat=foodCatalogCategory==='Все'||catalogCategory(f)===foodCatalogCategory;return matchQ&&matchCat}).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ru',{sensitivity:'base',numeric:true}));
-  const catsEl=document.getElementById('foodCategories');if(catsEl)catsEl.innerHTML=cats.map(c=>`<button type="button" class="catalogCat ${c===foodCatalogCategory?'active':''}" onclick="setFoodCatalogCategory('${c.replace(/'/g,"\\'")}')">${c}</button>`).join('');
+  const catsEl=document.getElementById('foodCategories');if(catsEl)catsEl.innerHTML=cats.map(c=>`<button type="button" class="catalogCat ${c===foodCatalogCategory?'active':''}" onclick="setFoodCatalogCategory('${c.replace(/'/g,"\\'")}')">${c}</button>`).join('');packChips(catsEl);
   const countEl=document.getElementById('foodCount');if(countEl)countEl.textContent=`${filtered.length} поз.`;
   const grid=document.getElementById('foodCatalogGrid');if(!grid)return;
   const xe=Number(db.settings?.xe)||12;

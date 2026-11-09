@@ -196,3 +196,4 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 .stickyHead{transition:none}
 
 @media(max-width:950px){body.tsBig .subTabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:950px){.catalogCats{gap:6px}.catalogCat{padding:6px 10px;font-size:.92em}}
