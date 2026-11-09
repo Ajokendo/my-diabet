@@ -107,7 +107,7 @@ function render(){
   if(!box){box=document.createElement('div');box.id='docsCard';box.className='card';box.style.marginBottom='14px';const anchor=sec.querySelector(':scope>.secLead')||sec.querySelector(':scope>.stickyHead');anchor?anchor.after(box):sec.prepend(box)}
   const list=docs().slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const keepRes=document.getElementById('docResult')?.innerHTML||'';
-  box.innerHTML=`<h3>📄 Документы и история болезни</h3>
+  box.innerHTML=`<h3>Документы и история болезни</h3>
 <p class="muted">Сфотографируйте выписку, заключение врача или бланки анализов — по одной странице, сколько нужно (до 12), — или выберите готовые фото и PDF. Можно сразу несколько разных документов: приложение само их разделит, прочитает и разложит по разделам.</p>
 <div class="row" style="gap:8px;flex-wrap:wrap">
 <label class="btn" style="cursor:pointer">📷 Сфотографировать страницу<input type="file" accept="image/*" capture="environment" style="display:none" onchange="DMDocs.add(this)"></label>

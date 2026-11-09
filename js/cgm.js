@@ -80,11 +80,11 @@ function gmiHtml(){if(!gmi)return '';const ok=gmi.days>=13.5&&gmi.cover>=70;
 function paintGlucose(){
   const sec=document.getElementById('glucose');if(!sec)return;let box=document.getElementById('cgmCard');
   if(!box){const grid=sec.querySelector('.grid');if(!grid)return;box=document.createElement('div');box.id='cgmCard';box.className='card s12';grid.prepend(box)}
-  if(!ready()){box.innerHTML=`<h3>📡 Сенсор</h3><p class="muted">Чтобы видеть показания сенсора, подключите «Семью», затем в разделе «Семья» — «Подключить сенсор (xDrip+)».</p>`;return}
+  if(!ready()){box.innerHTML=`<h3>Сенсор</h3><p class="muted">Чтобы видеть показания сенсора, подключите «Семью», затем в разделе «Семья» — «Подключить сенсор (xDrip+)».</p>`;return}
   const L=latest();
-  if(!L){box.innerHTML=`<h3>📡 Сенсор</h3><p class="muted">${connected?'Ждём первые показания от xDrip+… Обычно они приходят в течение 5 минут после настройки.':'Сенсор ещё не подключён. Откройте «Семья» → «Подключить сенсор (xDrip+)».'}</p>${err?`<div class="notice">${esc(err)}</div>`:''}`;return}
+  if(!L){box.innerHTML=`<h3>Сенсор</h3><p class="muted">${connected?'Ждём первые показания от xDrip+… Обычно они приходят в течение 5 минут после настройки.':'Сенсор ещё не подключён. Откройте «Семья» → «Подключить сенсор (xDrip+)».'}</p>${err?`<div class="notice">${esc(err)}</div>`:''}`;return}
   const s=stats(hoursSel);
-  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">📡 Сенсор: <span style="font-size:1.3em">${L.g.toFixed(1)} ${L.arrow}</span> <small class="muted">ммоль/л · ${ago(L.age)}</small></h3>
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div><h3 style="margin:0 0 2px">Сенсор</h3><div class="cgmNow"><b style="color:${L.g<3.9?'#dc2626':L.g>10?'#d97706':'var(--blue)'}">${L.g.toFixed(1).replace('.',',')}</b><span class="cgmArrow">${L.arrow}</span><span class="muted">ммоль/л · ${ago(L.age)}</span></div></div>
 <div class="row" style="gap:6px">${[3,6,12,24].map(h=>`<button class="btn ${h===hoursSel?'':'secondary'}" style="padding:6px 10px" onclick="DMCgm.hours(${h})">${h} ч</button>`).join('')}</div></div>
 ${chartSvg(hoursSel)}
 ${s?`<div class="kpi" style="margin-top:6px"><div class="mini"><span class="muted">Среднее</span><b>${s.avg.toFixed(1)}</b></div><div class="mini"><span class="muted">В диапазоне 3,9–10</span><b>${Math.round(s.inr)}%</b></div><div class="mini"><span class="muted">Ниже 3,9</span><b style="color:#dc2626">${Math.round(s.low)}%</b></div><div class="mini"><span class="muted">Выше 10</span><b style="color:#d97706">${Math.round(s.high)}%</b></div><div class="mini"><span class="muted">Мин / макс</span><b>${s.min.toFixed(1)} / ${s.max.toFixed(1)}</b></div></div>`:''}
@@ -112,7 +112,7 @@ function paintFamily(){
   const host=document.getElementById('sync2');if(!host||!ready())return;let box=document.getElementById('cgmFamily');
   if(!box){box=document.createElement('div');box.id='cgmFamily';box.className='card';box.style.marginTop='14px';host.appendChild(box)}
   const L=latest();const canWrite=C().role!=='viewer';
-  box.innerHTML=`<h3>📡 Сенсор (xDrip+)</h3>
+  box.innerHTML=`<h3>Сенсор (xDrip+)</h3>
 <p class="muted">xDrip+ на телефоне сына может отправлять показания сенсора в общий дневник. Тогда сахар в реальном времени видят все члены семьи.</p>
 ${L?`<p>Последнее показание: <b>${L.g.toFixed(1)} ${L.arrow}</b> ммоль/л, ${ago(L.age)}.</p>`:connected?'<p>Ключ создан, ждём первые показания.</p>':''}
 ${canWrite?`<button class="btn ${connected?'secondary':''}" onclick="DMCgm.connect()">${connected?'Показать адрес заново (создать новый ключ)':'Подключить сенсор (xDrip+)'}</button>`:'<p class="muted">Подключить может только родитель или сам пациент.</p>'}

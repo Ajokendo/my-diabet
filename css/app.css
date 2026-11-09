@@ -201,3 +201,5 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 .tplCard h3{margin-bottom:4px}.tplDay{border-top:1px solid var(--line);padding:6px 0}.tplDay summary{cursor:pointer;list-style:none;display:flex;gap:6px}.tplDay summary::-webkit-details-marker{display:none}.tplDay summary::after{content:"▾";color:var(--muted);margin-left:auto}.tplDay[open] summary::after{content:'▴'}.tplMeal{font-size:13px;margin:6px 0 0;line-height:1.35}.tplMeal span{display:block;font-weight:600;color:var(--muted);font-size:12px}
 /* v63.50: «Мои продукты» и «Другое» — всегда отдельной последней строкой */
 .catPinRow{order:9999;flex-basis:100%;display:flex;flex-wrap:wrap;gap:inherit}
+/* v63.51: текущее значение сенсора */
+.cgmNow{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.cgmNow b{font-size:30px;font-weight:800;line-height:1.1}.cgmNow .cgmArrow{font-size:22px;font-weight:700;color:var(--muted)}.cgmNow .muted{font-size:14px}
