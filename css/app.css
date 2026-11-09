@@ -181,3 +181,13 @@ body.scrolled .stickyHead h1{font-size:22px;margin:0}
 .fdInfo h3{margin:14px 0 4px}
 @media(max-width:760px){.fdWrap{grid-template-columns:1fr}.fdImg{max-width:none;width:100%}.fdTile b{font-size:19px}}
 .fdBox{max-width:min(1280px,96vw)!important}
+
+/* Калькулятор инсулина */
+.calcGroup{margin-top:12px;padding:12px;border:1px solid var(--line,#e2e8f0);border-radius:14px;background:#fbfdfd}
+.calcGroupTitle{font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#0f766e;margin-bottom:8px}
+.calcGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;align-items:end}
+.calcGrid label{display:block;font-size:13px;line-height:1.25;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calcGrid .calcWide{grid-column:span 1}
+.calcResultCard{align-self:start;position:sticky;top:90px}
+@media(max-width:950px){.calcResultCard{position:static}}
+@media(max-width:420px){.calcGrid label{white-space:normal;min-height:2.5em}}

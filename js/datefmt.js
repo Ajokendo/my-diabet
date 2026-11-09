@@ -3,11 +3,11 @@
  * Поле оставляем как есть (выбор даты в календаре и значение ГГГГ-ММ-ДД для программы не меняются),
  * а поверх рисуем подпись ДД.ММ.ГГГГ. */
 (function(){
-const fmt=v=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||'');return m?`${m[3]}.${m[2]}.${m[1]}`:''};
+const fmt=v=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||'');if(m)return `${m[3]}.${m[2]}.${m[1]}`;const t=/^(\d{2}):(\d{2})/.exec(v||'');return t?`${t[1]}:${t[2]}`:''};
 const desc=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
-function paint(i){const o=i.__dmOv;if(!o)return;const t=fmt(desc.get.call(i));o.textContent=t||'дд.мм.гггг';o.style.color=t?'':'#94a3b8'}
+function paint(i){const o=i.__dmOv;if(!o)return;const t=fmt(desc.get.call(i));o.textContent=t||(i.type==='time'?'чч:мм':'дд.мм.гггг');o.style.color=t?'':'#94a3b8'}
 function wrap(i){
-  if(i.__dmOv||i.type!=='date')return;
+  if(i.__dmOv||(i.type!=='date'&&i.type!=='time'))return;
   const cs=getComputedStyle(i);const w=document.createElement('span');w.className='dmDateWrap';
   w.style.cssText=`position:relative;display:${cs.display==='block'||i.classList.contains('input')?'block':'inline-block'};${cs.display==='block'?'':'max-width:100%'}`;
   i.parentNode.insertBefore(w,i);w.appendChild(i);
@@ -20,11 +20,11 @@ function wrap(i){
   i.addEventListener('click',()=>{try{i.showPicker&&i.showPicker()}catch(e){}});
   paint(i);
 }
-function scan(root){(root.querySelectorAll?root:document).querySelectorAll('input[type="date"]').forEach(wrap)}
+function scan(root){(root.querySelectorAll?root:document).querySelectorAll('input[type="date"],input[type="time"]').forEach(wrap)}
 const st=document.createElement('style');
 st.textContent='input.dmDate{color:transparent!important;caret-color:transparent}input.dmDate::-webkit-datetime-edit{color:transparent}input.dmDate:focus::-webkit-datetime-edit{color:transparent}';
 document.head.appendChild(st);
-function start(){scan(document);new MutationObserver(ms=>{for(const m of ms)m.addedNodes.forEach(n=>{if(n.nodeType!==1)return;if(n.matches&&n.matches('input[type="date"]'))wrap(n);else if(n.querySelectorAll)scan(n)})}).observe(document.body,{childList:true,subtree:true})}
+function start(){scan(document);new MutationObserver(ms=>{for(const m of ms)m.addedNodes.forEach(n=>{if(n.nodeType!==1)return;if(n.matches&&n.matches('input[type="date"],input[type="time"]'))wrap(n);else if(n.querySelectorAll)scan(n)})}).observe(document.body,{childList:true,subtree:true})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 window.DMDateFmt={scan,fmt};
 })();
