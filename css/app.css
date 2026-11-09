@@ -227,3 +227,8 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 @media(max-width:950px){.cgmKpi .mini:last-child{grid-column:span 2}.dashSide{flex-direction:row;gap:10px}.dashSide>.card{min-width:0}}
 .navSheetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.navSheetGrid button{min-width:0;overflow:hidden}.navSheetGrid button span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:400px){.navSheetGrid button{font-size:16px;gap:9px;padding:14px 11px}.navSheetGrid .ic{font-size:24px}}
+/* v63.59 */
+.dashMini .dmVal{margin-top:8px;font-size:26px;font-weight:850;line-height:1.15;white-space:nowrap}
+.dashMini .dmPills{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+#cgmCard .cgmStatus{display:inline-block;font-size:13px;padding:4px 10px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:950px){.dashMini .dmVal{font-size:22px}.dashMini .pill{padding:4px 7px}}
