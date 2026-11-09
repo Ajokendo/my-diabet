@@ -118,7 +118,7 @@ async function login(){
 async function acceptCode(){const code=v('s2JoinCode');if(!code)return;try{const a=await api('/v1/invitations/'+encodeURIComponent(code)+'/accept',{});startSession({},a.patient,true);alert('Готово: вы подключены к дневнику «'+a.patient.displayName+'».')}catch(e){alert(e.message)}}
 async function invite(){
   try{const j=await api('/v1/patients/'+encodeURIComponent(C().patientId)+'/invitations',{displayName:v('s2InvName'),role:v('s2InvRole')});
-    const code=j.invitation.code,txt=`Приглашение в «Мой диабет» (дневник: ${C().patientName}).\n1) Откройте https://ajokendo.github.io/my-diabet/ и установите приложение.\n2) Раздел «Семья» → «Я подключаюсь по коду» → введите код: ${code}\nКод действует 7 дней.`;
+    const code=j.invitation.code,txt=`Приглашение в «Мой диабет» (дневник: ${C().patientName}).\n1) Откройте ${location.origin+location.pathname.replace(/index\.html$/,"")} и установите приложение.\n2) Раздел «Семья» → «Я подключаюсь по коду» → введите код: ${code}\nКод действует 7 дней.`;
     document.getElementById('s2InvOut').innerHTML=`<div class="notice" style="margin-top:10px"><div class="muted">Код приглашения (${esc(j.invitation.roleLabel)}, 7 дней):</div><div style="font-size:30px;font-weight:900;letter-spacing:3px;margin:6px 0">${code}</div><textarea class="input" rows="5" style="width:100%" readonly id="s2InvTxt">${esc(txt)}</textarea><button class="btn small" style="margin-top:6px" onclick="DMSync.copyInvite()">Скопировать текст</button> <a class="btn small secondary" target="_blank" href="https://wa.me/?text=${encodeURIComponent(txt)}">Отправить в WhatsApp</a></div>`;
   }catch(e){alert(e.message)}
 }
