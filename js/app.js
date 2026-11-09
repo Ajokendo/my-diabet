@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.42';
+const APP_VERSION='v63.43';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -740,8 +740,8 @@ function fillProfileExtras(){db.profile=db.profile||{};PROFILE_EXTRA.forEach(([i
 (function(){const orig=window.saveProfile;if(typeof orig!=='function')return;window.saveProfile=function(){db.profile=db.profile||{};PROFILE_EXTRA.forEach(([id,k])=>{const e=document.getElementById(id);if(e)db.profile[k]=e.value.trim()});return orig.apply(this,arguments)}})();
 function latestLab(t){return (db.labs||[]).filter(x=>x.type===t).sort((a,b)=>b.date.localeCompare(a.date))[0]}
 
-function makeStickyHead(id){const sec=document.getElementById(id);if(!sec||sec.querySelector(':scope>.stickyHead'))return;const kids=[...sec.children].slice(0,3);const top=kids.find(k=>k.classList.contains('top'));const sh=document.createElement('div');sh.className='stickyHead';sec.insertBefore(sh,top||sec.firstChild);if(top)sh.appendChild(top);}
-window.addEventListener('scroll',()=>document.body.classList.toggle('scrolled',window.scrollY>40),{passive:true});
+function makeStickyHead(id){const sec=document.getElementById(id);if(!sec||sec.querySelector(':scope>.stickyHead'))return;const kids=[...sec.children].slice(0,3);const top=kids.find(k=>k.classList.contains('top'));const sh=document.createElement('div');sh.className='stickyHead';sec.insertBefore(sh,top||sec.firstChild);if(top){sh.appendChild(top);const p=top.querySelector('.title>p, :scope>p');if(p){p.classList.add('secLead');sh.after(p)}}}
+/* шапка раздела всегда компактная — без изменения размера при прокрутке (раньше мигала) */
 try{makeStickyHead(document.querySelector('.section.active')?.id||'dashboard')}catch(e){}
 
 let photoData=null;

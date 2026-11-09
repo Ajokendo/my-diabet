@@ -126,9 +126,9 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 .stickyHead{position:sticky;top:0;z-index:30;background:var(--bg);margin:-28px -30px 18px;padding:14px 30px 10px;transition:box-shadow .2s}
 .stickyHead .top{margin-bottom:0!important}
 .stickyHead .subTabs{margin-bottom:10px}
-body.scrolled .stickyHead{box-shadow:0 6px 14px -10px rgba(16,59,58,.35)}
-body.scrolled .stickyHead .top p{display:none}
-body.scrolled .stickyHead h1{font-size:22px;margin:0}
+.stickyHead{box-shadow:0 6px 14px -10px rgba(16,59,58,.35)}
+.stickyHead .top p{display:none}
+.stickyHead h1{font-size:22px;margin:0}
 @media(max-width:900px){.stickyHead{margin:-13px -13px 14px;padding:10px 13px 8px}}
 
 @media(max-width:950px){.mobilebar button.active{background:var(--brand)}.stickyHead{top:52px}.subTabs{flex-wrap:nowrap;overflow-x:auto}.subTabs button{white-space:nowrap}}
@@ -191,3 +191,6 @@ body.scrolled .stickyHead h1{font-size:22px;margin:0}
 .calcResultCard{align-self:start;position:sticky;top:90px}
 @media(max-width:950px){.calcResultCard{position:static}}
 @media(max-width:420px){.calcGrid label{white-space:normal;min-height:2.5em}}
+
+.secLead{color:var(--muted,#64748b);font-size:14px;margin:-6px 0 14px}
+.stickyHead{transition:none}
