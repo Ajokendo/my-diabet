@@ -118,11 +118,35 @@ ${canWrite?`<button class="btn ${connected?'secondary':''}" onclick="DMCgm.conne
 <div id="cgmConnect" style="margin-top:10px">${connectHtml}</div>`;
 }
 
-function paint(){try{window.renderDashKpi&&renderDashKpi()}catch(e){}try{paintGlucose();loadGmi()}catch(e){}try{fillCalc()}catch(e){}}
+/* Предупреждение «сенсор/xDrip+ молчит» — плашка вверху любого раздела + системное уведомление (пока приложение открыто) */
+const STALE_MIN=20;
+function staleDismissKey(){return 'dm-cgm-stale-ok:'+(C().patientId||'')}
+function paintStale(){
+  let bar=document.getElementById('cgmStale');const L=latest();
+  const stale=ready()&&L&&L.age>STALE_MIN&&L.age<7*24*60;
+  let dismissed=0;try{dismissed=+localStorage.getItem(staleDismissKey())||0}catch(e){}
+  if(!stale||dismissed===L.t){if(bar)bar.remove();return}
+  if(!bar){bar=document.createElement('div');bar.id='cgmStale';bar.className='cgmStale';document.body.appendChild(bar)}
+  const canAsk=('Notification' in window)&&Notification.permission==='default';
+  bar.innerHTML=`<div><b>Нет данных с сенсора ${ago(L.age).replace(' назад','')}</b><br><span>Последнее значение ${L.g.toFixed(1).replace('.',',')} ммоль/л. Проверьте телефон сына: xDrip+ запущен, Bluetooth и интернет включены.</span></div><div class="row" style="gap:6px;flex-wrap:nowrap">${canAsk?'<button class="btn small secondary" onclick="DMCgm.askNotify()">Уведомлять</button>':''}<button class="btn small secondary" onclick="DMCgm.staleOk()">Понятно</button></div>`;
+  notifyStale(L);
+}
+function notifyStale(L){
+  try{if(!('Notification' in window)||Notification.permission!=='granted')return;
+    const k='dm-cgm-stale-n:'+(C().patientId||'');if(+localStorage.getItem(k)===L.t)return;localStorage.setItem(k,String(L.t));
+    const opt={body:'Последнее значение '+L.g.toFixed(1)+' ммоль/л. Проверьте xDrip+, Bluetooth и интернет на телефоне сына.',tag:'cgm-stale',icon:'assets/icons/icon-192.png'};
+    if(navigator.serviceWorker&&navigator.serviceWorker.ready)navigator.serviceWorker.ready.then(r=>r.showNotification('Мой диабет: нет данных с сенсора',opt)).catch(()=>new Notification('Мой диабет: нет данных с сенсора',opt));
+    else new Notification('Мой диабет: нет данных с сенсора',opt);
+  }catch(e){}
+}
+function staleOk(){const L=latest();try{if(L)localStorage.setItem(staleDismissKey(),String(L.t))}catch(e){}paintStale()}
+async function askNotify(){try{await Notification.requestPermission()}catch(e){}paintStale()}
+
+function paint(){try{paintStale()}catch(e){}try{window.renderDashKpi&&renderDashKpi()}catch(e){}try{paintGlucose();loadGmi()}catch(e){}try{fillCalc()}catch(e){}}
 function start(){let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{try{paintGlucose()}catch(e){}},200)});loadCache();paint();refresh(true);clearInterval(timer);timer=setInterval(()=>{if(document.visibilityState==='visible')refresh()},60e3);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refresh(true)})}
 
 function reportHtml(){if(!gmi)return '';const f=v=>Math.round(v)+'%';return `<div class="reportSection" style="margin-top:18px"><h2>Данные сенсора (CGM) за последние ${gmi.days<1?'сутки':Math.min(14,Math.floor(gmi.days))+' дн.'}</h2><p>Средняя глюкоза: <b>${gmi.mean.toFixed(1)} ммоль/л</b> · стандартное отклонение ${gmi.sd.toFixed(1)} · коэффициент вариации ${Math.round(gmi.sd/gmi.mean*100)}% · расчётный HbA1c (GMI): <b>${gmi.v.toFixed(1)}%</b> · полнота данных ${Math.round(gmi.cover)}%.</p><p>Время в диапазоне 3,9–10: <b>${f(gmi.tir)}</b> · ниже 3,9: ${f(gmi.tbr)} (из них ниже 3,0: ${f(gmi.tbr54)}) · выше 10: ${f(gmi.tar)} (из них выше 13,9: ${f(gmi.tar139)}).</p><p class="muted">Источник: сенсор через xDrip+. GMI — расчётная оценка, не лабораторный HbA1c.</p></div>`}
-window.DMCgm={gmi:()=>gmi,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
+window.DMCgm={gmi:()=>gmi,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));else setTimeout(start,300);
 })();
