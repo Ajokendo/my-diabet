@@ -238,3 +238,7 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 /* v63.61: кнопки часов графика — на всю ширину на телефоне */
 @media(max-width:950px){#cgmCard .cgmHours{display:grid!important;grid-template-columns:repeat(4,1fr);width:100%}#cgmCard .cgmHours .btn{width:100%;padding:8px 0!important}}
 .cgmKpi .mini .muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* v63.64: категории на телефоне — по 2 в строке, растянуты по ширине */
+.catalogCats.catRows{display:flex;flex-direction:column;gap:6px}
+.catRows .catRow{display:flex;gap:6px}
+.catRows .catRow .catalogCat{flex:1 1 auto;text-align:center;white-space:nowrap}
