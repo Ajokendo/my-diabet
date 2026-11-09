@@ -136,10 +136,11 @@ async function sync(req,env,path){
       const secret=[...rnd(16)].map(x=>'abcdefghijkmnpqrstuvwxyz23456789'[x%32]).join('');
       await env.DB.batch([env.DB.prepare('DELETE FROM cgm_keys WHERE patient_id=?').bind(cm[1]),env.DB.prepare('INSERT INTO cgm_keys VALUES(?,?,?)').bind(await sha1(secret),cm[1],now())]);
       const host=new URL(req.url).host;return J(200,{secret,url:`https://${secret}@${host}/api/v1/`})}
-    if(cm[2]==='cgm'&&M==='GET'){const q=new URL(req.url).searchParams;const since=Math.max(+q.get('since')||0,Date.now()-14*864e5);
+    if(cm[2]==='cgm'&&M==='GET'){const q=new URL(req.url).searchParams;const since=Math.max(+q.get('since')||0,Date.now()-200*864e5);
       const r=await env.DB.prepare('SELECT ts,mgdl,direction FROM cgm WHERE patient_id=? AND ts>? ORDER BY ts LIMIT 5000').bind(cm[1],since).all();
       const k=await env.DB.prepare('SELECT created_at FROM cgm_keys WHERE patient_id=?').bind(cm[1]).first();
-      return J(200,{connected:!!k,readings:r.results.map(x=>({t:x.ts,g:Math.round(x.mgdl/18.016*10)/10,d:x.direction||''}))})}
+      let dev=null;try{dev=await env.DB.prepare('SELECT device FROM cgm WHERE patient_id=? ORDER BY ts DESC LIMIT 1').bind(cm[1]).first()}catch(e){}
+      return J(200,{connected:!!k,device:dev?.device||'',readings:r.results.map(x=>({t:x.ts,g:Math.round(x.mgdl/18.016*10)/10,d:x.direction||''}))})}
   }
   if(M==='POST'&&(path==='/v2/sync/push'||path==='/v2/sync/pull')){
     const b=await body(req),pid=String(b.patientId||''),role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа к пациенту.'});
@@ -178,7 +179,7 @@ function parseLoose(text){
 }
 
 /* ---------- Распознавание медицинских документов (выписки, заключения, анализы) ---------- */
-const DOC_ONE='{"docType":"выписка|заключение|анализы|рецепт|другое","date":"ГГГГ-ММ-ДД или пусто","title":"короткое название документа","institution":"учреждение","doctor":"врач","pages":[номера страниц из присланных, начиная с 1],"hospitalization":{"from":"","to":"","department":""},"diagnoses":[{"text":"диагноз как в документе","icd":"код МКБ или пусто","main":true}],"labs":[{"date":"","name":"название как в документе","code":"hba1c|...|other","value":число,"unit":"","ref":"норма, если указана"}],"insulin":[{"name":"препарат","kind":"базальный|болюсный|другое","dose":"доза и схема как в документе"}],"otherMeds":["другие назначения"],"recommendations":["рекомендации врача, коротко"],"summary":"3–5 предложений простым языком: что это за документ и главное из него","unreadable":"что не удалось прочитать, если есть"}';
+const DOC_ONE='{"docType":"выписка|заключение|анализы|рецепт|другое","date":"ГГГГ-ММ-ДД или пусто","title":"короткое название документа","institution":"учреждение","doctor":"врач","pages":[номера страниц из присланных, начиная с 1],"hospitalization":{"from":"","to":"","department":""},"patient":{"name":"ФИО пациента как в документе","birthDate":"ГГГГ-ММ-ДД","sex":"м|ж|пусто","weightKg":число или null,"heightCm":число или null},"diagnoses":[{"text":"диагноз как в документе","icd":"код МКБ или пусто","main":true}],"labs":[{"date":"","name":"название как в документе","code":"hba1c|...|other","value":число,"unit":"","ref":"норма, если указана"}],"insulin":[{"name":"препарат","kind":"базальный|болюсный|другое","dose":"доза и схема как в документе"}],"otherMeds":["другие назначения"],"recommendations":["рекомендации врача, коротко"],"summary":"3–5 предложений простым языком: что это за документ и главное из него","unreadable":"что не удалось прочитать, если есть"}';
 const DOC_PROMPT=`Перед тобой страницы медицинских документов пациента с сахарным диабетом: выписки из больницы, заключения эндокринолога, бланки анализов и т.п. (фото или PDF, страницы пронумерованы по порядку, начиная с 1). Фото могут быть повёрнуты, сняты под углом, с печатями поверх текста — читай внимательно.
 Среди страниц может быть НЕСКОЛЬКО разных документов (разные даты, учреждения, бланки лабораторий). Раздели их: каждый документ — отдельный элемент массива documents. Страницы одного документа объединяй.
 Аккуратно перенеси данные. Ничего не придумывай: чего нет в документе — пустая строка, null или пустой массив. Не давай медицинских советов и не меняй дозы.

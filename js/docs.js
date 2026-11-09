@@ -68,14 +68,14 @@ async function save(){
   db.labs=db.labs||[];let added=0,saved=0;const keep=on('docKeep');
   if(keep){try{await putPages(batchId,pages.filter(p=>p.mediaType!=='application/pdf').map(p=>p.data))}catch(e){}}
   results.forEach((o,k)=>{const id=s=>`d${k}_${s}`;if(!on(id('use')))return;
-    const doc={id:'doc'+Date.now()+'_'+k,docType:v(id('type')),date:v(id('date')),title:v(id('title')),institution:v(id('inst')),doctor:v(id('doc')),hospitalization:o.hospitalization,diagnoses:o.diagnoses,labs:[],insulin:o.insulin,otherMeds:o.otherMeds,recommendations:o.recommendations,summary:v(id('sum')),createdAt:new Date().toISOString(),pagesRef:keep?{batch:batchId,pages:o.pages||[],device:navigator.userAgent.slice(0,60)}:null};
+    const doc={id:'doc'+Date.now()+'_'+k,docType:v(id('type')),date:v(id('date')),title:v(id('title')),institution:v(id('inst')),doctor:v(id('doc')),hospitalization:o.hospitalization,patient:o.patient||null,diagnoses:o.diagnoses,labs:[],insulin:o.insulin,otherMeds:o.otherMeds,recommendations:o.recommendations,summary:v(id('sum')),createdAt:new Date().toISOString(),pagesRef:keep?{batch:batchId,pages:o.pages||[],device:navigator.userAgent.slice(0,60)}:null};
     o.labs.forEach((l,i)=>{const val=parseFloat(String(v(id('lv'+i))).replace(',','.'));const date=v(id('ld'+i))||doc.date;const code=v(id('lc'+i))||'other';
       doc.labs.push({...l,value:Number.isFinite(val)?val:l.value,date,code});
       if(!on(id('l'+i))||!Number.isFinite(val)||!date)return;
       const t=LAB_TYPES.find(x=>x[0]===code)||LAB_TYPES[LAB_TYPES.length-1];
       if(db.labs.some(x=>x.date===date&&x.type===t[0]&&+x.value===val&&(t[0]!=='other'||x.name===l.name)))return;
       db.labs.push({id:'lab'+Date.now()+'_'+k+'_'+i,date,type:t[0],name:t[0]==='other'?l.name:t[1],value:val,unit:l.unit||t[2],note:'из документа: '+(doc.title||doc.docType)+(l.ref?' · норма '+l.ref:'')});added++});
-    if(on(id('ins'))){db.medical=db.medical||{};const bas=o.insulin.filter(x=>/базал/i.test(x.kind)).map(x=>x.name+' — '+x.dose).join('; '),bol=o.insulin.filter(x=>/болюс/i.test(x.kind)).map(x=>x.name+' — '+x.dose).join('; ');if(bas)db.medical.basal=bas;if(bol)db.medical.bolus=bol}
+    if(on(id('ins'))){db.medical=db.medical||{};const ic=(k,n)=>{try{return window.insulinCode?insulinCode(k,n):''}catch(e){return ''}};const b=o.insulin.find(x=>/базал/i.test(x.kind||'')||ic('basal',x.name)),u=o.insulin.find(x=>/болюс/i.test(x.kind||'')||ic('bolus',x.name));if(b&&ic('basal',b.name))db.medical.basal=ic('basal',b.name);if(u&&ic('bolus',u.name))db.medical.bolus=ic('bolus',u.name);const sch=o.insulin.map(x=>x.name+(x.dose?' — '+x.dose:'')).join('; ');if(sch)db.medical.ins=sch;if(b&&u&&(!db.medical.regimen||db.medical.regimen==='Не указано'))db.medical.regimen='Многократные инъекции (MDI)'}
     docs().push(doc);saved++});
   persist();results=null;pages=[];drawPages();
   document.getElementById('docResult').innerHTML=`<div class="notice" style="background:#f0fdfa;border-color:#99f6e4">Сохранено документов: ${saved}.${added?` В «Анализы» добавлено показателей: ${added}.`:''}</div>`;

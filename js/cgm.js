@@ -6,7 +6,7 @@
 const ARROW={DoubleUp:'⇈',SingleUp:'↑',FortyFiveUp:'↗',Flat:'→',FortyFiveDown:'↘',SingleDown:'↓',DoubleDown:'⇊'};
 const ARROW_RU={DoubleUp:'быстро растёт',SingleUp:'растёт',FortyFiveUp:'медленно растёт',Flat:'стабильно',FortyFiveDown:'медленно снижается',SingleDown:'снижается',DoubleDown:'быстро снижается'};
 const FRESH_MIN=20;
-let readings=[],connected=null,timer=null,lastFetch=0,err='',connectHtml='';
+let readings=[],device='',connected=null,timer=null,lastFetch=0,err='',connectHtml='';
 
 function C(){return (window.db&&db.cloud2)||{}}
 function server(){return (C().server||db.settings?.photo?.server||'https://my-diabet.ajokendo.workers.dev').replace(/\/$/,'')}
@@ -29,7 +29,7 @@ async function refresh(force){
   const last=readings.length?readings[readings.length-1].t:Date.now()-36*3600e3;
   try{
     const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${last}`);
-    connected=j.connected;err='';
+    connected=j.connected;if(j.device)device=j.device;err='';
     const seen=new Set(readings.map(x=>x.t));
     (j.readings||[]).forEach(x=>{if(!seen.has(x.t))readings.push(x)});
     readings.sort((a,b)=>a.t-b.t);const from=Date.now()-36*3600e3;readings=readings.filter(x=>x.t>from);
@@ -91,7 +91,9 @@ ${gmiHtml()}${!L.fresh?`<div class="notice" style="margin-top:8px">Сенсор 
 }
 
 /* Расчёт дозы: подставляем свежий сахар с сенсора, если поле пустое */
-function fillCalc(){const i=document.getElementById('iG');const L=latest();if(i&&!i.value&&L&&L.age<=15){i.value=L.g.toFixed(1);i.title='Подставлено с сенсора ('+ago(L.age)+')'}}
+function fillCalc(){const i=document.getElementById('iG');const L=latest();if(!i)return;if(!i.value&&L&&L.age<=15){i.value=L.g.toFixed(1);i.title='Подставлено с сенсора ('+ago(L.age)+')'}
+  let h=document.getElementById('iGHint');if(!h){h=document.createElement('div');h.id='iGHint';h.className='muted';h.style.marginTop='4px';i.after(h)}
+  const col=/Up/.test(L?.d||'')?'#d97706':/Down/.test(L?.d||'')?'#dc2626':'inherit';h.innerHTML=L&&L.age<=60?`Сенсор: <b>${L.g.toFixed(1).replace('.',',')} ${L.arrow}</b> <span style="color:${col}">${L.trend||''}</span> · ${ago(L.age)}`:''}
 
 /* Карточка в «Семье» — подключение xDrip+ */
 async function connect(){
@@ -150,16 +152,17 @@ function reportHtml(){if(!gmi)return '';const f=v=>Math.round(v)+'%';return `<di
 /* Данные сенсора за произвольный период — для отчёта врачу (сервер отдаёт до 5000 точек за запрос, поэтому листаем) */
 const periodCache={};let periodPending=null;
 function dayKey(t){const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-async function period(start,end){const key=start+'_'+end;if(periodCache[key])return periodCache[key];if(!ready())return null;
+const inflight={};
+async function period(start,end){const key=start+'_'+end;const c=periodCached(start,end);if(c)return c;if(!ready())return null;if(inflight[key])return inflight[key];
   const from=new Date(start+'T00:00:00').getTime(),to=new Date(end+'T23:59:59').getTime();
   periodPending=(async()=>{let since=from-1,all=[];for(let i=0;i<40;i++){const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${since}`);const r=j.readings||[];all=all.concat(r);if(r.length<5000)break;since=r[r.length-1].t}
-    const r=all.filter(x=>x.t>=from&&x.t<=to);if(!r.length){periodCache[key]={n:0};return periodCache[key]}
+    const r=all.filter(x=>x.t>=from&&x.t<=to);if(!r.length){periodCache[key]={n:0,raw:[],at:Date.now()};return periodCache[key]}
     const n=r.length,mean=r.reduce((a,x)=>a+x.g,0)/n,sd=Math.sqrt(r.reduce((a,x)=>a+(x.g-mean)**2,0)/n),q=f=>r.filter(f).length/n*100;
     const byDay={};r.forEach(x=>{(byDay[dayKey(x.t)]??=[]).push(x.g)});const daily=Object.keys(byDay).sort().map(d=>({date:d,v:byDay[d].reduce((a,b)=>a+b,0)/byDay[d].length}));
     const spanDays=(to-Math.max(from,r[0].t))/864e5,cover=Math.min(100,n/(Math.max(spanDays,1/24)*288)*100);
-    periodCache[key]={n,mean,sd,v:3.31+0.02392*mean*18.016,tir:q(x=>x.g>=3.9&&x.g<=10),tbr:q(x=>x.g<3.9),tbr54:q(x=>x.g<3),tar:q(x=>x.g>10),tar139:q(x=>x.g>13.9),min:Math.min(...r.map(x=>x.g)),max:Math.max(...r.map(x=>x.g)),days:daily.length,cover,daily,first:r[0].t,last:r[n-1].t};return periodCache[key]})();
-  try{return await periodPending}catch(e){return {error:e.message||String(e)}}finally{periodPending=null}}
-function periodCached(start,end){return periodCache[start+'_'+end]||null}
-window.DMCgm={gmi:()=>gmi,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
+    periodCache[key]={n,mean,sd,v:3.31+0.02392*mean*18.016,tir:q(x=>x.g>=3.9&&x.g<=10),tbr:q(x=>x.g<3.9),tbr54:q(x=>x.g<3),tar:q(x=>x.g>10),tar139:q(x=>x.g>13.9),min:Math.min(...r.map(x=>x.g)),max:Math.max(...r.map(x=>x.g)),days:daily.length,cover,daily,first:r[0].t,last:r[n-1].t,raw:r,at:Date.now()};return periodCache[key]})();
+  inflight[key]=periodPending;try{return await periodPending}catch(e){periodCache[key]={error:e.message||String(e),at:Date.now()};return periodCache[key]}finally{periodPending=null;delete inflight[key]}}
+function periodCached(start,end){const c=periodCache[start+'_'+end];if(!c)return null;if(Date.now()-(c.at||0)>10*60e3){delete periodCache[start+'_'+end];return null}return c}
+window.DMCgm={gmi:()=>gmi,device:()=>device,isConnected:()=>connected,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));else setTimeout(start,300);
 })();

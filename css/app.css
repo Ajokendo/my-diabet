@@ -259,3 +259,7 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 .rptList{margin:4px 0;padding-left:22px}.rptList li{margin:2px 0}
 .rptFoot{margin-top:24px;padding-top:12px;border-top:1px solid var(--line)}
 @media(max-width:600px){.rptKV{grid-template-columns:1fr}.rptKV .k{padding-bottom:0;border-bottom:0;background:none;font-size:12px}.rptHead{flex-direction:column}.rptHead>div:last-child{text-align:left!important}}
+/* v63.67: разбор дня */
+.dtlItem{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}.dtlItem:last-of-type{border-bottom:0}
+.dtlTime{flex:none;width:58px;font-weight:800;color:#0f766e}.dtlText{color:#334155;margin-top:2px;line-height:1.4}
+.dtlItem.warn .dtlTime,.dtlItem.warn b{color:#dc2626}
