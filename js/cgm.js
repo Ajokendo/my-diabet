@@ -147,6 +147,19 @@ function start(){let rt;window.addEventListener('resize',()=>{clearTimeout(rt);r
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refresh(true)})}
 
 function reportHtml(){if(!gmi)return '';const f=v=>Math.round(v)+'%';return `<div class="reportSection" style="margin-top:18px"><h2>Данные сенсора (CGM) за последние ${gmi.days<1?'сутки':Math.min(14,Math.floor(gmi.days))+' дн.'}</h2><p>Средняя глюкоза: <b>${gmi.mean.toFixed(1)} ммоль/л</b> · стандартное отклонение ${gmi.sd.toFixed(1)} · коэффициент вариации ${Math.round(gmi.sd/gmi.mean*100)}% · расчётный HbA1c (GMI): <b>${gmi.v.toFixed(1)}%</b> · полнота данных ${Math.round(gmi.cover)}%.</p><p>Время в диапазоне 3,9–10: <b>${f(gmi.tir)}</b> · ниже 3,9: ${f(gmi.tbr)} (из них ниже 3,0: ${f(gmi.tbr54)}) · выше 10: ${f(gmi.tar)} (из них выше 13,9: ${f(gmi.tar139)}).</p><p class="muted">Источник: сенсор через xDrip+. GMI — расчётная оценка, не лабораторный HbA1c.</p></div>`}
-window.DMCgm={gmi:()=>gmi,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
+/* Данные сенсора за произвольный период — для отчёта врачу (сервер отдаёт до 5000 точек за запрос, поэтому листаем) */
+const periodCache={};let periodPending=null;
+function dayKey(t){const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+async function period(start,end){const key=start+'_'+end;if(periodCache[key])return periodCache[key];if(!ready())return null;
+  const from=new Date(start+'T00:00:00').getTime(),to=new Date(end+'T23:59:59').getTime();
+  periodPending=(async()=>{let since=from-1,all=[];for(let i=0;i<40;i++){const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${since}`);const r=j.readings||[];all=all.concat(r);if(r.length<5000)break;since=r[r.length-1].t}
+    const r=all.filter(x=>x.t>=from&&x.t<=to);if(!r.length){periodCache[key]={n:0};return periodCache[key]}
+    const n=r.length,mean=r.reduce((a,x)=>a+x.g,0)/n,sd=Math.sqrt(r.reduce((a,x)=>a+(x.g-mean)**2,0)/n),q=f=>r.filter(f).length/n*100;
+    const byDay={};r.forEach(x=>{(byDay[dayKey(x.t)]??=[]).push(x.g)});const daily=Object.keys(byDay).sort().map(d=>({date:d,v:byDay[d].reduce((a,b)=>a+b,0)/byDay[d].length}));
+    const spanDays=(to-Math.max(from,r[0].t))/864e5,cover=Math.min(100,n/(Math.max(spanDays,1/24)*288)*100);
+    periodCache[key]={n,mean,sd,v:3.31+0.02392*mean*18.016,tir:q(x=>x.g>=3.9&&x.g<=10),tbr:q(x=>x.g<3.9),tbr54:q(x=>x.g<3),tar:q(x=>x.g>10),tar139:q(x=>x.g>13.9),min:Math.min(...r.map(x=>x.g)),max:Math.max(...r.map(x=>x.g)),days:daily.length,cover,daily,first:r[0].t,last:r[n-1].t};return periodCache[key]})();
+  try{return await periodPending}catch(e){return {error:e.message||String(e)}}finally{periodPending=null}}
+function periodCached(start,end){return periodCache[start+'_'+end]||null}
+window.DMCgm={gmi:()=>gmi,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));else setTimeout(start,300);
 })();

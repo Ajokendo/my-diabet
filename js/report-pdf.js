@@ -7,6 +7,7 @@ function fileName(){const p=(window.db&&db.profile)||{},n=String(p.name||p.fullN
 async function build(){
   const src=document.getElementById('doctorReport');if(!src)throw new Error('Нет отчёта.');
   if(src.style.display==='none'||!src.innerHTML.trim())window.generateDoctorReport();
+  if(window.DMCgm&&DMCgm.pending&&DMCgm.pending()){try{await DMCgm.pending()}catch(e){}window.generateDoctorReport()}
   await libs();
   const W=794,body=document.body,zoom=body.style.zoom;body.style.zoom='';
   const box=document.createElement('div');box.style.cssText=`position:fixed;left:-10000px;top:0;width:${W}px;background:#fff;color:#000;padding:28px 32px;font-size:13px;line-height:1.45`;
