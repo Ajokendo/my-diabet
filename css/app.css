@@ -225,3 +225,5 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 @media(min-width:951px) and (max-width:1250px){#dashboard .glucoseHero{grid-column:span 12}#dashboard .dashSide{grid-column:span 12;flex-direction:row}}
 @media(max-width:950px){.cgmKpi{grid-template-columns:repeat(2,1fr)}.dashSide{grid-column:span 12}}
 @media(max-width:950px){.cgmKpi .mini:last-child{grid-column:span 2}.dashSide{flex-direction:row;gap:10px}.dashSide>.card{min-width:0}}
+.navSheetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.navSheetGrid button{min-width:0;overflow:hidden}.navSheetGrid button span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:400px){.navSheetGrid button{font-size:16px;gap:9px;padding:14px 11px}.navSheetGrid .ic{font-size:24px}}
