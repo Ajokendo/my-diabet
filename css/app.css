@@ -153,7 +153,7 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
  .stickyHead{top:0}
  .subTabs{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;overflow:visible!important} .subTabs:has(>button:nth-child(2):last-child),.subTabs:has(>button:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))} .subTabs button{font-size:14px;padding:6px 4px;hyphens:auto;overflow-wrap:break-word;font-weight:600;white-space:normal!important;line-height:1.15;border-radius:14px;text-align:center;min-height:40px}
  .stickyHead .subTabs{margin-bottom:6px}
- .stickyHead:has(.subTabs) .top h1{display:none}
+
  .navSheet{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.45);display:none;align-items:flex-end}
  .navSheet.open{display:flex}
  .navSheetBox{background:var(--bg,#f5faf9);width:100%;border-radius:22px 22px 0 0;padding:14px 14px calc(18px + env(safe-area-inset-bottom));max-height:85vh;overflow:auto}
