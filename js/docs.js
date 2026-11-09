@@ -104,7 +104,7 @@ ${(d.recommendations||[]).length?`<b>Рекомендации:</b><ul>${d.recomm
 }
 function render(){
   const sec=document.getElementById('labs');if(!sec)return;let box=document.getElementById('docsCard');
-  if(!box){box=document.createElement('div');box.id='docsCard';box.className='card';box.style.marginBottom='14px';const top=sec.querySelector('.top');top?top.after(box):sec.prepend(box)}
+  if(!box){box=document.createElement('div');box.id='docsCard';box.className='card';box.style.marginBottom='14px';const anchor=sec.querySelector(':scope>.secLead')||sec.querySelector(':scope>.stickyHead');anchor?anchor.after(box):sec.prepend(box)}
   const list=docs().slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const keepRes=document.getElementById('docResult')?.innerHTML||'';
   box.innerHTML=`<h3>📄 Документы и история болезни</h3>
