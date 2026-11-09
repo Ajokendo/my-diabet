@@ -1,0 +1,33 @@
+# Автовыкладка сайта на Cloudflare Pages (my-diabet.pages.dev) при каждом изменении ветки main.
+# Нужны секреты репозитория: CLOUDFLARE_API_TOKEN (права «Cloudflare Pages: Edit») и CLOUDFLARE_ACCOUNT_ID.
+# Сервер (Worker) этим файлом не выкладывается — его по-прежнему обновляем через Edit code.
+name: Deploy to Cloudflare Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Проверить ключи
+        id: keys
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$T" ] || [ -z "$A" ]; then echo "Секреты Cloudflare не заданы — выкладка пропущена."; echo "ok=false" >> "$GITHUB_OUTPUT"; else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Собрать сайт (как git archive)
+        if: steps.keys.outputs.ok == 'true'
+        run: mkdir dist && git archive HEAD | tar -x -C dist && rm -rf dist/.github
+      - name: Выложить на Cloudflare Pages
+        if: steps.keys.outputs.ok == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=my-diabet --branch=main --commit-dirty=true
