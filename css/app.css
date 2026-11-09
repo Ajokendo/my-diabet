@@ -194,3 +194,5 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 
 .secLead{color:var(--muted,#64748b);font-size:14px;margin:-6px 0 14px}
 .stickyHead{transition:none}
+
+@media(max-width:950px){body.tsBig .subTabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}}

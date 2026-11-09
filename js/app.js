@@ -21,7 +21,7 @@ const recipes=[
 ['Кефир с яблоком и орехами',[['Кефир',200],['Яблоко красное',100],['Орех грецкий',15]]]
 ];
 const storage=window.DMStorage.create({key:'dmFull'});
-const APP_VERSION='v63.44';
+const APP_VERSION='v63.45';
 const core=window.DMCore=window.DMCore||window.DMCoreFactory(window.DMRuntime);
 let db=storage.load()||{foods:[],menus:{},diary:[],activity:[],profile:{name:'',dob:'',height:'',weight:'',type:'Не указан',alt:'',sex:'Не указан',activity:'Умеренная',avoid:'',waist:'',icr:'',isf:'',target:5.5},medical:{},settings:{xe:12,target:5.5,icr:'',isf:'',carb:0},ratios:{},recipes:[],favorites:{foods:[],recipes:[]}};
 db=core.migrate(db);if(window.DMFamily)DMFamily.makeFoundation(db);db.cloud=db.cloud||{authenticated:false,baseUrl:'http://localhost:8787',baseRevision:0,lastPulledAt:null,lastPushedAt:null,conflict:false};
@@ -780,7 +780,7 @@ mb.innerHTML=all.filter(x=>main.includes(x.s)).sort((a,b)=>main.indexOf(a.s)-mai
 document.getElementById('navSheetGrid').innerHTML=all.map(x=>`<button data-s="${x.s}" data-g="${x.g}" onclick="toggleNavSheet(false);show('${x.s}')"><span class="ic">${x.icon}</span><span class="lb">${x.label}</span></button>`).join('');})();
 function toggleNavSheet(on){const el=document.getElementById('navSheet');if(!el)return;on=on??!el.classList.contains('open');el.classList.toggle('open',on);document.body.classList.toggle('sheetOpen',on)}
 const TEXT_SCALES=[[1,'Обычный'],[1.15,'Крупный'],[1.3,'Очень крупный']];
-function applyTextScale(){let v=db.settings?.textScale;if(!v)v=window.matchMedia('(max-width:950px)').matches?1.15:1;document.documentElement.style.setProperty('--ts',v);document.body.style.zoom=v;
+function applyTextScale(){let v=db.settings?.textScale;if(!v)v=window.matchMedia('(max-width:950px)').matches?1.15:1;document.documentElement.style.setProperty('--ts',v);document.body.style.zoom=v;document.body.classList.toggle('tsBig',v>=1.3);
 const box=document.getElementById('textScaleBtns');if(box)box.innerHTML=TEXT_SCALES.map(([k,l])=>`<button class="btn ${Math.abs(k-v)<.01?'':'secondary'}" style="font-size:${Math.round(15*k)}px" onclick="setTextScale(${k})">${l}</button>`).join('')}
 function setTextScale(v){db.settings.textScale=v;save();applyTextScale()}
 applyTextScale();
