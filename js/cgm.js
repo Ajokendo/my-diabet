@@ -84,10 +84,10 @@ function paintGlucose(){
   if(manual)manual.style.display='none';
   const s=stats(hoursSel);const [cls,txt]=!L.fresh?['statusHigh','● Нет новых данных']:L.g<3.9?['statusLow','● Низкий']:L.g>10?['statusHigh','● Высокий']:['statusGood','● В норме'];
   box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div><div class="muted">Глюкоза с сенсора</div><div class="cgmNow" style="margin-top:4px"><b style="color:${L.g<3.9?'#dc2626':L.g>10?'#d97706':'var(--text)'}">${L.g.toFixed(1).replace('.',',')}</b><span class="cgmArrow">${L.arrow}</span><span class="muted">ммоль/л</span></div><div class="${cls} cgmStatus" style="margin-top:6px">${txt}${L.fresh&&L.trend?', '+L.trend:''} · ${ago(L.age)}</div></div>
-<div class="row" style="gap:6px">${[3,6,12,24].map(h=>`<button class="btn ${h===hoursSel?'':'secondary'}" style="padding:6px 10px" onclick="DMCgm.hours(${h})">${h} ч</button>`).join('')}</div></div>
+<div class="row cgmHours" style="gap:6px">${[3,6,12,24].map(h=>`<button class="btn ${h===hoursSel?'':'secondary'}" style="padding:6px 10px" onclick="DMCgm.hours(${h})">${h} ч</button>`).join('')}</div></div>
 ${chartSvg(hoursSel,box.clientWidth)}
 ${s?`<div class="kpi cgmKpi" style="margin-top:6px"><div class="mini"><span class="muted">Среднее</span><b>${s.avg.toFixed(1)}</b></div><div class="mini"><span class="muted">В диапазоне 3,9–10</span><b>${Math.round(s.inr)}%</b></div><div class="mini"><span class="muted">Ниже 3,9</span><b style="color:#dc2626">${Math.round(s.low)}%</b></div><div class="mini"><span class="muted">Выше 10</span><b style="color:#d97706">${Math.round(s.high)}%</b></div><div class="mini"><span class="muted">Мин / макс</span><b>${s.min.toFixed(1)} / ${s.max.toFixed(1)}</b></div></div>`:''}
-${gmiHtml()}${!L.fresh?`<div class="notice" style="margin-top:8px">Сенсор не присылал данные ${ago(L.age)}. Проверьте xDrip+ на телефоне сына и интернет.</div>`:''}`;
+${gmiHtml()}${!L.fresh?`<div class="notice" style="margin-top:8px">Сенсор не присылает данные уже ${ago(L.age).replace(" назад","")}. Проверьте xDrip+ на телефоне сына и интернет.</div>`:''}`;
 }
 
 /* Расчёт дозы: подставляем свежий сахар с сенсора, если поле пустое */
@@ -143,7 +143,7 @@ function staleOk(){const L=latest();try{if(L)localStorage.setItem(staleDismissKe
 async function askNotify(){try{await Notification.requestPermission()}catch(e){}paintStale()}
 
 function paint(){try{paintStale()}catch(e){}try{window.renderDashKpi&&renderDashKpi()}catch(e){}try{paintGlucose();loadGmi()}catch(e){}try{fillCalc()}catch(e){}}
-function start(){let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{try{paintGlucose()}catch(e){}},200)});loadCache();paint();refresh(true);clearInterval(timer);timer=setInterval(()=>{if(document.visibilityState==='visible')refresh()},60e3);
+function start(){let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{try{paintGlucose()}catch(e){}},200)});loadCache();paint();refresh(true);clearInterval(timer);timer=setInterval(()=>{if(document.visibilityState==='visible')refresh();else{try{paintStale()}catch(e){}}},60e3);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refresh(true)})}
 
 function reportHtml(){if(!gmi)return '';const f=v=>Math.round(v)+'%';return `<div class="reportSection" style="margin-top:18px"><h2>Данные сенсора (CGM) за последние ${gmi.days<1?'сутки':Math.min(14,Math.floor(gmi.days))+' дн.'}</h2><p>Средняя глюкоза: <b>${gmi.mean.toFixed(1)} ммоль/л</b> · стандартное отклонение ${gmi.sd.toFixed(1)} · коэффициент вариации ${Math.round(gmi.sd/gmi.mean*100)}% · расчётный HbA1c (GMI): <b>${gmi.v.toFixed(1)}%</b> · полнота данных ${Math.round(gmi.cover)}%.</p><p>Время в диапазоне 3,9–10: <b>${f(gmi.tir)}</b> · ниже 3,9: ${f(gmi.tbr)} (из них ниже 3,0: ${f(gmi.tbr54)}) · выше 10: ${f(gmi.tar)} (из них выше 13,9: ${f(gmi.tar139)}).</p><p class="muted">Источник: сенсор через xDrip+. GMI — расчётная оценка, не лабораторный HbA1c.</p></div>`}
