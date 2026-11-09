@@ -123,7 +123,14 @@ async function invite(){
   }catch(e){alert(e.message)}
 }
 function copyInvite(){const t=document.getElementById('s2InvTxt');t.select();try{navigator.clipboard.writeText(t.value)}catch(e){document.execCommand('copy')}}
-async function members(){const el=document.getElementById('s2Members');if(!el||!C().token||!C().patientId)return;try{const j=await api('/v1/patients/'+encodeURIComponent(C().patientId)+'/members',null,'GET');el.innerHTML=j.members.map(m=>`<div class="mini" style="margin:6px 0"><b>${esc(m.displayName||m.email)}</b> <span class="pill">${esc(m.roleLabel)}</span><br><span class="muted">${esc(m.email)}</span></div>`).join('')}catch(e){el.innerHTML='<span class="muted">'+esc(e.message)+'</span>'}}
+let memberList=[];
+async function members(){const el=document.getElementById('s2Members');if(!el||!C().token||!C().patientId)return;try{const j=await api('/v1/patients/'+encodeURIComponent(C().patientId)+'/members',null,'GET');memberList=j.members||[];const canEdit=C().role!=='viewer';
+  el.innerHTML=memberList.map(m=>`<div class="mini" style="margin:6px 0" id="mem_${esc(m.id)}"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><b>${esc(m.displayName||m.email)}</b>${m.me?' <span class="muted">(вы)</span>':''} <span class="pill">${esc(m.roleLabel)}</span><br><span class="muted">${esc(m.email)}</span></div>${canEdit||m.me?`<button class="btn small secondary" onclick="DMSync.editMember('${esc(m.id)}')">Изменить</button>`:''}</div></div>`).join('')}catch(e){el.innerHTML='<span class="muted">'+esc(e.message)+'</span>'}}
+function editMember(id){const m=memberList.find(x=>x.id===id);const box=document.getElementById('mem_'+id);if(!m||!box)return;const canRole=C().role!=='viewer';
+  box.innerHTML=`<div class="two"><div><label>Имя в дневнике</label><input id="memName" class="input" value="${esc(m.displayName||'')}" placeholder="например, Ата"></div>${canRole?`<div><label>Права</label><select id="memRole" class="select"><option value="guardian">Родитель — видит и вносит</option><option value="patient">Пациент — видит и вносит</option><option value="viewer">Только просмотр</option></select></div>`:''}</div><div class="row" style="gap:8px;margin-top:8px"><button class="btn small" onclick="DMSync.saveMember('${esc(id)}')">Сохранить</button><button class="btn small secondary" onclick="DMSync.members()">Отмена</button></div>`;
+  const r=document.getElementById('memRole');if(r)r.value=m.role}
+async function saveMember(id){const m=memberList.find(x=>x.id===id);const name=v('memName'),role=document.getElementById('memRole')?.value;const b={};if(name&&name!==m.displayName)b.displayName=name;if(role&&role!==m.role)b.role=role;if(!Object.keys(b).length)return members();
+  try{await api('/v1/patients/'+encodeURIComponent(C().patientId)+'/members/'+encodeURIComponent(id),b);if(m.me){if(b.displayName&&C().user)C().user.displayName=b.displayName;if(b.role)C().role=b.role;storage.save(db)}render()}catch(e){alert(e.message)}}
 function logout(){if(!confirm('Выйти из семейного аккаунта? Записи на этом телефоне останутся, но перестанут синхронизироваться.'))return;const c=C();api('/v1/auth/logout',{}).catch(()=>{});db.cloud2={server:c.server};storage.save(db);render()}
 function v(id){return (document.getElementById(id)?.value||'').trim()}
 
@@ -156,7 +163,7 @@ ${lastError?`<div class="notice" style="margin-top:8px">${esc(lastError)}</div>`
 }
 function modeUi(){document.getElementById('s2CodeBox').style.display=v('s2Mode')==='join'?'':'none'}
 
-window.DMSync={adopt:(j,p)=>startSession(j,p,true),syncNow,register,login,logout,invite,acceptCode,copyInvite,render,modeUi,pending};
+window.DMSync={members,editMember,saveMember,adopt:(j,p)=>startSession(j,p,true),syncNow,register,login,logout,invite,acceptCode,copyInvite,render,modeUi,pending};
 /* Автосинхронизация: после каждого сохранения, при открытии и раз в минуту, когда приложение на экране. */
 const origSave=window.save;window.save=function(){const r=origSave.apply(this,arguments);schedule();return r};
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')schedule(300)});

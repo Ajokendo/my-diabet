@@ -116,9 +116,18 @@ async function sync(req,env,path){
 
   if(M==='POST'&&path==='/v1/auth/logout'){const h=req.headers.get('Authorization').slice(7);await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(await sha256(h)).run();return J(200,{ok:true})}
   if(M==='GET'&&path==='/v1/me')return J(200,{user,patients:await patientsOf(env,user.id)});
+  const mm=path.match(/^\/v1\/patients\/([^/]+)\/members\/([^/]+)$/);
+  if(mm&&M==='POST'){const pid=decodeURIComponent(mm[1]),mid=decodeURIComponent(mm[2]),role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа.'});
+    const m=await env.DB.prepare("SELECT id,user_id,role FROM members WHERE id=? AND patient_id=? AND status='active'").bind(mid,pid).first();if(!m)return J(404,{error:'Участник не найден.'});
+    const self=m.user_id===user.id;if(!self&&!ROLES[role].invite)return J(403,{error:'Менять других участников может только родитель или пациент.'});
+    const b=await body(req),name=b.displayName!=null?String(b.displayName).trim().slice(0,60):null,nr=b.role&&ROLES[b.role]?b.role:null;
+    if(nr&&!ROLES[role].invite)return J(403,{error:'Недостаточно прав, чтобы менять роль.'});
+    if(nr==='viewer'&&m.role!=='viewer'){const w2=await env.DB.prepare("SELECT COUNT(*) n FROM members WHERE patient_id=? AND status='active' AND role IN ('guardian','patient') AND id<>?").bind(pid,mid).first();if(!w2||!w2.n)return J(400,{error:'В дневнике должен остаться хотя бы один участник с правом записи.'})}
+    const ops=[];if(name)ops.push(env.DB.prepare('UPDATE members SET display_name=? WHERE id=?').bind(name,mid));if(nr)ops.push(env.DB.prepare('UPDATE members SET role=? WHERE id=?').bind(nr,mid));if(name&&self)ops.push(env.DB.prepare('UPDATE users SET display_name=? WHERE id=?').bind(name,user.id));
+    if(ops.length)await env.DB.batch(ops);return J(200,{ok:true,self})}
   const pm=path.match(/^\/v1\/patients\/([^/]+)\/(members|invitations)$/);
   if(pm){const pid=decodeURIComponent(pm[1]),role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа.'});
-    if(M==='GET'&&pm[2]==='members'){const r=await env.DB.prepare("SELECT m.id,m.role,m.display_name,m.created_at,u.email FROM members m JOIN users u ON u.id=m.user_id WHERE m.patient_id=? AND m.status='active' ORDER BY m.created_at").bind(pid).all();return J(200,{members:r.results.map(x=>({id:x.id,role:x.role,roleLabel:ROLE_RU[x.role]||x.role,displayName:x.display_name,email:x.email,since:x.created_at}))})}
+    if(M==='GET'&&pm[2]==='members'){const r=await env.DB.prepare("SELECT m.id,m.user_id,m.role,m.display_name,m.created_at,u.email FROM members m JOIN users u ON u.id=m.user_id WHERE m.patient_id=? AND m.status='active' ORDER BY m.created_at").bind(pid).all();return J(200,{members:r.results.map(x=>({id:x.id,me:x.user_id===user.id,role:x.role,roleLabel:ROLE_RU[x.role]||x.role,displayName:x.display_name,email:x.email,since:x.created_at}))})}
     if(M==='POST'&&pm[2]==='invitations'){if(!ROLES[role].invite)return J(403,{error:'Недостаточно прав для приглашения.'});const b=await body(req),r=ROLES[b.role]?b.role:'guardian',code=newCode(),exp=new Date(Date.now()+7*864e5).toISOString();await env.DB.prepare('INSERT INTO invitations VALUES(?,?,?,?,?,?,?,?,NULL)').bind(code,pid,r,String(b.displayName||'').slice(0,60),user.id,now(),exp,'pending').run();return J(201,{invitation:{code,role:r,roleLabel:ROLE_RU[r],expiresAt:exp}})}
   }
   const im=path.match(/^\/v1\/invitations\/([^/]+)\/accept$/);
