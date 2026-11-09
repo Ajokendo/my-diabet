@@ -130,12 +130,26 @@ async function sync(req,env,path){
     await env.DB.batch(ops);const p=await env.DB.prepare('SELECT id,display_name FROM patients WHERE id=?').bind(inv.patient_id).first();
     return J(200,{ok:true,patient:{id:p.id,displayName:p.display_name,role:ex||inv.role}});
   }
-  const cm=path.match(/^\/v1\/patients\/([^/]+)\/(cgm|cgm-key)$/);
+  const cm=path.match(/^\/v1\/patients\/([^/]+)\/(cgm|cgm-key|cgm-import)$/);
   if(cm){const role=await roleIn(env,user.id,cm[1]);if(!role)return J(403,{error:'Нет доступа к этому дневнику.'});
     if(cm[2]==='cgm-key'&&M==='POST'){if(!ROLES[role].write)return J(403,{error:'Нужны права на запись.'});
       const secret=[...rnd(16)].map(x=>'abcdefghijkmnpqrstuvwxyz23456789'[x%32]).join('');
       await env.DB.batch([env.DB.prepare('DELETE FROM cgm_keys WHERE patient_id=?').bind(cm[1]),env.DB.prepare('INSERT INTO cgm_keys VALUES(?,?,?)').bind(await sha1(secret),cm[1],now())]);
       const host=new URL(req.url).host;return J(200,{secret,url:`https://${secret}@${host}/api/v1/`})}
+    if(cm[2]==='cgm-import'&&M==='POST'){if(!ROLES[role].write)return J(403,{error:'Нужны права на запись.'});
+      /* Импорт истории из чужого Nightscout: клиент присылает адрес, ключ и кусок периода (до ~7 дней), сервер забирает и сохраняет. Свои записи не перезаписываются. */
+      const b=await body(req);let base=String(b.url||'').trim().replace(/\/+$/,'').replace(/\/api\/v1.*$/,'');
+      let tok='';try{const U=new URL(base);if(U.protocol!=='https:'&&U.protocol!=='http:')throw 0;if(U.username){tok=decodeURIComponent(U.username);U.username='';U.password=''}base=U.toString().replace(/\/+$/,'')}catch(e){return J(400,{error:'Неверный адрес Nightscout.'})}
+      const secret=String(b.secret||tok||'').trim(),from=Math.round(+b.from||0),to=Math.round(+b.to||Date.now());if(!from||to<=from||to-from>15*864e5)return J(400,{error:'Неверный период.'});
+      const q=`${base}/api/v1/entries/sgv.json?count=6000&find[date][$gte]=${from}&find[date][$lt]=${to}`+(secret&&/-[0-9a-f]{8,}$/i.test(secret)?`&token=${encodeURIComponent(secret)}`:'');
+      const h={'Accept':'application/json'};if(secret&&!/-[0-9a-f]{8,}$/i.test(secret))h['api-secret']=await sha1(secret);
+      let r;try{r=await fetch(q,{headers:h})}catch(e){return J(502,{error:'Nightscout не отвечает: '+(e.message||e)})}
+      if(r.status===401||r.status===403)return J(401,{error:'Nightscout не пустил: нужен API secret или токен для чтения.'});
+      if(!r.ok)return J(502,{error:'Nightscout ответил ошибкой '+r.status});
+      let arr;try{arr=await r.json()}catch(e){return J(502,{error:'Nightscout вернул не JSON. Проверьте адрес.'})}
+      const rows=(Array.isArray(arr)?arr:[]).filter(e=>e&&+e.sgv>=20&&+e.sgv<=600&&+e.date>=from&&+e.date<to);
+      for(let i=0;i<rows.length;i+=500)await env.DB.batch(rows.slice(i,i+500).map(e=>env.DB.prepare('INSERT OR IGNORE INTO cgm VALUES(?,?,?,?,?)').bind(cm[1],Math.round(+e.date),+e.sgv,String(e.direction||''),String(e.device||'').slice(0,60))));
+      return J(200,{found:rows.length,first:rows.length?Math.min(...rows.map(e=>+e.date)):null})}
     if(cm[2]==='cgm'&&M==='GET'){const q=new URL(req.url).searchParams;const since=Math.max(+q.get('since')||0,Date.now()-200*864e5);
       const r=await env.DB.prepare('SELECT ts,mgdl,direction FROM cgm WHERE patient_id=? AND ts>? ORDER BY ts LIMIT 5000').bind(cm[1],since).all();
       const k=await env.DB.prepare('SELECT created_at FROM cgm_keys WHERE patient_id=?').bind(cm[1]).first();

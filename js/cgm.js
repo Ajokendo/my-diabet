@@ -117,7 +117,13 @@ function paintFamily(){
 <p class="muted">xDrip+ на телефоне сына может отправлять показания сенсора в общий дневник. Тогда сахар в реальном времени видят все члены семьи.</p>
 ${L?`<p>Последнее показание: <b>${L.g.toFixed(1)} ${L.arrow}</b> ммоль/л, ${ago(L.age)}.</p>`:connected?'<p>Ключ создан, ждём первые показания.</p>':''}
 ${canWrite?`<button class="btn ${connected?'secondary':''}" onclick="DMCgm.connect()">${connected?'Показать адрес заново (создать новый ключ)':'Подключить сенсор (xDrip+)'}</button>`:'<p class="muted">Подключить может только родитель или сам пациент.</p>'}
-<div id="cgmConnect" style="margin-top:10px">${connectHtml}</div>`;
+<div id="cgmConnect" style="margin-top:10px">${connectHtml}</div>
+${canWrite?`<details style="margin-top:14px"${importOpen?' open':''}><summary><b>Загрузить прошлую историю из Nightscout</b></summary>
+<p class="muted">Если xDrip+ раньше отправлял данные в другой Nightscout (например, на jino), историю за прошлые месяцы можно перенести сюда — для отчёта врачу и GMI. Уже имеющиеся показания не меняются.</p>
+<label>Адрес Nightscout</label><input id="nsUrl" class="input" placeholder="https://имя.nightscout-jino.ru" value="${esc(nsSaved())}">
+<label style="margin-top:8px">API secret или токен (если сайт закрыт)</label><input id="nsSecret" class="input" type="password" autocomplete="off" placeholder="можно оставить пустым">
+<div class="row" style="margin-top:8px;gap:8px"><select id="nsDays" class="select" style="max-width:180px"><option value="30">30 дней</option><option value="90" selected>90 дней</option><option value="180">180 дней</option></select><button class="btn" onclick="DMCgm.importNs()" ${importBusy?'disabled':''}>${importBusy?'Загрузка…':'Загрузить'}</button></div>
+<div id="nsOut" style="margin-top:8px">${importMsg}</div></details>`:''}`;
 }
 
 /* Предупреждение «сенсор/xDrip+ молчит» — плашка вверху любого раздела + системное уведомление (пока приложение открыто) */
@@ -163,6 +169,19 @@ async function period(start,end){const key=start+'_'+end;const c=periodCached(st
     periodCache[key]={n,mean,sd,v:3.31+0.02392*mean*18.016,tir:q(x=>x.g>=3.9&&x.g<=10),tbr:q(x=>x.g<3.9),tbr54:q(x=>x.g<3),tar:q(x=>x.g>10),tar139:q(x=>x.g>13.9),min:Math.min(...r.map(x=>x.g)),max:Math.max(...r.map(x=>x.g)),days:daily.length,cover,daily,first:r[0].t,last:r[n-1].t,raw:r,at:Date.now()};return periodCache[key]})();
   inflight[key]=periodPending;try{return await periodPending}catch(e){periodCache[key]={error:e.message||String(e),at:Date.now()};return periodCache[key]}finally{periodPending=null;delete inflight[key]}}
 function periodCached(start,end){const c=periodCache[start+'_'+end];if(!c)return null;if(Date.now()-(c.at||0)>10*60e3){delete periodCache[start+'_'+end];return null}return c}
-window.DMCgm={gmi:()=>gmi,device:()=>device,isConnected:()=>connected,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
+/* Импорт истории из другого Nightscout — кусками по 3 дня, чтобы сервер успевал */
+let importBusy=false,importMsg='',importOpen=false;
+function nsSaved(){try{return localStorage.getItem('dm-ns-url')||''}catch(e){return ''}}
+async function importNs(){if(importBusy)return;const url=(document.getElementById('nsUrl')?.value||'').trim(),secret=(document.getElementById('nsSecret')?.value||'').trim(),days=+(document.getElementById('nsDays')?.value||90);
+  if(!/^https?:\/\//i.test(url))return alert('Вставьте адрес Nightscout, начиная с https://');try{localStorage.setItem('dm-ns-url',url.replace(/\/\/[^@/]*@/,'//'))}catch(e){}
+  importBusy=true;importOpen=true;let total=0,oldest=null;const step=3*864e5,end=Date.now(),start=end-days*864e5;const out=()=>{const o=document.getElementById('nsOut');if(o)o.innerHTML=importMsg};
+  try{for(let to=end,i=0;to>start;to-=step,i++){const from=Math.max(start,to-step);importMsg=`Загружаю… ${Math.round(i*step/864e5)} из ${days} дней, найдено показаний: ${total.toLocaleString('ru-RU')}`;out();
+      const j=await fetch(server()+`/v1/patients/${encodeURIComponent(C().patientId)}/cgm-import`,{method:'POST',headers:{'Authorization':'Bearer '+C().token,'Content-Type':'application/json'},body:JSON.stringify({url,secret,from,to})}).then(async r=>{const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||('Ошибка '+r.status));return x});
+      total+=j.found||0;if(j.first)oldest=Math.min(oldest||j.first,j.first)}
+    importMsg=total?`<div class="notice" style="background:#f0fdfa;border-color:#99f6e4">Готово: перенесено показаний — <b>${total.toLocaleString('ru-RU')}</b>, самые ранние от ${new Date(oldest).toLocaleDateString('ru-RU')}. Они уже учитываются в отчёте врачу и аналитике.</div>`:'<div class="notice">В этом Nightscout за выбранный период показаний не нашлось. Проверьте адрес и ключ.</div>';
+    Object.keys(periodCache).forEach(k=>delete periodCache[k]);gmiAt=0;
+  }catch(e){importMsg=`<div class="notice">${esc(e.message)}${total?` (до ошибки перенесено ${total.toLocaleString('ru-RU')})`:''}</div>`}
+  importBusy=false;paintFamily();try{loadGmi()}catch(e){}}
+window.DMCgm={importNs,gmi:()=>gmi,device:()=>device,isConnected:()=>connected,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));else setTimeout(start,300);
 })();
