@@ -209,3 +209,7 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 .homeTitle{display:flex;align-items:flex-start;gap:12px}.homeTitle .homeLogo{width:44px;height:44px;margin-top:2px}.homeTitle .brandSlogan{margin-top:3px}
 .stickyHead .homeTitle .homeLogo{width:40px;height:40px;margin-top:1px}
 .dayPick{display:flex;align-items:center;gap:8px}.dayPick span{font-weight:800;font-size:15px;color:var(--text)}
+/* v63.53: шапка главной — на компьютере «Сегодня» (бренд уже в левой колонке), на телефоне — логотип и «Мой диабет» */
+.onMobile{display:none!important}
+.homeTitle .homeLogo{display:none}
+@media(max-width:950px){.onMobile{display:revert!important}.onDesktop{display:none!important}.homeTitle .homeLogo{display:block}.dayPick span.onMobile{display:inline!important}}
