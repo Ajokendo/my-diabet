@@ -56,9 +56,9 @@ function paintDashboard(){
 }
 
 /* График за 24 часа в «Аналитике сахара» */
-function chartSvg(hours){
+function chartSvg(hours,cw){
   const to=Date.now(),from=to-hours*3600e3,pts=readings.filter(x=>x.t>=from);
-  const W=640,H=220,pl=30,pr=8,pt=8,pb=22,ymax=Math.max(16,...pts.map(x=>x.g+1)),X=t=>pl+(t-from)/(to-from)*(W-pl-pr),Y=g=>pt+(1-g/ymax)*(H-pt-pb);
+  const W=Math.max(300,Math.round(cw||640)),H=W<600?190:230,pl=30,pr=22,pt=8,pb=22,ymax=Math.max(16,...pts.map(x=>x.g+1)),X=t=>pl+(t-from)/(to-from)*(W-pl-pr),Y=g=>pt+(1-g/ymax)*(H-pt-pb);
   let grid='';for(let g=4;g<=ymax;g+=4)grid+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(g)}" y2="${Y(g)}" stroke="#e2e8f0"/><text x="${pl-4}" y="${Y(g)+4}" font-size="11" text-anchor="end" fill="#64748b">${g}</text>`;
   for(let h=0;h<=hours;h+=hours>12?4:2){const t=from+h*3600e3,d=new Date(t);grid+=`<text x="${X(t)}" y="${H-6}" font-size="11" text-anchor="middle" fill="#64748b">${String(d.getHours()).padStart(2,'0')}:00</text>`}
   const band=`<rect x="${pl}" y="${Y(10)}" width="${W-pl-pr}" height="${Y(3.9)-Y(10)}" fill="#dcfce7" opacity=".7"/>`;
@@ -78,16 +78,15 @@ async function loadGmi(){if(!ready()||Date.now()-gmiAt<(gmi?30*60e3:60e3))return
 function gmiHtml(){if(!gmi)return '';const ok=gmi.days>=13.5&&gmi.cover>=70;
   return `<div class="notice" style="margin-top:10px;background:#f0fdfa;border-color:#99f6e4"><b>Расчётный HbA1c (GMI): ${gmi.v.toFixed(1)}%</b> · средняя глюкоза ${gmi.mean.toFixed(1)} ммоль/л за ${gmi.days<1?'менее суток':Math.floor(gmi.days)+' дн.'} (данных ${Math.round(gmi.cover)}%).<br><span class="muted">${ok?'Посчитано по данным сенсора за 14 дней. ':'Пока мало данных — показатель станет надёжным после 14 дней работы сенсора. '}Это оценка, а не лабораторный анализ: настоящий HbA1c сдают в лаборатории и записывают в «Анализы».</span></div>`}
 function paintGlucose(){
-  const sec=document.getElementById('glucose');if(!sec)return;let box=document.getElementById('cgmCard');
-  if(!box){const grid=sec.querySelector('.grid');if(!grid)return;box=document.createElement('div');box.id='cgmCard';box.className='card s12';grid.prepend(box)}
-  if(!ready()){box.innerHTML=`<h3>Сенсор</h3><p class="muted">Чтобы видеть показания сенсора, подключите «Семью», затем в разделе «Семья» — «Подключить сенсор (xDrip+)».</p>`;return}
+  const box=document.getElementById('cgmCard');if(!box)return;const manual=document.querySelector('#dashboard .glucoseManual');
   const L=latest();
-  if(!L){box.innerHTML=`<h3>Сенсор</h3><p class="muted">${connected?'Ждём первые показания от xDrip+… Обычно они приходят в течение 5 минут после настройки.':'Сенсор ещё не подключён. Откройте «Семья» → «Подключить сенсор (xDrip+)».'}</p>${err?`<div class="notice">${esc(err)}</div>`:''}`;return}
-  const s=stats(hoursSel);
-  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div><h3 style="margin:0 0 2px">Сенсор</h3><div class="cgmNow"><b style="color:${L.g<3.9?'#dc2626':L.g>10?'#d97706':'var(--blue)'}">${L.g.toFixed(1).replace('.',',')}</b><span class="cgmArrow">${L.arrow}</span><span class="muted">ммоль/л · ${ago(L.age)}</span></div></div>
+  if(!L){box.innerHTML=ready()&&connected?`<div class="muted" style="margin-bottom:8px">Сенсор подключён — ждём первые показания от xDrip+ (обычно до 5 минут).</div>`:'';if(manual)manual.style.display='';return}
+  if(manual)manual.style.display='none';
+  const s=stats(hoursSel);const [cls,txt]=!L.fresh?['statusHigh','● Нет новых данных']:L.g<3.9?['statusLow','● Низкий']:L.g>10?['statusHigh','● Высокий']:['statusGood','● В норме'];
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div><div class="muted">Глюкоза с сенсора</div><div class="cgmNow" style="margin-top:4px"><b style="color:${L.g<3.9?'#dc2626':L.g>10?'#d97706':'var(--text)'}">${L.g.toFixed(1).replace('.',',')}</b><span class="cgmArrow">${L.arrow}</span><span class="muted">ммоль/л</span></div><div class="${cls}" style="margin-top:6px">${txt}${L.fresh&&L.trend?', '+L.trend:''} · ${ago(L.age)}</div></div>
 <div class="row" style="gap:6px">${[3,6,12,24].map(h=>`<button class="btn ${h===hoursSel?'':'secondary'}" style="padding:6px 10px" onclick="DMCgm.hours(${h})">${h} ч</button>`).join('')}</div></div>
-${chartSvg(hoursSel)}
-${s?`<div class="kpi" style="margin-top:6px"><div class="mini"><span class="muted">Среднее</span><b>${s.avg.toFixed(1)}</b></div><div class="mini"><span class="muted">В диапазоне 3,9–10</span><b>${Math.round(s.inr)}%</b></div><div class="mini"><span class="muted">Ниже 3,9</span><b style="color:#dc2626">${Math.round(s.low)}%</b></div><div class="mini"><span class="muted">Выше 10</span><b style="color:#d97706">${Math.round(s.high)}%</b></div><div class="mini"><span class="muted">Мин / макс</span><b>${s.min.toFixed(1)} / ${s.max.toFixed(1)}</b></div></div>`:''}
+${chartSvg(hoursSel,box.clientWidth)}
+${s?`<div class="kpi cgmKpi" style="margin-top:6px"><div class="mini"><span class="muted">Среднее</span><b>${s.avg.toFixed(1)}</b></div><div class="mini"><span class="muted">В диапазоне 3,9–10</span><b>${Math.round(s.inr)}%</b></div><div class="mini"><span class="muted">Ниже 3,9</span><b style="color:#dc2626">${Math.round(s.low)}%</b></div><div class="mini"><span class="muted">Выше 10</span><b style="color:#d97706">${Math.round(s.high)}%</b></div><div class="mini"><span class="muted">Мин / макс</span><b>${s.min.toFixed(1)} / ${s.max.toFixed(1)}</b></div></div>`:''}
 ${gmiHtml()}${!L.fresh?`<div class="notice" style="margin-top:8px">Сенсор не присылал данные ${ago(L.age)}. Проверьте xDrip+ на телефоне сына и интернет.</div>`:''}`;
 }
 
@@ -119,8 +118,8 @@ ${canWrite?`<button class="btn ${connected?'secondary':''}" onclick="DMCgm.conne
 <div id="cgmConnect" style="margin-top:10px">${connectHtml}</div>`;
 }
 
-function paint(){try{paintDashboard()}catch(e){}try{paintGlucose();loadGmi()}catch(e){}try{fillCalc()}catch(e){}}
-function start(){loadCache();paint();refresh(true);clearInterval(timer);timer=setInterval(()=>{if(document.visibilityState==='visible')refresh()},60e3);
+function paint(){try{window.renderDashKpi&&renderDashKpi()}catch(e){}try{paintGlucose();loadGmi()}catch(e){}try{fillCalc()}catch(e){}}
+function start(){let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{try{paintGlucose()}catch(e){}},200)});loadCache();paint();refresh(true);clearInterval(timer);timer=setInterval(()=>{if(document.visibilityState==='visible')refresh()},60e3);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refresh(true)})}
 
 function reportHtml(){if(!gmi)return '';const f=v=>Math.round(v)+'%';return `<div class="reportSection" style="margin-top:18px"><h2>Данные сенсора (CGM) за последние ${gmi.days<1?'сутки':Math.min(14,Math.floor(gmi.days))+' дн.'}</h2><p>Средняя глюкоза: <b>${gmi.mean.toFixed(1)} ммоль/л</b> · стандартное отклонение ${gmi.sd.toFixed(1)} · коэффициент вариации ${Math.round(gmi.sd/gmi.mean*100)}% · расчётный HbA1c (GMI): <b>${gmi.v.toFixed(1)}%</b> · полнота данных ${Math.round(gmi.cover)}%.</p><p>Время в диапазоне 3,9–10: <b>${f(gmi.tir)}</b> · ниже 3,9: ${f(gmi.tbr)} (из них ниже 3,0: ${f(gmi.tbr54)}) · выше 10: ${f(gmi.tar)} (из них выше 13,9: ${f(gmi.tar139)}).</p><p class="muted">Источник: сенсор через xDrip+. GMI — расчётная оценка, не лабораторный HbA1c.</p></div>`}

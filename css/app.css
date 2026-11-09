@@ -216,4 +216,12 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 /* v63.54 главная: три карточки в ряд, все показатели в одну строку, рацион на телефоне */
 .dashKpi{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))}
 @media(max-width:950px){.dashMealRow{flex-direction:column;align-items:flex-start!important;gap:2px}}
-@media(min-width:951px) and (max-width:1250px){#dashboard .glucoseHero{grid-column:span 12}#dashboard .rationCard,#dashboard .rationCard+.s3{grid-column:span 6}}
+
+
+/* v63.56: сенсор на главной */
+.dashSide{display:flex;flex-direction:column;gap:15px}.dashSide>.card{flex:1}
+#dashboard .glucoseHero{display:block}
+.cgmKpi{grid-template-columns:repeat(5,1fr)}
+@media(min-width:951px) and (max-width:1250px){#dashboard .glucoseHero{grid-column:span 12}#dashboard .dashSide{grid-column:span 12;flex-direction:row}}
+@media(max-width:950px){.cgmKpi{grid-template-columns:repeat(2,1fr)}.dashSide{grid-column:span 12}}
+@media(max-width:950px){.cgmKpi .mini:last-child{grid-column:span 2}.dashSide{flex-direction:row;gap:10px}.dashSide>.card{min-width:0}}
