@@ -116,11 +116,16 @@ async function sync(req,env,path){
 
   if(M==='POST'&&path==='/v1/auth/logout'){const h=req.headers.get('Authorization').slice(7);await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(await sha256(h)).run();return J(200,{ok:true})}
   if(M==='GET'&&path==='/v1/me')return J(200,{user,patients:await patientsOf(env,user.id)});
+  if(M==='POST'&&path==='/v1/auth/password'){const b=await body(req),np=String(b.password||'');if(np.length<8)return J(400,{error:'Пароль должен быть не короче 8 символов.'});
+    const salt=hex(rnd(16));await env.DB.prepare('UPDATE users SET pw_hash=?,salt=? WHERE id=?').bind(await pbkdf2(np,salt),salt,user.id).run();return J(200,{ok:true})}
   const mm=path.match(/^\/v1\/patients\/([^/]+)\/members\/([^/]+)$/);
   if(mm&&M==='POST'){const pid=decodeURIComponent(mm[1]),mid=decodeURIComponent(mm[2]),role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа.'});
     const m=await env.DB.prepare("SELECT id,user_id,role FROM members WHERE id=? AND patient_id=? AND status='active'").bind(mid,pid).first();if(!m)return J(404,{error:'Участник не найден.'});
     const self=m.user_id===user.id;if(!self&&!ROLES[role].invite)return J(403,{error:'Менять других участников может только родитель или пациент.'});
     const b=await body(req),name=b.displayName!=null?String(b.displayName).trim().slice(0,60):null,nr=b.role&&ROLES[b.role]?b.role:null;
+    if(b.remove){if(!self&&!ROLES[role].invite)return J(403,{error:'Удалять участников может только родитель или пациент.'});
+      const w3=await env.DB.prepare("SELECT COUNT(*) n FROM members WHERE patient_id=? AND status='active' AND role IN ('guardian','patient') AND id<>?").bind(pid,mid).first();if(!w3||!w3.n)return J(400,{error:'Нельзя удалить последнего участника с правом записи.'});
+      await env.DB.prepare("UPDATE members SET status='removed' WHERE id=?").bind(mid).run();return J(200,{ok:true,removed:true,self})}
     if(nr&&!ROLES[role].invite)return J(403,{error:'Недостаточно прав, чтобы менять роль.'});
     if(nr==='viewer'&&m.role!=='viewer'){const w2=await env.DB.prepare("SELECT COUNT(*) n FROM members WHERE patient_id=? AND status='active' AND role IN ('guardian','patient') AND id<>?").bind(pid,mid).first();if(!w2||!w2.n)return J(400,{error:'В дневнике должен остаться хотя бы один участник с правом записи.'})}
     const ops=[];if(name)ops.push(env.DB.prepare('UPDATE members SET display_name=? WHERE id=?').bind(name,mid));if(nr)ops.push(env.DB.prepare('UPDATE members SET role=? WHERE id=?').bind(nr,mid));if(name&&self)ops.push(env.DB.prepare('UPDATE users SET display_name=? WHERE id=?').bind(name,user.id));
@@ -135,7 +140,7 @@ async function sync(req,env,path){
     if(!inv||inv.status!=='pending'||inv.expires_at<now())return J(400,{error:'Код приглашения неверный или устарел.'});
     const ex=await roleIn(env,user.id,inv.patient_id);
     const ops=[env.DB.prepare("UPDATE invitations SET status='accepted',accepted_by=? WHERE code=?").bind(user.id,code)];
-    if(!ex)ops.push(env.DB.prepare('INSERT INTO members VALUES(?,?,?,?,?,?,?)').bind(uid('mem'),user.id,inv.patient_id,inv.role,inv.display_name||user.displayName,'active',now()));
+    if(!ex){ops.push(env.DB.prepare('DELETE FROM members WHERE user_id=? AND patient_id=?').bind(user.id,inv.patient_id));ops.push(env.DB.prepare('INSERT INTO members VALUES(?,?,?,?,?,?,?)').bind(uid('mem'),user.id,inv.patient_id,inv.role,inv.display_name||user.displayName,'active',now()))}
     await env.DB.batch(ops);const p=await env.DB.prepare('SELECT id,display_name FROM patients WHERE id=?').bind(inv.patient_id).first();
     return J(200,{ok:true,patient:{id:p.id,displayName:p.display_name,role:ex||inv.role}});
   }
