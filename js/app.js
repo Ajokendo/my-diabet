@@ -702,7 +702,7 @@ const CGM_CATALOG={
  'Abbott':{'FreeStyle Libre':['Libre 1','Libre 2','Libre 2 Plus','Libre 3','Libre 3 Plus']},
  'Dexcom':{'Dexcom G':['G6','G7','G7 15 Day'],'Dexcom ONE':['ONE','ONE+'],'Stelo':['Stelo']},
  'Medtronic':{'Guardian':['Guardian 3','Guardian 4'],'Simplera':['Simplera','Simplera Sync']},
- 'MicroTech Medical':{'AiDEX':['AiDEX','AiDEX X'],'LinX':['LinX']},
+ 'MicroTech Medical (WeiTai)':{'AiDEX':['AiDEX','AiDEX X'],'LinX':['LinX']},
  'Roche':{'Accu-Chek SmartGuide':['SmartGuide']},
  'Senseonics':{'Eversense':['Eversense E3','Eversense 365']},
  'Sinocare':{'iCan':[]},
@@ -712,7 +712,7 @@ const CGM_CATALOG={
  'i-SENS':{'CareSens Air':[]}
 };
 const CGM_MANUFACTURERS=['Не указано',...Object.keys(CGM_CATALOG),'Другое'];
-const CGM_LEGACY={'AiDEX':'MicroTech Medical','LinX':'MicroTech Medical','Abbott / FreeStyle Libre':'Abbott'};
+const CGM_LEGACY={'AiDEX':'MicroTech Medical (WeiTai)','LinX':'MicroTech Medical (WeiTai)','MicroTech Medical':'MicroTech Medical (WeiTai)','WeiTai':'MicroTech Medical (WeiTai)','Weitai':'MicroTech Medical (WeiTai)','Abbott / FreeStyle Libre':'Abbott'};
 function cgmMakerOf(product){const p=String(product||'').toLowerCase();for(const [mk,ps] of Object.entries(CGM_CATALOG))for(const [name,models] of Object.entries(ps)){if(p&&(name.toLowerCase().includes(p)||p.includes(name.toLowerCase())||models.some(x=>x.toLowerCase()===p)))return [mk,name]}return null}
 function cgmLists(){const mk=document.getElementById('cgmManufacturer')?.value,pr=document.getElementById('cgmProduct')?.value||'',P=CGM_CATALOG[mk];
   const prods=P?Object.keys(P):Object.values(CGM_CATALOG).flatMap(o=>Object.keys(o));
@@ -761,7 +761,7 @@ function medicalCgmAuto(){if(!(window.DMCgm&&DMCgm.ready&&DMCgm.ready()))return;
   const setInp=(id,val)=>{const e=document.getElementById(id);if(!e||!val)return;if(!e.value||e.dataset.auto===e.value){e.value=val;e.dataset.auto=val;e.classList.add('autoVal')}};
   setSel('cgmActive','yes');setSel('cgmSource','xDrip+ (Nightscout)');setSel('cgmConnection',L&&L.fresh?'Подключено':'Подключено, нет новых данных');
   const dev=(DMCgm.device&&DMCgm.device())||'',m=(db.medical||{}).cgm||{};
-  if(/aidex|linx|microtech/i.test(dev)||(!dev&&(!m.manufacturer||m.manufacturer==='Не указано'))){const e=document.getElementById('cgmManufacturer');if(e&&(!m.manufacturer||m.manufacturer==='Не указано')){e.value='MicroTech Medical';e.classList.add('autoVal');const pe=document.getElementById('cgmProduct');if(pe&&!pe.value){pe.value=/linx/i.test(dev)?'LinX':'AiDEX';pe.classList.add('autoVal')}}}
+  if(/aidex|linx|microtech/i.test(dev)||(!dev&&(!m.manufacturer||m.manufacturer==='Не указано'))){const e=document.getElementById('cgmManufacturer');if(e&&(!m.manufacturer||m.manufacturer==='Не указано')){e.value='MicroTech Medical (WeiTai)';e.classList.add('autoVal');const pe=document.getElementById('cgmProduct');if(pe&&!pe.value){pe.value=/linx/i.test(dev)?'LinX':'AiDEX';pe.classList.add('autoVal')}}}
   if(dev)setInp('cgmModel',dev);if(/aidex/i.test(dev))setInp('cgmProduct','AiDEX');
   const box=document.getElementById('cgmConnection');if(box){let cap=box.parentElement.querySelector('.medAuto');if(!cap){cap=document.createElement('div');cap.className='muted medAuto';box.after(cap)}cap.innerHTML=L?`Автоматически по данным xDrip+: последнее значение ${L.g.toFixed(1).replace('.',',')} ммоль/л, ${L.age<1?'только что':Math.round(L.age)+' мин назад'}${dev?' · устройство: '+reportEscape(dev):''}`:'Ключ xDrip+ создан, ждём данные.'}}
 function medicalAuto(){try{medicalCgmAuto()}catch(e){}try{medicalDocsAuto()}catch(e){}const m=db.medical||{};MED_AUTO.forEach(([el,key,type,re])=>{const inp=document.getElementById(el);if(!inp)return;let cap=inp.parentElement.querySelector('.medAuto');if(!cap){cap=document.createElement('div');cap.className='muted medAuto';inp.after(cap)}

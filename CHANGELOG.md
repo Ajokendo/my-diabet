@@ -3,7 +3,7 @@
 Сводная история из файлов `INTEGRATION_v61.xx.txt`, которые были удалены из корня проекта как отдельные служебные отчёты. Оригинальные отчёты включали записи об изменениях ассетов, но не являются файлами, необходимыми для запуска приложения.
 
 ## v64.0
-- «Медицинские данные» → CGM: справочник производителей и их сенсоров — Abbott (FreeStyle Libre), Dexcom (G6/G7, ONE, Stelo), Medtronic (Guardian, Simplera), MicroTech Medical (AiDEX, LinX), Roche (Accu-Chek SmartGuide), Senseonics (Eversense), Sinocare (iCan), SiBionics, Medtrum, Yuwell, i-SENS.
+- «Медицинские данные» → CGM: справочник производителей и их сенсоров — Abbott (FreeStyle Libre), Dexcom (G6/G7, ONE, Stelo), Medtronic (Guardian, Simplera), MicroTech Medical / WeiTai — это одна компания, Weitai Medical — её китайское название (AiDEX, LinX), Roche (Accu-Chek SmartGuide), Senseonics (Eversense), Sinocare (iCan), SiBionics, Medtrum, Yuwell, i-SENS.
 - Поля связаны: выбрали производителя — в «Продукт» предлагаются только его сенсоры, в «Модель» — только модели этого сенсора; вписали продукт или модель — производитель выставляется сам. Старые значения «AiDEX», «LinX», «Abbott / FreeStyle Libre» переведены на нового производителя.
 
 ## v63.99
