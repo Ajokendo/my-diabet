@@ -283,3 +283,10 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 
 /* v63.93: в «Медицинских данных» под полями нет пояснений — только поле, название и ⓘ */
 #medical .formgrid>div>.muted,#medical .formgrid>div>small{display:none}
+
+/* v63.94: вкладки приёмов пищи в «Питании» */
+.mealTabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:12px}
+.mealTab{border:1px solid var(--line);background:#fff;border-radius:11px;padding:8px 6px;cursor:pointer;text-align:center;font:inherit;color:var(--text)}
+.mealTab b{display:block;font-size:14px}.mealTab span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.mealTab.on{background:var(--blue);border-color:var(--blue);color:#fff}.mealTab.on span{color:#e6fffb}
+@media(max-width:950px){.mealTabs{grid-template-columns:repeat(3,minmax(0,1fr))}.mealTab.all{grid-column:1 / -1}}
