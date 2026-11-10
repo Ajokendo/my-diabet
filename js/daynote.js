@@ -2,7 +2,7 @@
    Заметки: db.dayNotes[ГГГГ-ММ-ДД] = {text, tags:[...], at}. Синхронизируются с семьёй (тип записи dayNote).
    Сенсор: db.medical.cgm.installed (дата установки) и db.medical.cgm.days (срок, дней). */
 (function () {
-  const TAGS = ['Болел', 'Спорт', 'Соревнования', 'Праздник, гости', 'Стресс, экзамен', 'Поездка', 'Новый сенсор', 'Гипо'];
+  const TAGS = ['Болел', 'Спорт', 'Много поел', 'Праздник, гости', 'Стресс, экзамен', 'Поездка', 'Новый сенсор', 'Гипо'];
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const day = () => (document.getElementById('day') && document.getElementById('day').value) || (window.today ? today() : new Date().toISOString().slice(0, 10));
   const notes = () => (db.dayNotes = db.dayNotes || {});
