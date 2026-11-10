@@ -268,7 +268,10 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
    каждая ячейка — подпись / поле / пояснение на общих строках сетки */
 @supports (grid-template-rows:subgrid){
 .formgrid{row-gap:0}
-.formgrid>div{display:grid;grid-template-rows:subgrid;grid-row:span 3;align-content:start;padding-bottom:11px}
+.formgrid>div{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);grid-row:span 3;align-content:start;padding-bottom:11px;min-width:0}
 .formgrid>div>:first-child{align-self:end}
 .formgrid>div>:nth-child(2){align-self:start}
 }
+
+/* v63.85: поле даты не вылезает за свою колонку */
+input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;box-sizing:border-box}

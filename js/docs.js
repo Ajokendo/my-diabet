@@ -92,7 +92,7 @@ async function openPages(id){const d=docs().find(x=>x.id===id);if(!d||!d.pagesRe
 
 function docHtml(d,forReport){
   return `<div class="${forReport?'':'card'}" style="${forReport?'border-top:1px solid #e2e8f0;padding:8px 0':'margin:10px 0'}">
-<div class="row" style="justify-content:space-between;gap:8px;align-items:flex-start"><div><span class="pill">${esc(d.docType)}</span> <b>${fmt(d.date)||'без даты'}</b> · ${esc(d.title)}<div class="muted" style="font-size:13px">${esc([d.institution,d.doctor].filter(Boolean).join(' · '))}</div></div>${forReport?'':`<button class="btn secondary" style="padding:4px 10px" onclick="DMDocs.del('${d.id}')">✕</button>`}</div>
+<div class="row" style="justify-content:space-between;gap:8px;align-items:flex-start"><div><span class="pill">${esc(d.docType)}</span> <b>${fmt(d.date)||'без даты'}</b> · ${esc(d.title)}<div class="muted" style="font-size:13px">${esc([d.institution,d.doctor].filter(Boolean).join(' · '))}</div></div>${forReport?'':`<button class="btn secondary small" style="padding:4px 10px;white-space:nowrap" onclick="DMDocs.del('${d.id}')">✕ Удалить</button>`}</div>
 ${d.hospitalization&&(d.hospitalization.from||d.hospitalization.to)?`<div>🏥 Госпитализация: ${fmt(d.hospitalization.from)} — ${fmt(d.hospitalization.to)} ${esc(d.hospitalization.department||'')}</div>`:''}
 ${(d.diagnoses||[]).length?`<div style="margin-top:4px"><b>Диагноз:</b> ${d.diagnoses.map(x=>esc(x.text)+(x.icd?` (${esc(x.icd)})`:'')).join('; ')}</div>`:''}
 ${d.summary?`<p style="margin:6px 0">${esc(d.summary)}</p>`:''}
