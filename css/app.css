@@ -263,3 +263,12 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 .dtlItem{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}.dtlItem:last-of-type{border-bottom:0}
 .dtlTime{flex:none;width:58px;font-weight:800;color:#0f766e}.dtlText{color:#334155;margin-top:2px;line-height:1.4}
 .dtlItem.warn .dtlTime,.dtlItem.warn b{color:#dc2626}
+
+/* v63.74: поля в формах на одном уровне, даже если подпись в две строки:
+   каждая ячейка — подпись / поле / пояснение на общих строках сетки */
+@supports (grid-template-rows:subgrid){
+.formgrid{row-gap:0}
+.formgrid>div{display:grid;grid-template-rows:subgrid;grid-row:span 3;align-content:start;padding-bottom:11px}
+.formgrid>div>:first-child{align-self:end}
+.formgrid>div>:nth-child(2){align-self:start}
+}
