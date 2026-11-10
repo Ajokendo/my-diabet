@@ -123,7 +123,7 @@ ${canWrite?`<details style="margin-top:14px"${importOpen?' open':''}><summary><b
 <p class="muted">Если xDrip+ раньше отправлял данные в другой Nightscout (например, на jino), историю за прошлые месяцы можно перенести сюда — для отчёта врачу и GMI. Уже имеющиеся показания не меняются.</p>
 <label>Адрес Nightscout</label><input id="nsUrl" class="input" placeholder="https://имя.nightscout-jino.ru" value="${esc(nsSaved())}">
 <label style="margin-top:8px">API secret или токен (если сайт закрыт)</label><input id="nsSecret" class="input" type="password" autocomplete="off" placeholder="можно оставить пустым">
-<div class="row" style="margin-top:8px;gap:8px"><select id="nsDays" class="select" style="max-width:180px"><option value="30">30 дней</option><option value="90" selected>90 дней</option><option value="180">180 дней</option></select><button class="btn" onclick="DMCgm.importNs()" ${importBusy?'disabled':''}>${importBusy?'Загрузка…':'Загрузить'}</button></div>
+<div class="row" style="margin-top:8px;gap:8px"><select id="nsDays" class="select" style="max-width:180px"><option value="1">1 день</option><option value="3">3 дня</option><option value="7" selected>7 дней</option><option value="30">30 дней</option><option value="90">90 дней</option><option value="180">180 дней</option></select><button class="btn" onclick="DMCgm.importNs()" ${importBusy?'disabled':''}>${importBusy?'Загрузка…':'Загрузить'}</button></div>
 <div id="nsOut" style="margin-top:8px">${importMsg}</div></details>`:''}`;
 }
 
@@ -173,7 +173,7 @@ function periodCached(start,end){const c=periodCache[start+'_'+end];if(!c)return
 /* Импорт истории из другого Nightscout — кусками по 3 дня, чтобы сервер успевал */
 let importBusy=false,importMsg='',importOpen=false;
 function nsSaved(){try{return localStorage.getItem('dm-ns-url')||''}catch(e){return ''}}
-async function importNs(){if(importBusy)return;const url=(document.getElementById('nsUrl')?.value||'').trim(),secret=(document.getElementById('nsSecret')?.value||'').trim(),days=+(document.getElementById('nsDays')?.value||90);
+async function importNs(){if(importBusy)return;const url=(document.getElementById('nsUrl')?.value||'').trim(),secret=(document.getElementById('nsSecret')?.value||'').trim(),days=+(document.getElementById('nsDays')?.value||7);if(days>7&&!confirm('Загрузить историю сенсора за '+days+' дн.?\n\nЭто много записей. У бесплатного сервера есть дневной лимит: при большой загрузке синхронизация у всей семьи может остановиться до 06:00 следующего утра (показания сенсора тогда тоже не будут видны в приложении).\n\nЕсли нужно только заполнить недавний пробел, выберите 1–3 дня.'))return;
   if(!/^https?:\/\//i.test(url))return alert('Вставьте адрес Nightscout, начиная с https://');try{localStorage.setItem('dm-ns-url',url.replace(/\/\/[^@/]*@/,'//'))}catch(e){}
   importBusy=true;importOpen=true;let total=0,oldest=null;const step=3*864e5,end=Date.now(),start=end-days*864e5;const out=()=>{const o=document.getElementById('nsOut');if(o)o.innerHTML=importMsg};
   try{for(let to=end,i=0;to>start;to-=step,i++){const from=Math.max(start,to-step);importMsg=`Загружаю… ${Math.round(i*step/864e5)} из ${days} дней, найдено показаний: ${total.toLocaleString('ru-RU')}`;out();
