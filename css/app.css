@@ -341,3 +341,13 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 
 /* v64.17: длинные английские названия в глоссарии переносятся */
 @media(max-width:950px){.glossaryTerm summary>div{flex-direction:column;align-items:flex-start;gap:4px}.glossaryTerm summary .pill{white-space:normal;text-align:left;border-radius:8px}}
+
+/* v64.18: заметка к дню */
+.dnTags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.dnTag{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 11px;font:inherit;font-size:14px;cursor:pointer;color:var(--text)}
+.dnTag.on{background:var(--blue);border-color:var(--blue);color:#fff}
+#dayNoteText{width:100%;box-sizing:border-box;font:inherit;resize:vertical}
+.dnHint{font-size:12px;margin-top:4px}
+.sensorLeft{font-size:13px;font-weight:700;color:#0f766e;background:#e6fffb;border-radius:999px;padding:4px 10px;white-space:nowrap}
+.sensorLeft.warn{color:#a15c00;background:#fff1d6}.sensorLeft.bad{color:#b42318;background:#fde8e8}
+.dnShow{margin:8px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}

@@ -39,6 +39,7 @@ function records(){
   for(const [t,get] of Object.entries(COLLECTIONS))(get()||[]).forEach(x=>{if(x&&x.id!=null)put(t,x.id,x)});
   (db.foods||[]).forEach(f=>{if(/^u\d/.test(String(f.id)))put('food',f.id,f)});
   Object.entries(db.menus||{}).forEach(([day,v])=>put('menu',day,v));
+  Object.entries(db.dayNotes||{}).forEach(([day,v])=>put('dayNote',day,v));
   return m;
 }
 function listFor(t){
@@ -50,6 +51,7 @@ function apply(ch){
   if(['profile','settings','ratios','favorites','preferences','waterLog'].includes(t)){if(!del)db[t]=p||{};return}
   if(t==='medical'){if(!del){const keep={calculationLog:db.medical?.calculationLog,actualInsulinLog:db.medical?.actualInsulinLog,safetyEvents:db.medical?.safetyEvents};db.medical={...(p||{}),...keep}}return}
   if(t==='menu'){db.menus=db.menus||{};if(del)delete db.menus[id];else db.menus[id]=p;return}
+  if(t==='dayNote'){db.dayNotes=db.dayNotes||{};if(del)delete db.dayNotes[id];else db.dayNotes[id]=p;try{window.DMDayNote&&DMDayNote.render()}catch(e){}return}
   if(t==='food'){db.foods=db.foods||[];const i=db.foods.findIndex(f=>String(f.id)===id);if(del){if(i>=0)db.foods.splice(i,1)}else if(i>=0)db.foods[i]=p;else db.foods.push(p);return}
   if(COLLECTIONS[t]){const a=listFor(t),i=a.findIndex(x=>String(x?.id)===id);if(del){if(i>=0)a.splice(i,1)}else if(i>=0)a[i]=p;else a.push(p)}
 }
