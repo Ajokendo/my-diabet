@@ -16,6 +16,29 @@ function rid(){return 'r'+Date.now().toString(36)+Math.random().toString(36).sli
 function shadowKey(){return SHADOW_PREFIX+(C().patientId||'')}
 function loadShadow(){try{return JSON.parse(localStorage.getItem(shadowKey())||'{}')}catch(e){return {}}}
 function saveShadow(s){try{localStorage.setItem(shadowKey(),JSON.stringify(s))}catch(e){}}
+/* Меню дня сливается по продуктам, а не перезаписывается целиком.
+   Удалённые продукты помнятся отдельно (menuDel|день), чтобы не «воскресали». */
+const remerge=new Set();
+function baseKey(){return shadowKey()+':menuBase'}
+function loadBase(){try{return JSON.parse(localStorage.getItem(baseKey())||'{}')}catch(e){return {}}}
+function saveBase(b){try{localStorage.setItem(baseKey(),JSON.stringify(b))}catch(e){}}
+function menuIds(m){const r=[];Object.values(m||{}).forEach(a=>{if(Array.isArray(a))a.forEach(x=>{if(x&&x.id)r.push(String(x.id))})});return r}
+function menuHasItems(m){return menuIds(m).length>0}
+function noteRemovals(){const b=loadBase();db.menuDel=db.menuDel||{};
+  for(const [day,ids] of Object.entries(b)){const cur=new Set(menuIds(db.menus?.[day]));const gone=ids.filter(i=>!cur.has(i));
+    if(gone.length){const t=new Set(db.menuDel[day]||[]);gone.forEach(i=>t.add(i));db.menuDel[day]=[...t].slice(-400)}}}
+function rememberBase(){const b={};Object.entries(db.menus||{}).forEach(([d,m])=>{const ids=menuIds(m);if(ids.length)b[d]=ids});saveBase(b)}
+function mergeMenu(day,remote){
+  db.menus=db.menus||{};const local=db.menus[day]||{},dead=new Set((db.menuDel?.[day])||[]),out={};let extra=false;
+  const keys=new Set([...Object.keys(remote||{}),...Object.keys(local)]);
+  keys.forEach(k=>{const r=Array.isArray(remote?.[k])?remote[k]:[],l=Array.isArray(local[k])?local[k]:[];
+    if(!Array.isArray(remote?.[k])&&!Array.isArray(local[k]))return;
+    const seen=new Set(),a=[];r.forEach(x=>{if(x&&!dead.has(String(x.id))){a.push(x);seen.add(String(x.id))}});
+    l.forEach(x=>{if(x&&x.id&&!seen.has(String(x.id))&&!dead.has(String(x.id))){a.push(x);extra=true}});out[k]=a});
+  db.menus[day]=out;if(extra)remerge.add('menu|'+day);
+}
+function applyMenuDel(day,ids){db.menuDel=db.menuDel||{};const t=new Set(db.menuDel[day]||[]);(ids||[]).forEach(i=>t.add(String(i)));db.menuDel[day]=[...t].slice(-400);
+  const m=db.menus?.[day];if(m)Object.keys(m).forEach(k=>{if(Array.isArray(m[k]))m[k]=m[k].filter(x=>!t.has(String(x?.id)))})}
 function clone(v){return v==null?v:JSON.parse(JSON.stringify(v))}
 
 async function api(path,body,method){
@@ -38,7 +61,9 @@ function records(){
   const med=clone(db.medical||{});delete med.calculationLog;delete med.actualInsulinLog;delete med.safetyEvents;put('medical','1',med);
   for(const [t,get] of Object.entries(COLLECTIONS))(get()||[]).forEach(x=>{if(x&&x.id!=null)put(t,x.id,x)});
   (db.foods||[]).forEach(f=>{if(/^u\d/.test(String(f.id)))put('food',f.id,f)});
-  Object.entries(db.menus||{}).forEach(([day,v])=>put('menu',day,v));
+  noteRemovals();
+  Object.entries(db.menus||{}).forEach(([day,v])=>{if(menuHasItems(v))put('menu',day,v)});
+  Object.entries(db.menuDel||{}).forEach(([day,v])=>{if(v&&v.length)put('menuDel',day,{ids:v})});
   Object.entries(db.dayNotes||{}).forEach(([day,v])=>put('dayNote',day,v));
   return m;
 }
@@ -50,7 +75,8 @@ function apply(ch){
   const t=ch.recordType,id=ch.recordId,p=ch.payload,del=ch.deleted;
   if(['profile','settings','ratios','favorites','preferences','waterLog'].includes(t)){if(!del)db[t]=p||{};return}
   if(t==='medical'){if(!del){const keep={calculationLog:db.medical?.calculationLog,actualInsulinLog:db.medical?.actualInsulinLog,safetyEvents:db.medical?.safetyEvents};db.medical={...(p||{}),...keep}}return}
-  if(t==='menu'){db.menus=db.menus||{};if(del)delete db.menus[id];else db.menus[id]=p;return}
+  if(t==='menu'){if(!del&&p)mergeMenu(id,p);return}
+  if(t==='menuDel'){if(!del&&p)applyMenuDel(id,p.ids);return}
   if(t==='dayNote'){db.dayNotes=db.dayNotes||{};if(del)delete db.dayNotes[id];else db.dayNotes[id]=p;try{window.DMDayNote&&DMDayNote.render()}catch(e){}return}
   if(t==='food'){db.foods=db.foods||[];const i=db.foods.findIndex(f=>String(f.id)===id);if(del){if(i>=0)db.foods.splice(i,1)}else if(i>=0)db.foods[i]=p;else db.foods.push(p);return}
   if(COLLECTIONS[t]){const a=listFor(t),i=a.findIndex(x=>String(x?.id)===id);if(del){if(i>=0)a.splice(i,1)}else if(i>=0)a[i]=p;else a.push(p)}
@@ -73,13 +99,14 @@ async function syncNow(manual){
     if(c.role!=='viewer'){
       const cur=records(),ev=[];
       for(const [k,v] of Object.entries(cur)){const h=hash(v);if(shadow[k]!==h){const [t,...r]=k.split('|');ev.push({recordType:t,recordId:r.join('|'),operation:'upsert',payload:v,clientEventId:k+'@'+h,_h:h})}}
-      for(const k of Object.keys(shadow))if(!(k in cur)){const [t,...r]=k.split('|');ev.push({recordType:t,recordId:r.join('|'),operation:'delete',clientEventId:k+'@del',_h:null})}
+      for(const k of Object.keys(shadow))if(!(k in cur)){const [t,...r]=k.split('|');if(t==='menu'||t==='menuDel'){delete shadow[k];continue}ev.push({recordType:t,recordId:r.join('|'),operation:'delete',clientEventId:k+'@del',_h:null})}
       for(let i=0;i<ev.length;i+=250){const part=ev.slice(i,i+250);const j=await api('/v2/sync/push',{patientId:c.patientId,events:part.map(({_h,...e})=>e)});
         const ok=new Set((j.accepted||[]).map(a=>a.recordType+'|'+a.recordId));part.forEach(e=>{const k=e.recordType+'|'+e.recordId;if(ok.has(k)){if(e._h)shadow[k]=e._h;else delete shadow[k]}});saveShadow(shadow)}
     }
     const t2=new Set();applied+=await pullAll(shadow,t2);
     if(t2.size){const cur=records();t2.forEach(k=>{if(k in cur)shadow[k]=hash(cur[k])})}
-    saveShadow(shadow);c.lastSyncAt=new Date().toISOString();storage.save(db);
+    const again=remerge.size>0;remerge.forEach(k=>delete shadow[k]);remerge.clear();rememberBase();
+    saveShadow(shadow);if(again)setTimeout(()=>syncNow(false),1500);c.lastSyncAt=new Date().toISOString();storage.save(db);
     if(applied)refreshUi();
   }catch(e){lastError=e.message||String(e);if(e.status===401){c.token=null;storage.save(db);lastError='Сессия закончилась — войдите снова.'}if(manual)alert(lastError)}
   finally{busy=false;render()}
