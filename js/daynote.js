@@ -43,7 +43,7 @@
     }
     box.innerHTML = `<div class="row" style="justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">Заметка к дню</h3>${sensor}</div>
 <div class="dnTags">${TAGS.map(t => `<button type="button" class="dnTag${(n.tags || []).includes(t) ? ' on' : ''}" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
-<textarea id="dayNoteText" class="textarea" rows="2" placeholder="Что было особенного: болел, гости, тренировка, поздно поел…">${esc(n.text || '')}</textarea>
+${earlyHtml()}<textarea id="dayNoteText" class="textarea" rows="2" placeholder="Что было особенного: болел, гости, тренировка, поздно поел…">${esc(n.text || '')}</textarea>
 <div class="muted dnHint">Заметку видят все в семье, она попадает в «Анализ дня» и отчёт врачу.</div>`;
     box.querySelectorAll('.dnTag').forEach(b => b.onclick = () => {
       const cur = (notes()[d] || {}).tags || [], t = b.dataset.t, on = !cur.includes(t);
@@ -51,25 +51,41 @@
       if (t === 'Новый сенсор' && on) setSensorInstalled(d);
       render();
     });
+    box.querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+      const h = db.medical.cgm.history[askEarly.idx]; if (h) h.reason = b.dataset.r; askEarly = null;
+      try { window.save && window.save() } catch (e) {} render();
+    });
     const ta = document.getElementById('dayNoteText');
     let tm; ta.oninput = () => { clearTimeout(tm); tm = setTimeout(() => save(d, { text: ta.value.trim() }), 600); };
     ta.onblur = () => { clearTimeout(tm); save(d, { text: ta.value.trim() }); };
   }
 
+  /* смена сенсора: прошлый уходит в историю; если раньше срока — спрашиваем причину */
+  const REASONS = ['Задел, отклеился', 'После воды, душа', 'Неточные показания', 'Ошибка, не подключается', 'Другое'];
+  let askEarly = null;
   function setSensorInstalled(d) {
-    db.medical = db.medical || {}; db.medical.cgm = db.medical.cgm || {};
-    if (db.medical.cgm.installed !== d) {
-      db.medical.cgm.installed = d;
-      try { window.save && window.save() } catch (e) {}
-      const el = document.getElementById('cgmInstalled'); if (el) el.value = d;
+    db.medical = db.medical || {}; const c = db.medical.cgm = db.medical.cgm || {};
+    if (c.installed === d) return;
+    if (c.installed && c.installed < d) {
+      const used = Math.round((new Date(d + 'T12:00:00') - new Date(c.installed + 'T12:00:00')) / 864e5), term = sensorDays();
+      c.history = (c.history || []).concat({ installed: c.installed, removed: d, days: used, term, early: used < term - 0.5, reason: '' });
+      if (used < term - 0.5) askEarly = { idx: c.history.length - 1, used, term };
     }
+    c.installed = d;
+    try { window.save && window.save() } catch (e) {}
+    const el = document.getElementById('cgmInstalled'); if (el) el.value = d;
+  }
+  function earlyHtml() {
+    if (!askEarly) return '';
+    return `<div class="dnEarly"><b>Прошлый сенсор проработал ${askEarly.used} из ${askEarly.term} дн.</b> Почему сняли раньше?<div class="dnTags" style="margin:8px 0 0">${REASONS.map(r => `<button type="button" class="dnTag" data-r="${esc(r)}">${esc(r)}</button>`).join('')}</div></div>`;
   }
 
   /* для отчёта врачу и анализа дня */
   window.DMDayNote = {
-    render, sensorLeft, sensorDays,
+    render, sensorLeft, sensorDays, setInstalled: d => { if (d) { setSensorInstalled(d); render() } },
     get: d => notes()[d] || null,
     html(d) { const n = notes()[d]; if (!n) return ''; return `<div class="dnShow">${(n.tags || []).map(t => `<span class="pill">${esc(t)}</span>`).join(' ')}${n.text ? ` <span>${esc(n.text)}</span>` : ''}</div>` },
+    sensors(from, to) { const h = ((db.medical && db.medical.cgm && db.medical.cgm.history) || []); return h.filter(x => x.removed >= from && x.installed <= to) },
     list(from, to) { return Object.entries(notes()).filter(([d]) => d >= from && d <= to).sort(([a], [b]) => a.localeCompare(b)) }
   };
 
