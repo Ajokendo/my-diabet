@@ -183,6 +183,6 @@ async function importNs(){if(importBusy)return;const url=(document.getElementByI
     Object.keys(periodCache).forEach(k=>delete periodCache[k]);gmiAt=0;
   }catch(e){importMsg=`<div class="notice">${esc(e.message)}${total?` (до ошибки перенесено ${total.toLocaleString('ru-RU')})`:''}</div>`}
   importBusy=false;paintFamily();try{loadGmi()}catch(e){}}
-window.DMCgm={importNs,gmi:()=>gmi,device:()=>device,isConnected:()=>connected,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
+window.DMCgm={readings:()=>readings,importNs,gmi:()=>gmi,device:()=>device,isConnected:()=>connected,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));else setTimeout(start,300);
 })();

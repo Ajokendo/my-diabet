@@ -338,3 +338,6 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 #menu .tbl td:first-child .row{flex-wrap:nowrap}
 #menu .tbl td:first-child .foodmeta{min-width:0}
 }
+
+/* v64.17: длинные английские названия в глоссарии переносятся */
+@media(max-width:950px){.glossaryTerm summary>div{flex-direction:column;align-items:flex-start;gap:4px}.glossaryTerm summary .pill{white-space:normal;text-align:left;border-radius:8px}}
