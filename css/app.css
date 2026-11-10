@@ -295,3 +295,7 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 #updBanner>div{flex:1;min-width:0}#updBanner span{color:#cfe9e5}
 #updBanner .btn{flex:none;background:#14b8a6}
 #updBanner .updX{flex:none;background:none;border:0;color:#cfe9e5;font-size:22px;cursor:pointer;padding:0 4px}
+/* v63.97: плитки сенсора — 6 штук: среднее/в диапазоне, ниже/выше, мин/макс */
+.cgmKpi{grid-template-columns:repeat(6,1fr)}
+.cgmKpi .mini .muted{white-space:normal}
+@media(max-width:950px){.cgmKpi{grid-template-columns:repeat(2,1fr)}.cgmKpi .mini:last-child{grid-column:auto}}
