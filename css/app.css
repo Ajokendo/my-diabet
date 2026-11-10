@@ -320,3 +320,9 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 @media(min-width:951px){.glossCats{display:flex;flex-wrap:wrap}.glossCats .btn{grid-column:auto}}
 /* v64.9: глоссарий на компьютере — английское название вторым столбцом рядом с русским */
 @media(min-width:951px){.glossaryTerm summary>div{display:grid;grid-template-columns:minmax(0,27em) minmax(0,1fr);justify-items:start;gap:16px}}
+
+/* v64.10: «Семья» — синхронизация и кнопки на всю ширину */
+.syncInfo{display:grid;gap:8px;margin-top:8px}
+.syncInfo .mini{display:flex;flex-direction:column;gap:2px}.syncInfo .mini .muted{white-space:nowrap}
+.syncBtns{display:grid;gap:8px;margin-top:12px}.syncBtns .btn{width:100%;text-align:center;margin:0}
+.syncBtns .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.syncBtns .btn{white-space:nowrap;padding-left:8px;padding-right:8px}@media(min-width:951px){.syncInfo{grid-template-columns:1fr 1fr}}
