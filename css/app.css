@@ -280,3 +280,6 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 #reports .btn{text-align:center}
 @media(max-width:950px){#reports .btn:not(.small):not(.iconHelp){display:block;width:100%;margin:6px 0}}
 @media(max-width:950px){#reports .row>div:has(>.btn){flex:1 1 100%;width:100%}}
+
+/* v63.93: в «Медицинских данных» под полями нет пояснений — только поле, название и ⓘ */
+#medical .formgrid>div>.muted,#medical .formgrid>div>small{display:none}
