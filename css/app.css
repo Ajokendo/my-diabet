@@ -318,3 +318,5 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 .glossCats .btn{grid-column:span 2;text-align:center;white-space:nowrap;padding-left:6px;padding-right:6px}
 .glossCats .btn:nth-child(n+4){grid-column:span 3}
 @media(min-width:951px){.glossCats{display:flex;flex-wrap:wrap}.glossCats .btn{grid-column:auto}}
+/* v64.9: глоссарий на компьютере — английское название вторым столбцом рядом с русским */
+@media(min-width:951px){.glossaryTerm summary>div{display:grid;grid-template-columns:minmax(0,27em) minmax(0,1fr);justify-items:start;gap:16px}}
