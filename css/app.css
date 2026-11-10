@@ -307,7 +307,8 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 .dashKpi .mini>:first-child{align-self:end}
 }
 
-/* v64.2: ХЕ / БЖЕ / Б / Ж — подпись и число в колонках, с отступом */
-.dashMini .dmPills{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
-.dashMini .dmPills .pill{display:inline-grid;grid-template-columns:3.2em auto;column-gap:6px;align-items:baseline;min-width:8.5em;box-sizing:border-box}
-.dashMini .dmPills .pill i{font-style:normal}
+/* v64.2: ХЕ / БЖЕ / Б / Ж — подпись и число раздельно, ровной колонкой */
+.dashMini .dmPills{display:inline-grid;grid-template-columns:auto;gap:6px;justify-items:stretch}
+.dashMini .dmPills .pill{display:flex;align-items:baseline;gap:.5em;white-space:nowrap}
+.dashMini .dmPills .pill i{font-style:normal;display:inline-block;min-width:2.7em}
+.dashMini .dmPills .pill b{display:inline}
