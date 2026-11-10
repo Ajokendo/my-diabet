@@ -116,7 +116,7 @@ function paintFamily(){
   box.innerHTML=`<h3>Сенсор (xDrip+)</h3>
 <p class="muted">xDrip+ на телефоне сына может отправлять показания сенсора в общий дневник. Тогда сахар в реальном времени видят все члены семьи.</p>
 ${L?`<p>Последнее показание: <b>${L.g.toFixed(1)} ${L.arrow}</b> ммоль/л, ${ago(L.age)}.</p>`:connected?'<p>Ключ создан, ждём первые показания.</p>':''}
-${canWrite?`<button class="btn ${connected?'secondary':''}" onclick="DMCgm.connect()">${connected?'Показать адрес заново (создать новый ключ)':'Подключить сенсор (xDrip+)'}</button>`:'<p class="muted">Подключить может только родитель или сам пациент.</p>'}
+${canWrite?`<button class="btn ${connected?'secondary':''}" onclick="DMCgm.connect()">${connected?'Показать адрес заново<br><span style="font-weight:400;font-size:.88em">(создать новый ключ)</span>':'Подключить сенсор (xDrip+)'}</button>`:'<p class="muted">Подключить может только родитель или сам пациент.</p>'}
 <div id="cgmConnect" style="margin-top:10px">${connectHtml}</div>
 ${canWrite?`<details style="margin-top:14px"${importOpen?' open':''}><summary><b>Загрузить прошлую историю из Nightscout</b></summary>
 <p class="muted">Если xDrip+ раньше отправлял данные в другой Nightscout (например, на jino), историю за прошлые месяцы можно перенести сюда — для отчёта врачу и GMI. Уже имеющиеся показания не меняются.</p>
