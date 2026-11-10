@@ -29,13 +29,13 @@ async function build(){
   }finally{box.remove();body.style.zoom=zoom}
 }
 async function share(btn){
-  const t=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='Готовлю PDF…'}
+  const t=btn&&btn.innerHTML;if(btn){btn.disabled=true;btn.textContent='Готовлю PDF…'}
   try{const f=await build();
     if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Отчёт врачу',text:'Отчёт из приложения «Мой диабет»'});return}catch(e){if(e&&e.name==='AbortError')return}}
     const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
     alert('PDF сохранён в «Загрузки». Отправьте его врачу из WhatsApp: скрепка → Документ → выберите файл.');
   }catch(e){alert('Не получилось сделать PDF: '+(e.message||e))}
-  finally{if(btn){btn.disabled=false;btn.textContent=t}}
+  finally{if(btn){btn.disabled=false;btn.innerHTML=t}}
 }
 window.DMReportPdf={share,build};
 })();
