@@ -18,7 +18,7 @@ async function showQr(){
   try{await load('assets/vendor/qrcode.js');const j=await api('/v1/link/start','POST');
     const url=location.origin+location.pathname+'#link='+j.code;const q=qrcode(0,'M');q.addData(url);q.make();
     modal(`<h3>Вход по QR-коду</h3><div style="display:flex;justify-content:center;margin:10px 0">${q.createSvgTag({cellSize:6,margin:2,scalable:true}).replace('<svg ','<svg style="width:260px;height:260px" ')}</div>
-<ol style="padding-left:18px;line-height:1.6"><li>Откройте «Мой диабет» на телефоне, где уже выполнен вход в «Семью».</li><li><b>☰ Все разделы → Семья → «💻 Подключить компьютер»</b>.</li><li>Наведите камеру телефона на этот код и подтвердите.</li></ol>
+<ol style="padding-left:18px;line-height:1.6"><li>Откройте «Мой диабет» на телефоне, где уже выполнен вход в «Семью».</li><li><b>☰ Все разделы → Семья → «Подключить компьютер»</b>.</li><li>Наведите камеру телефона на этот код и подтвердите.</li></ol>
 <p class="muted" id="linkState">Ждём подтверждения с телефона… Код действует 3 минуты.</p>`);
     const started=Date.now();
     const tick=async()=>{if(!document.getElementById('linkModal'))return;
@@ -60,7 +60,7 @@ async function scan(){
 
 /* QR отсканирован обычной камерой телефона — приложение открылось по ссылке с #link=… */
 function fromHash(){const code=parse(location.hash);if(!code)return;history.replaceState(null,'',location.pathname+location.search);
-  if(C().token)setTimeout(()=>approve(code),600);else alert('Этот QR-код нужно сканировать на телефоне, где уже выполнен вход в «Семью»: «Семья» → «💻 Подключить компьютер».')}
+  if(C().token)setTimeout(()=>approve(code),600);else alert('Этот QR-код нужно сканировать на телефоне, где уже выполнен вход в «Семью»: «Семья» → «Подключить компьютер».')}
 
 window.DMLink={showQr,scan,close,approve};
 window.addEventListener('hashchange',fromHash);

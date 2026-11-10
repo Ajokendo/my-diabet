@@ -96,7 +96,7 @@ function docHtml(d,forReport){
 ${d.hospitalization&&(d.hospitalization.from||d.hospitalization.to)?`<div>🏥 Госпитализация: ${fmt(d.hospitalization.from)} — ${fmt(d.hospitalization.to)} ${esc(d.hospitalization.department||'')}</div>`:''}
 ${(d.diagnoses||[]).length?`<div style="margin-top:4px"><b>Диагноз:</b> ${d.diagnoses.map(x=>esc(x.text)+(x.icd?` (${esc(x.icd)})`:'')).join('; ')}</div>`:''}
 ${d.summary?`<p style="margin:6px 0">${esc(d.summary)}</p>`:''}
-${forReport?'':`${d.pagesRef?`<button class="btn secondary" style="padding:6px 10px;margin:4px 0" onclick="DMDocs.openPages('${d.id}')">🖼 Копия документа</button>`:''}<details><summary class="muted">Подробнее</summary>
+${forReport?'':`${d.pagesRef?`<button class="btn secondary" style="padding:6px 10px;margin:4px 0" onclick="DMDocs.openPages('${d.id}')">Копия документа</button>`:''}<details><summary class="muted">Подробнее</summary>
 ${(d.labs||[]).length?`<b>Анализы:</b><ul>${d.labs.map(l=>`<li>${esc(l.name)}: ${l.value} ${esc(l.unit)}${l.ref?` (норма ${esc(l.ref)})`:''}${l.date?' · '+fmt(l.date):''}</li>`).join('')}</ul>`:''}
 ${(d.insulin||[]).length?`<b>Инсулин:</b><ul>${d.insulin.map(x=>`<li>${esc(x.name)} — ${esc(x.dose)}</li>`).join('')}</ul>`:''}
 ${(d.otherMeds||[]).length?`<b>Другие назначения:</b><ul>${d.otherMeds.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
