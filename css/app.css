@@ -327,3 +327,14 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 .syncBtns{display:grid;gap:8px;margin-top:12px}.syncBtns .btn{width:100%;text-align:center;margin:0}
 .syncBtns .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.syncBtns .btn{white-space:nowrap;padding-left:8px;padding-right:8px}@media(min-width:951px){.syncInfo{grid-template-columns:1fr 1fr}}
 @media(min-width:951px){.dashKpi{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* v64.14: «Питание» на широком экране — меню уже, подбор продуктов шире */
+@media(min-width:1400px){#menu>.grid>.card.s8{grid-column:span 7}#menu>.grid>.card.s4{grid-column:span 5}}
+@media(min-width:951px){
+#menu .mealhead{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+#menu .mealhead>div:first-child{flex:1 1 220px;min-width:0}
+#menu .mealActions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#menu .mealTabs{grid-template-columns:repeat(auto-fit,minmax(84px,1fr))}
+#menu .mealTab b{white-space:nowrap}
+#menu .tbl td:first-child .row{flex-wrap:nowrap}
+#menu .tbl td:first-child .foodmeta{min-width:0}
+}
