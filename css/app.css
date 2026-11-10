@@ -277,6 +277,6 @@ html[dir="rtl"] .nav button{text-align:right}html[dir="rtl"] .top,html[dir="rtl"
 input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;box-sizing:border-box}
 
 /* v63.89: в «Отчётах врачу» текст кнопок по левому краю */
-#reports .btn{text-align:left}
+#reports .btn{text-align:center}
 @media(max-width:950px){#reports .btn:not(.small):not(.iconHelp){display:block;width:100%;margin:6px 0}}
 @media(max-width:950px){#reports .row>div:has(>.btn){flex:1 1 100%;width:100%}}

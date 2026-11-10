@@ -110,11 +110,11 @@ function render(){
   box.innerHTML=`<h3>Документы и история болезни</h3>
 <p class="muted">Сфотографируйте выписку, заключение врача или бланки анализов — по одной странице, сколько нужно (до 12), — или выберите готовые фото и PDF. Можно сразу несколько разных документов: приложение само их разделит, прочитает и разложит по разделам.</p>
 <div class="row" style="gap:8px;flex-wrap:wrap">
-<label class="btn" style="cursor:pointer">📷 Сфотографировать страницу<input type="file" accept="image/*" capture="environment" style="display:none" onchange="DMDocs.add(this)"></label>
-<label class="btn secondary" style="cursor:pointer">📁 Выбрать фото или PDF<input type="file" accept="image/*,application/pdf" multiple style="display:none" onchange="DMDocs.add(this)"></label></div>
+<label class="btn secondary" style="cursor:pointer;display:block;width:100%;text-align:center;margin:6px 0">Сфотографировать страницу<input type="file" accept="image/*" capture="environment" style="display:none" onchange="DMDocs.add(this)"></label>
+<label class="btn secondary" style="cursor:pointer;display:block;width:100%;text-align:center;margin:6px 0">Выбрать фото или PDF<input type="file" accept="image/*,application/pdf" multiple style="display:none" onchange="DMDocs.add(this)"></label></div>
 <p class="muted" style="font-size:13px;margin:6px 0 0">Снимайте при хорошем свете, лист целиком, без бликов. Повёрнутые бланки — не страшно.</p>
 <div id="docPrev" class="row" style="gap:10px;margin-top:10px;flex-wrap:wrap"></div>
-<button class="btn" id="docGo" style="margin-top:10px;width:100%" onclick="DMDocs.recognize()" ${pages.length?'':'disabled'}>🔍 Распознать</button>
+<button class="btn" id="docGo" style="margin-top:10px;width:100%;text-align:center" onclick="DMDocs.recognize()" ${pages.length?'':'disabled'}>Распознать</button>
 <p class="muted" style="font-size:12px;margin-top:6px">Страницы отправляются на ваш сервер распознавания (тот же, что для фото еды) и читаются моделью Claude. Сохраняется только то, что вы подтвердите.</p>
 <div id="docResult">${keepRes}</div>
 <h3 style="margin-top:16px">История ${list.length?`<small class="muted">(${list.length})</small>`:''}</h3>
