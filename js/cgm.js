@@ -97,6 +97,7 @@ function fillCalc(){const i=document.getElementById('iG');const L=latest();if(!i
 
 /* Карточка в «Семье» — подключение xDrip+ */
 async function connect(){
+  if(connected&&!confirm('Создать новый ключ для сенсора?\n\nСтарый адрес перестанет работать: показания сенсора перестанут приходить, пока вы не впишете новый адрес в xDrip+ на телефоне, где он установлен.\n\nНажимайте «ОК», только если xDrip+ нужно подключить заново.'))return;
   const out=document.getElementById('cgmConnect');if(out)out.innerHTML='Создаю ключ…';
   try{const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm-key`,'POST');connected=true;saveCache();
     connectHtml=`<p><b>Адрес для xDrip+</b> (это ваш личный ключ, никому не пересылайте):</p>
