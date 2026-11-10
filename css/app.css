@@ -312,3 +312,9 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 .dashMini .dmPills .pill{display:flex;align-items:baseline;gap:.5em;white-space:nowrap}
 .dashMini .dmPills .pill i{font-style:normal;display:inline-block;min-width:2.7em}
 .dashMini .dmPills .pill b{display:inline}
+
+/* v64.8: категории глоссария — 2 ровные строки (3 + 2) */
+.glossCats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
+.glossCats .btn{grid-column:span 2;text-align:center;white-space:nowrap;padding-left:6px;padding-right:6px}
+.glossCats .btn:nth-child(n+4){grid-column:span 3}
+@media(min-width:951px){.glossCats{display:flex;flex-wrap:wrap}.glossCats .btn{grid-column:auto}}
