@@ -70,8 +70,8 @@ function stats(hours){const from=Date.now()-hours*3600e3,p=readings.filter(x=>x.
   return {n,avg,low:p.filter(x=>x.g<3.9).length/n*100,inr:p.filter(x=>x.g>=3.9&&x.g<=10).length/n*100,high:p.filter(x=>x.g>10).length/n*100,min:Math.min(...p.map(x=>x.g)),max:Math.max(...p.map(x=>x.g))}}
 let hoursSel=6,gmi=null,gmiAt=0;
 /* Расчётный HbA1c (GMI, Bergenstal 2018): GMI % = 3,31 + 0,02392 × средняя глюкоза в мг/дл. Надёжен при 14+ днях данных и покрытии ≥70%. */
-async function loadGmi(){if(!ready()||Date.now()-gmiAt<(gmi?30*60e3:60e3))return;gmiAt=Date.now();
-  try{const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${Date.now()-14*864e5}`);const r=j.readings||[];
+async function loadGmi(){if(!ready()||Date.now()-gmiAt<(gmi?30*60e3:20e3))return;gmiAt=Date.now();
+  try{let since=Date.now()-14*864e5,r=[];for(let i=0;i<12;i++){const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${since}`);const p=j.readings||[];r=r.concat(p);if(p.length<5000)break;since=p[p.length-1].t}
     if(!r.length){gmi=null;return}
     const mean=r.reduce((a,x)=>a+x.g,0)/r.length,days=(Date.now()-r[0].t)/864e5,cover=Math.min(100,r.length/(Math.max(days,1/24)*288)*100);
     gmi={v:3.31+0.02392*mean*18.016,mean,days,cover,n:r.length,tbr:r.filter(x=>x.g<3.9).length/r.length*100,tbr54:r.filter(x=>x.g<3).length/r.length*100,tir:r.filter(x=>x.g>=3.9&&x.g<=10).length/r.length*100,tar:r.filter(x=>x.g>10).length/r.length*100,tar139:r.filter(x=>x.g>13.9).length/r.length*100,sd:Math.sqrt(r.reduce((a,x)=>a+(x.g-mean)**2,0)/r.length)};paintGlucose();try{window.renderDashKpi&&renderDashKpi()}catch(e){}try{window.medicalAuto&&medicalAuto()}catch(e){}}catch(e){}}
