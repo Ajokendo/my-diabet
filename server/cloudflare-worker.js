@@ -7,6 +7,7 @@
 //   Переменные (необязательно): OWNER_EMAILS — почты (через запятую) вашей семьи: распознавание фото без лимита
 //              и создание кодов. Если не задано — без лимита первая созданная семья.
 //              FREE_PHOTOS — бесплатных распознаваний для новой семьи (по умолчанию 3).
+//              ALLOWED_EMAILS — кроме OWNER_EMAILS, кому ещё можно создать новый дневник (через запятую). OPEN_REGISTRATION=1 — всем.
 //              IMPORT_DAILY_LIMIT — сколько показаний сенсора можно загрузить из Nightscout за сутки на весь сервер (по умолчанию 20000).
 //              PHOTO_CONTACT — куда писать за кодом (показывается в приложении), например «WhatsApp +996 …».
 //   Триггер: Cron «*/5 * * * *» — забирать сахар из облаков (LibreLinkUp, Dexcom Share, Nightscout) и уведомление «нет данных».
@@ -285,6 +286,9 @@ async function sync(req,env,path){
     const b=await body(req),email=String(b.email||'').trim().toLowerCase(),pw=String(b.password||''),name=String(b.displayName||'').trim()||email.split('@')[0];
     if(!email.includes('@')||pw.length<8)return J(400,{error:'Введите email и пароль не короче 8 символов.'});
     if(await env.DB.prepare('SELECT 1 FROM users WHERE email=?').bind(email).first())return J(409,{error:'Аккаунт с таким email уже есть — войдите.'});
+    /* v64.50: закрытый сервер — новый дневник могут создать только почты из OWNER_EMAILS и ALLOWED_EMAILS. Подключиться к чужому дневнику по коду приглашения можно всем. OPEN_REGISTRATION=1 — открыть для всех. */
+    if(b.createPatient!==false&&String(env.OPEN_REGISTRATION||'')!=='1'){const allow=(String(env.OWNER_EMAILS||'')+','+String(env.ALLOWED_EMAILS||'')).split(/[,; ]+/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+      if(allow.length&&!allow.includes(email))return J(403,{error:'Этот сервер закрыт: на нём ведут дневники только приглашённые семьи. Чтобы вести общий дневник своей семьи, заведите свой бесплатный сервер — раздел «Семья» → «Свой сервер». Подключиться к дневнику другой семьи можно по её коду приглашения.',code:'registration_closed'})}
     const salt=hex(rnd(16)),u={id:uid('usr'),email,displayName:name};
     const ops=[env.DB.prepare('INSERT INTO users VALUES(?,?,?,?,?,?)').bind(u.id,email,name,await pbkdf2(pw,salt),salt,now())];
     let patients=[];

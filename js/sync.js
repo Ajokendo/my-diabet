@@ -186,7 +186,19 @@ function render(light){
 <label style="margin-top:8px">Пароль (не короче 8 символов)</label><input id="s2Pw" type="password" class="input" autocomplete="current-password">
 <div class="row" style="margin-top:12px;gap:8px"><button class="btn" onclick="DMSync.register()">Создать аккаунт</button><button class="btn secondary" onclick="DMSync.login()">У меня уже есть аккаунт — войти</button></div>
 <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0"><button class="btn" style="width:100%" onclick="DMLink.showQr()">Войти по QR-коду с телефона</button><p class="muted" style="font-size:13px;margin-top:6px">Для компьютера или нового телефона: без email и пароля, как в WhatsApp Web.</p></div>
-<details style="margin-top:10px"><summary class="muted">Сервер</summary><input id="s2Server" class="input" value="${esc(server())}"></details></div>
+<details id="s2OwnSrv" style="margin-top:10px"${C().server&&C().server.replace(/\/$/,'')!==DEFAULT_SERVER.replace(/\/$/,'')?' open':''}><summary style="cursor:pointer;font-weight:700">Свой сервер</summary>
+<p class="muted" style="margin:6px 0">Общий дневник семьи, сахар с сенсора, уведомления и фото еды работают через сервер. Сервер по умолчанию закрыт для новых семей — заведите свой: бесплатный аккаунт Cloudflare и около часа на компьютере.</p>
+<ol style="padding-left:18px;line-height:1.55;margin:6px 0">
+<li>Скачайте код сервера:<br><a class="btn small secondary" style="display:inline-block;margin-top:4px;white-space:nowrap" href="server/cloudflare-worker.js" download="cloudflare-worker.js">⬇ cloudflare-worker.js</a></li>
+<li>Зарегистрируйтесь на <a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">dash.cloudflare.com</a>.</li>
+<li><b>Storage &amp; Databases → D1 → Create database</b>, имя <code>my-diabet-db</code>.</li>
+<li><b>Workers &amp; Pages → Create → Worker</b> → Deploy. Затем <b>Edit code</b>: заменить весь код содержимым скачанного файла → <b>Deploy</b>.</li>
+<li><b>Settings → Bindings → Add → D1 database</b>: имя <code>DB</code>, база <code>my-diabet-db</code>.</li>
+<li><b>Settings → Variables and Secrets</b>: <code>CRED_KEY</code> (Secret, любая длинная случайная строка), <code>OWNER_EMAILS</code> (Text, ваша почта); для фото — <code>ANTHROPIC_API_KEY</code> (Secret).</li>
+<li><b>Settings → Trigger events → Cron</b>: каждые 5 минут.</li>
+<li>Вставьте адрес вашего Worker ниже (вида <code>https://….workers.dev</code>) на <b>каждом</b> телефоне семьи, затем «Создать аккаунт» или «Войти».</li></ol>
+<p class="muted" style="font-size:13px;margin:6px 0">Подробно — «Справка» → «Свой сервер». Сервер и данные — ваши; настройка и обслуживание — тоже на вас.</p>
+<label>Адрес сервера</label><input id="s2Server" class="input" value="${esc(server())}"></details></div>
 <div class="card s5"><h3>Как подключить семью</h3><ol style="padding-left:18px;line-height:1.6"><li>На телефоне <b>сына</b>: «Это мой дневник» → «Создать аккаунт». Его записи станут общими.</li><li>Там же — «Пригласить» → код → отправить маме и папе.</li><li>На телефонах родителей: «Я подключаюсь по коду» → код → «Создать аккаунт».</li></ol><p class="muted">Пароль хранится на сервере только в зашифрованном виде.</p></div></div>`;
     return;
   }
