@@ -62,5 +62,5 @@ ${fam.length ? `<details style="margin-top:6px"><summary style="cursor:pointer;f
   const origShow = window.show;
   if (typeof origShow === 'function') window.show = function (id) { const r = origShow.apply(this, arguments); if (id === 'photo') refresh(); if (id === 'account') setTimeout(refresh, 100); return r };
   setTimeout(refresh, 2000);
-  window.DMPhotoQuota = { refresh, render, renderAdmin, redeem, create, set, toggleCode() { showCode = !showCode; render() }, headers() { return ready() ? { 'Authorization': 'Bearer ' + C().token } : {} }, patientId: () => C().patientId || '', owner: () => !!(Q && Q.owner) };
+  window.DMPhotoQuota = { refresh, render, renderAdmin, redeem, create, set, toggleCode() { showCode = !showCode; render() }, headers() { return ready() ? { 'Authorization': 'Bearer ' + C().token } : {} }, patientId: () => C().patientId || '', owner: () => !!(Q && Q.owner), family: () => !!(Q && Q.unlimited) };
 })();

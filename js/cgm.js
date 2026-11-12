@@ -112,7 +112,7 @@ async function connect(){
   }catch(e){if(out)out.innerHTML=`<div class="notice">${esc(e.message)}</div>`}
 }
 function copy(){const i=document.getElementById('cgmUrl');if(!i)return;i.select();try{navigator.clipboard.writeText(i.value).catch(()=>document.execCommand('copy'))}catch(e){document.execCommand('copy')}}
-function ownerImp(){try{return !!(window.DMPhotoQuota&&DMPhotoQuota.owner())}catch(e){return false}}
+function ownerImp(){try{return !!(window.DMPhotoQuota&&DMPhotoQuota.family())}catch(e){return false}}
 function paintFamily(){
   const host=document.getElementById('sync2');if(!host||!ready())return;let box=document.getElementById('cgmFamily');
   if(!box){box=document.createElement('div');box.id='cgmFamily';box.className='card';box.style.marginTop='14px';host.appendChild(box)}
