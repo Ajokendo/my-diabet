@@ -125,7 +125,7 @@
   const norm = s => String(s).toLowerCase().replace(/ё/g, 'е').replace(/<[^>]+>/g, '');
   function topicHtml([id, title, imgs, steps], expanded) {
     return `<div class="gdT${expanded ? ' open' : ''}" id="gd-${id}"><button class="gdQ" onclick="DMGuide.toggle('${id}')"><span>${title}</span><i>›</i></button>
-<div class="gdA">${steps.length > 1 ? `<ol>${steps.map(s => `<li>${s}</li>`).join('')}</ol>` : `<p>${steps[0]}</p>`}${imgs.length ? `<div class="gdImgs">${imgs.map(n => `<img src="${IMG(n)}" loading="lazy" alt="${title}" onclick="DMGuide.zoom(this.src)">`).join('')}</div>` : ''}</div></div>`;
+<div class="gdA">${steps.length > 1 ? `<ol>${steps.map(s => `<li>${s}</li>`).join('')}</ol>` : `<p>${steps[0]}</p>`}${imgs.length ? `<div class="gdImgs">${imgs.map(n => `<span class="gdPh"><img src="assets/guide/sm/${n}.webp" alt="${title}" onclick="DMGuide.zoom('${IMG(n)}')" onload="this.parentNode.classList.add('ok')" onerror="this.parentNode.classList.add('err')"></span>`).join('')}</div>` : ''}</div></div>`;
   }
   function render() {
     const el = document.getElementById('guideBody'); if (!el) return;
