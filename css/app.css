@@ -458,3 +458,12 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 .cgmBigMed input:checked+.medSw.dk{background:#14b8a6}
 .cgmBigBox.dark .cgmBigMed{color:#e2e8f0}.cgmBigBox.dark .medSw:not(.dk){background:#475569}.cgmBigBox.dark .cgmBigMed input:checked+.medSw:not(.dk){background:#ef4444}
 .cgmBigBox.dark .cgmBigStats .bs b[style*="#0f766e"]{color:#2dd4bf!important}
+
+/* v64.32: тёмная тема — инверсия цветов; фото, иконки и уже тёмные части возвращаются как были */
+html.dark{filter:invert(.9) hue-rotate(180deg);background:#fff}
+html.dark img,html.dark video,html.dark canvas,html.dark picture,html.dark .side,html.dark .mobilebar,html.dark .cgmBig,html.dark .foodvisual,html.dark .homeLogo,html.dark .brandLogo,html.dark .emoji,html.dark .ic,html.dark .navIcon,html.dark .themeBtn{filter:invert(1) hue-rotate(180deg)}
+html.dark .foodvisual img,html.dark .side img,html.dark .mobilebar img,html.dark .cgmBig img,html.dark .homeLogo img{filter:none}
+html.dark .card,html.dark .stickyHead{box-shadow:none}
+.themeRow{display:flex;align-items:center;gap:12px;justify-content:space-between;cursor:pointer}.themeRow input{position:absolute;opacity:0;pointer-events:none}.themeRow input:checked+.medSw.dk{background:#14b8a6}
+.themeRow .medSw{width:44px;height:26px}.themeRow .medSw:after{width:20px;height:20px}.themeRow input:checked+.medSw:after{left:21px}
+.themeBtn{margin-left:auto;margin-right:8px;border:0;background:rgba(255,255,255,.12);border-radius:999px;width:36px;height:36px;font-size:18px;cursor:pointer}
