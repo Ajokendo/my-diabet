@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v64.24",foods:[
+window.DM_CATALOG={version:"v64.34",foods:[
 {"id":"b247","name":"Горох зеленый вареный","category":"Бобовые","kcal":84,"c":15.6,"p":5.4,"f":0.2,"fib":5.5,"se":0,"image":"assets/foods/goroh-zelenyy-varenyy.webp","sourceLabel":"USDA: peas, green, cooked, boiled","h":"c7dc6a86"},
 {"id":"b196","name":"Маш варёный","category":"Бобовые","kcal":105,"c":19.2,"p":7,"f":0.4,"fib":7.6,"se":0,"image":"assets/foods/mash-varenyy.webp","h":"0c342a55"},
 {"id":"b57","name":"Нут варёный","category":"Бобовые","kcal":164,"c":27.4,"p":8.9,"f":2.6,"fib":7.6,"se":0,"image":"assets/foods/nut-varenyy.webp","h":"10d80ee7"},
@@ -363,7 +363,7 @@ window.DM_CATALOG={version:"v64.24",foods:[
 {"id":"b1","name":"Хлеб ржаной","category":"Хлеб и выпечка","kcal":210,"c":41,"p":6.6,"f":1.2,"fib":5.8,"se":0,"image":"assets/foods/hleb-rzhanoy.webp","note":"Не подтверждено: у ржаного хлеба разных марок углеводы от 34 до 49 г. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой.","h":"f7a66948"},
 {"id":"b102","name":"Хлебцы гречневые","category":"Хлеб и выпечка","kcal":350,"c":72,"p":10,"f":3,"fib":5,"se":0,"image":"assets/foods/hlebtsy-grechnevye.webp","note":"Не проверено по источнику. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой.","h":"4777bc60"},
 {"id":"b101","name":"Хлебцы рисовые","category":"Хлеб и выпечка","kcal":387,"c":81,"p":8,"f":2.5,"fib":4,"se":0,"image":"assets/foods/hlebtsy-risovye.webp","note":"Не проверено по источнику. Состав зависит от рецептуры/производителя — для покупного продукта сверяйтесь с упаковкой.","h":"4cae6113"},
-{"id":"b139","name":"Вишня","category":"Ягоды","kcal":50,"c":12.2,"p":1.0,"f":0.3,"fib":1.6,"se":0,"image":"assets/foods/vishnya.webp","note":"Источник КБЖУ: USDA FoodData Central, FDC 173954 (Cherries, sour, red, raw).","h":"eee54cdd"},
+{"id":"b139","name":"Вишня","category":"Ягоды","kcal":50,"c":12.2,"p":1.0,"f":0.3,"fib":1.6,"se":0,"image":"assets/foods/vishnya.webp","note":"Источник КБЖУ: USDA FoodData Central, FDC 173954 (Cherries, sour, red, raw).","h":"e98eccec"},
 {"id":"b302","name":"Голубика","category":"Ягоды","kcal":57,"c":14.5,"p":0.7,"f":0.3,"fib":2.4,"se":0,"image":"assets/foods/golubika.webp","note":"Источник КБЖУ: USDA FoodData Central (Blueberries, raw).","h":"d34e7773"},
 {"id":"b140","name":"Ежевика","category":"Ягоды","kcal":43,"c":9.6,"p":1.4,"f":0.5,"fib":5.3,"se":0,"image":"assets/foods/ezhevika.webp","h":"1cf4e290"},
 {"id":"b15","name":"Клубника","category":"Ягоды","kcal":32,"c":7.7,"p":0.7,"f":0.3,"fib":2,"se":0,"image":"assets/foods/klubnika.webp","h":"e453a9b7"},
@@ -372,7 +372,7 @@ window.DM_CATALOG={version:"v64.24",foods:[
 {"id":"b16","name":"Малина","category":"Ягоды","kcal":52,"c":11.9,"p":1.2,"f":0.7,"fib":6.5,"se":0,"image":"assets/foods/malina.webp","h":"f02aee8e"},
 {"id":"b141","name":"Смородина красная","category":"Ягоды","kcal":56,"c":13.8,"p":1.4,"f":0.2,"fib":4.3,"se":0,"image":"assets/foods/krasnaya-smorodina.webp","h":"c3eba74a"},
 {"id":"b142","name":"Смородина чёрная","category":"Ягоды","kcal":63,"c":15.4,"p":1.4,"f":0.4,"fib":4.3,"se":0,"image":"assets/foods/smorodina-chernaya.webp","h":"e17ba7b8"},
-{"id":"b138","name":"Черешня","category":"Ягоды","kcal":63,"c":16,"p":1.1,"f":0.2,"fib":2.1,"se":0,"image":"assets/foods/chereshnya.webp","h":"e62cf74f"},
+{"id":"b138","name":"Черешня","category":"Ягоды","kcal":63,"c":16,"p":1.1,"f":0.2,"fib":2.1,"se":0,"image":"assets/foods/chereshnya.webp","h":"779234dc"},
 {"id":"b17","name":"Черника","category":"Ягоды","kcal":57,"c":14.5,"p":0.7,"f":0.3,"fib":2.4,"se":0,"image":"assets/foods/chernika.webp","h":"f408527d"},
 {"id":"b171","name":"Омлет","category":"Яйца","kcal":154,"c":1,"p":10.6,"f":11.5,"fib":0,"se":0,"image":"assets/foods/omlet.webp","h":"4fe80e03"},
 {"id":"egg-extra-2","name":"Скрембл","category":"Яйца","kcal":166,"c":1.6,"p":10.6,"f":12,"fib":0,"se":0,"image":"assets/foods/skrembl.webp","h":"e60bb0eb"},
@@ -399,7 +399,7 @@ window.DM_CATALOG={version:"v64.24",foods:[
 {"id":"p7-spagetti-s-frikadelkami","name":"Спагетти с фрикадельками","category":"Готовые блюда","kcal":160,"c":17,"p":8,"f":6.5,"fib":1.3,"se":0,"image":"assets/foods/spagetti-s-frikadelkami.webp","isDish":true,"note":"Усреднённый рецепт: углеводы зависят от способа приготовления и доли теста/риса/картофеля — для блюд из кафе ориентируйтесь на их данные.","h":"311d71dd"},
 {"id":"p7-syrniki-zharenye","name":"Сырники жареные","category":"Молочные продукты","kcal":220,"c":20,"p":13,"f":10,"fib":0.5,"se":0,"image":"assets/foods/syrniki-zharenye.webp","isDish":true,"note":"Усреднённый рецепт: углеводы зависят от способа приготовления и доли теста/риса/картофеля — для блюд из кафе ориентируйтесь на их данные.","h":"8fcc703b"},
 {"id":"p7-syrniki-zapechennye","name":"Сырники запечённые","category":"Молочные продукты","kcal":180,"c":18,"p":14,"f":6,"fib":0.5,"se":0,"image":"assets/foods/syrniki-zapechennye.webp","isDish":true,"note":"Усреднённый рецепт: углеводы зависят от способа приготовления и доли теста/риса/картофеля — для блюд из кафе ориентируйтесь на их данные.","h":"f605f2a9"},
-{"id":"p7-farsh-govyazhiy-obzharennyy","name":"Фарш говяжий обжаренный","category":"Мясо и птица","kcal":254,"c":0,"p":25.8,"f":16.4,"fib":0,"se":0,"image":"assets/foods/farsh-govyazhiy-obzharennyy.webp","sourceLabel":"USDA: beef, ground, 80% lean, pan-browned","h":"2a144c8c"},
+{"id":"p7-farsh-govyazhiy-obzharennyy","name":"Фарш говяжий жареный","category":"Мясо и птица","kcal":254,"c":0,"p":25.8,"f":16.4,"fib":0,"se":0,"image":"assets/foods/farsh-govyazhiy-zharenyy.webp","sourceLabel":"USDA: beef, ground, 80% lean, pan-browned","h":"bbdc1b13"},
 {"id":"p7-forel-zharenaya","name":"Форель жареная","category":"Рыба и морепродукты","kcal":190,"c":0,"p":23,"f":11,"fib":0,"se":0,"image":"assets/foods/forel-zharenaya.webp","sourceLabel":"USDA: trout, cooked, dry heat (с маслом)","h":"53013969"},
 {"id":"p7-frikadelki-varenye","name":"Фрикадельки варёные","category":"Мясо и птица","kcal":180,"c":6,"p":14,"f":11,"fib":0.3,"se":0,"image":"assets/foods/frikadelki-varenye.webp","isDish":true,"note":"Усреднённый рецепт: углеводы зависят от способа приготовления и доли теста/риса/картофеля — для блюд из кафе ориентируйтесь на их данные.","h":"abb1f577"},
 {"id":"ganfan","name":"Ганфан","category":"Готовые блюда","kcal":150,"c":21,"p":6.5,"f":4.5,"fib":0.8,"se":0,"image":"assets/foods/ganfan.webp","note":"Усреднённый рецепт: углеводы зависят от способа приготовления и доли теста/риса/картофеля — для блюд из кафе ориентируйтесь на их данные.","h":"6a6784a6","isDish":true},
