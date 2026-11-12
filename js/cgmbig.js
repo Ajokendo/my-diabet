@@ -4,6 +4,7 @@
 (function () {
   const RANGES = [[3, '3 ч'], [6, '6 ч'], [12, '12 ч'], [24, '24 ч'], [72, '3 дн'], [168, '7 дн'], [336, '14 дн'], [720, '30 дн']];
   let hours = 24, end = null, pts = [], loading = false, token = 0, cursorX = null;
+  let medOn = (() => { try { return localStorage.getItem('dm-cgm-median') !== '0' } catch (e) { return true } })();
   const $ = id => document.getElementById(id);
   const f1 = v => v.toFixed(1).replace('.', ',');
   const p2 = n => String(n).padStart(2, '0');
@@ -19,10 +20,10 @@
 <div class="cgmBigHead"><b>Сахар с сенсора</b><span id="cgmBigWhen" class="muted"></span><button class="navClose" aria-label="Закрыть" onclick="DMCgmBig.close()">✕</button></div>
 <div class="cgmBigRanges" id="cgmBigRanges"></div>
 <div class="cgmBigNav"><button class="btn secondary small" onclick="DMCgmBig.shift(-1)">‹ Раньше</button><button class="btn secondary small" id="cgmBigNow" onclick="DMCgmBig.now()">Сейчас</button><button class="btn secondary small" id="cgmBigNext" onclick="DMCgmBig.shift(1)">Позже ›</button></div>
-<div class="cgmBigChart" id="cgmBigChart"></div>
 <div class="cgmBigTip" id="cgmBigTip"></div>
-<div class="kpi cgmKpi cgmBigStats" id="cgmBigStats"></div>
-<div class="muted cgmBigHint">Проведите пальцем по графику — увидите значение и время. Свайп влево/вправо листает период.</div>
+<div class="cgmBigChart" id="cgmBigChart"></div>
+<div class="cgmBigStats" id="cgmBigStats"></div>
+<label class="cgmBigMed"><input type="checkbox" id="cgmBigMedOn" onchange="DMCgmBig.median(this.checked)"> <span class="medSw"></span> Медиана <span class="muted">(красная линия — середина значений за скользящий отрезок)</span></label>
 </div>`;
     el.addEventListener('click', e => { if (e.target === el) close() });
     document.body.appendChild(el);
@@ -77,6 +78,22 @@
     pts.forEach(p => { const gap = prev && p.t - prev.t > 15 * 60e3; path += (path === '' || gap ? 'M' : 'L') + X(p.t).toFixed(1) + ',' + Y(p.g).toFixed(1); prev = p });
     s += `<path d="${path}" fill="none" stroke="#0d9488" stroke-width="${hours > 168 ? 1.2 : 2}" stroke-linejoin="round"/>`;
     if (hours <= 72) s += pts.filter(p => p.g < 3.9 || p.g > 10).map(p => `<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.g).toFixed(1)}" r="2.2" fill="${p.g < 3.9 ? '#dc2626' : '#f59e0b'}"/>`).join('');
+    if (medOn && pts.length > 5) {
+      // скользящая медиана: окно ~1/40 периода, не меньше 30 минут; считаем по сетке точек
+      const win = Math.max(30 * 60e3, (to - from) / 40), steps = Math.min(240, Math.max(40, Math.round(W / 4))), med = [];
+      let i0 = 0, i1 = 0;
+      for (let k = 0; k <= steps; k++) {
+        const t = from + (to - from) * k / steps;
+        while (i0 < pts.length && pts[i0].t < t - win / 2) i0++;
+        while (i1 < pts.length && pts[i1].t <= t + win / 2) i1++;
+        const seg = pts.slice(i0, i1);
+        if (seg.length < 3) { med.push(null); continue }
+        const v = seg.map(x => x.g).sort((a, b) => a - b), m = v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2;
+        med.push([X(t), Y(m)]);
+      }
+      let d = '', pen = false; med.forEach(p => { if (!p) { pen = false; return } d += (pen ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1); pen = true });
+      s += `<path d="${d}" fill="none" stroke="#dc2626" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`;
+    }
     s += `<g id="cgmBigCur"></g>`;
     return { s: `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="display:block;touch-action:pan-y">${s}</svg>`, X, Y, from, to };
   }
@@ -87,9 +104,11 @@
     el.querySelector('#cgmBigNext').disabled = nowEnd();
     el.querySelector('#cgmBigNow').disabled = nowEnd();
     el.querySelector('#cgmBigWhen').textContent = hours <= 24 ? `${dm(from)} ${hm(from)} — ${dm(to) === dm(from) ? '' : dm(to) + ' '}${hm(to)}` : `${dm(from)} — ${dm(to)}`;
-    const W = Math.max(300, ch.clientWidth || 640), H = Math.round(Math.min(Math.max(window.innerHeight * 0.42, 240), 460));
-    if (loading) { ch.innerHTML = `<div class="muted" style="height:${H}px;display:flex;align-items:center;justify-content:center">Загружаю показания…</div>`; geo = null; stats(); return }
-    if (!pts.length) { ch.innerHTML = `<div class="muted" style="height:${H}px;display:flex;align-items:center;justify-content:center;text-align:center">За этот период показаний нет</div>`; geo = null; stats(); return }
+    const mo = el.querySelector('#cgmBigMedOn'); if (mo) mo.checked = medOn;
+    ch.innerHTML = '';
+    const W = Math.max(280, ch.clientWidth || 640), H = Math.max(180, Math.round(ch.clientHeight || 300));
+    if (loading) { ch.innerHTML = `<div class="muted" style="height:100%;display:flex;align-items:center;justify-content:center">Загружаю показания…</div>`; geo = null; stats(); return }
+    if (!pts.length) { ch.innerHTML = `<div class="muted" style="height:100%;display:flex;align-items:center;justify-content:center;text-align:center">За этот период показаний нет</div>`; geo = null; stats(); return }
     const r = svg(W, H); ch.innerHTML = r.s; geo = r; stats(); paintTip();
   }
   function stats() {
@@ -97,7 +116,9 @@
     if (!pts.length) { el.innerHTML = ''; return }
     const n = pts.length, avg = pts.reduce((a, x) => a + x.g, 0) / n, q = f => Math.round(pts.filter(f).length / n * 100);
     const mn = Math.min(...pts.map(x => x.g)), mx = Math.max(...pts.map(x => x.g));
-    el.innerHTML = `<div class="mini"><span class="muted">Среднее</span><b>${f1(avg)}</b></div><div class="mini"><span class="muted">В диапазоне 3,9–10</span><b>${q(x => x.g >= 3.9 && x.g <= 10)}%</b></div><div class="mini"><span class="muted">Ниже 3,9</span><b style="color:#dc2626">${q(x => x.g < 3.9)}%</b></div><div class="mini"><span class="muted">Выше 10</span><b style="color:#d97706">${q(x => x.g > 10)}%</b></div><div class="mini"><span class="muted">Мин / макс</span><b>${f1(mn)} / ${f1(mx)}</b></div>`;
+    const sv = pts.map(x => x.g).sort((a, b) => a - b), md = sv.length % 2 ? sv[(sv.length - 1) / 2] : (sv[sv.length / 2 - 1] + sv[sv.length / 2]) / 2;
+    const T = (l, v, c) => `<div class="bs"><span>${l}</span><b${c ? ` style="color:${c}"` : ''}>${v}</b></div>`;
+    el.innerHTML = T('Среднее', f1(avg)) + T('Медиана', f1(md), medOn ? '#dc2626' : '') + T('В норме', q(x => x.g >= 3.9 && x.g <= 10) + '%', '#0f766e') + T('Ниже 3,9', q(x => x.g < 3.9) + '%', '#dc2626') + T('Выше 10', q(x => x.g > 10) + '%', '#d97706') + T('Мин', f1(mn)) + T('Макс', f1(mx)) + T('Точек', n);
   }
   function move(e) {
     if (!geo) return; const r = e.currentTarget.getBoundingClientRect(); cursorX = (e.clientX - r.left) * (geo.s ? 1 : 1); paintTip();
@@ -119,5 +140,5 @@
     if (ne >= Date.now() - 60e3) end = null; else end = ne; cursorX = null; load();
   }
   window.addEventListener('resize', () => { if ($('cgmBig')?.classList.contains('open')) paint() });
-  window.DMCgmBig = { open, close, shift, range(h) { hours = h; cursorX = null; load() }, now() { end = null; load() } };
+  window.DMCgmBig = { median(on) { medOn = !!on; try { localStorage.setItem('dm-cgm-median', on ? '1' : '0') } catch (e) {} paint() }, open, close, shift, range(h) { hours = h; cursorX = null; load() }, now() { end = null; load() } };
 })();
