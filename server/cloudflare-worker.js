@@ -4,6 +4,11 @@
 //   Секреты:   ANTHROPIC_API_KEY (для фото), PHOTO_ACCESS_CODE (код для фото, желательно).
 //   Переменная (необязательно): ANTHROPIC_MODEL (по умолчанию claude-sonnet-5-5).
 //   Binding:   D1 database, имя переменной DB (для синхронизации). Таблицы создаются сами.
+//   Переменные (необязательно): OWNER_EMAILS — почты (через запятую) вашей семьи: распознавание фото без лимита
+//              и создание кодов. Если не задано — без лимита первая созданная семья.
+//              FREE_PHOTOS — бесплатных распознаваний для новой семьи (по умолчанию 10).
+//              PHOTO_CONTACT — куда писать за кодом (показывается в приложении), например «WhatsApp +996 …».
+//   Триггер (необязательно): Cron «*/10 * * * *» — уведомление «нет данных с сенсора».
 const REFS={card:'банковская карта 85,6 × 54 мм',plate:'тарелка/пиала, внешний диаметр {d} мм',none:null};
 const CORS={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, X-Access-Code, Authorization, api-secret','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS'};
 const J=(s,o)=>new Response(JSON.stringify(o),{status:s,headers:{...CORS,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
@@ -28,7 +33,7 @@ ${ref?`На фото есть ориентир известного размер
 /* ---------- Распознавание фото ---------- */
 async function foodPhoto(req,env){
   let b;try{b=await req.json()}catch{return J(400,{error:'Неверный запрос.'})}
-  if(env.PHOTO_ACCESS_CODE&&req.headers.get('X-Access-Code')!==env.PHOTO_ACCESS_CODE)return J(401,{error:'Неверный код доступа.'});
+  const gate=await photoGate(req,env,b);if(gate.err)return gate.err;
   if(!env.ANTHROPIC_API_KEY)return J(503,{error:'Не задан ANTHROPIC_API_KEY.'});
   const imgs=(Array.isArray(b.images)?b.images:[]).slice(0,2).filter(x=>x&&x.data);if(!imgs.length)return J(400,{error:'Нет фото.'});
   const model=env.ANTHROPIC_MODEL||'claude-sonnet-5-5';
@@ -38,7 +43,9 @@ async function foodPhoto(req,env){
   const text=(j.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');const m=text.match(/\{[\s\S]*\}/);if(!m)return J(502,{error:'Ответ модели не в формате JSON.'});
   let out;try{out=JSON.parse(m[0])}catch{return J(502,{error:'Ответ модели не разобран.'})}
   out.items=(Array.isArray(out.items)?out.items:[]).map(x=>({name:String(x.name||''),catalogName:x.catalogName?String(x.catalogName):null,grams:Math.max(0,Math.round(+x.grams||0)),confidence:['low','medium','high'].includes(x.confidence)?x.confidence:'low',note:String(x.note||'')}));
-  out.warnings=Array.isArray(out.warnings)?out.warnings.map(String):[];out.model=model;return J(200,out);
+  out.warnings=Array.isArray(out.warnings)?out.warnings.map(String):[];out.model=model;
+  if(gate.pid){try{await quotaSpend(env,gate.pid);out.quota=await quota(env,gate.pid)}catch(e){}}
+  return J(200,out);
 }
 
 /* ---------- Синхронизация ---------- */
@@ -52,7 +59,11 @@ const SCHEMA=[
  "CREATE INDEX IF NOT EXISTS records_seq ON records(patient_id,seq)",
  "CREATE TABLE IF NOT EXISTS links(code_hash TEXT PRIMARY KEY,status TEXT NOT NULL,user_id TEXT,patient_id TEXT,token TEXT,created_at TEXT NOT NULL,expires_at TEXT NOT NULL)",
  "CREATE TABLE IF NOT EXISTS cgm_keys(key_hash TEXT PRIMARY KEY,patient_id TEXT NOT NULL,created_at TEXT NOT NULL)",
- "CREATE TABLE IF NOT EXISTS cgm(patient_id TEXT NOT NULL,ts INTEGER NOT NULL,mgdl REAL NOT NULL,direction TEXT,device TEXT,PRIMARY KEY(patient_id,ts))"
+ "CREATE TABLE IF NOT EXISTS cgm(patient_id TEXT NOT NULL,ts INTEGER NOT NULL,mgdl REAL NOT NULL,direction TEXT,device TEXT,PRIMARY KEY(patient_id,ts))",
+ "CREATE TABLE IF NOT EXISTS kv(k TEXT PRIMARY KEY,v TEXT)",
+ "CREATE TABLE IF NOT EXISTS push_subs(endpoint TEXT PRIMARY KEY,patient_id TEXT NOT NULL,user_id TEXT NOT NULL,sub TEXT NOT NULL,prefs TEXT,state TEXT,created_at TEXT NOT NULL)",
+ "CREATE TABLE IF NOT EXISTS photo_quota(patient_id TEXT PRIMARY KEY,free_used INTEGER NOT NULL DEFAULT 0,paid_left INTEGER NOT NULL DEFAULT 0,total_used INTEGER NOT NULL DEFAULT 0,updated_at TEXT)",
+ "CREATE TABLE IF NOT EXISTS photo_codes(code TEXT PRIMARY KEY,photos INTEGER NOT NULL,note TEXT,created_by TEXT,created_at TEXT NOT NULL,used_by TEXT,used_at TEXT)"
 ];
 let schemaReady=false;
 async function ensureSchema(env){if(schemaReady)return;await env.DB.batch(SCHEMA.map(s=>env.DB.prepare(s)));schemaReady=true}
@@ -75,6 +86,105 @@ async function authUser(req,env){const h=req.headers.get('Authorization')||'';if
 async function patientsOf(env,userId){const r=await env.DB.prepare("SELECT p.id,p.display_name,m.role FROM members m JOIN patients p ON p.id=m.patient_id WHERE m.user_id=? AND m.status='active' ORDER BY m.created_at").bind(userId).all();return r.results.map(x=>({id:x.id,displayName:x.display_name,role:x.role}))}
 async function roleIn(env,userId,pid){const m=await env.DB.prepare("SELECT role FROM members WHERE user_id=? AND patient_id=? AND status='active'").bind(userId,pid).first();return m?m.role:null}
 async function body(req){try{return await req.json()}catch{return {}}}
+
+
+/* ---------- Web Push (уведомления на телефон, в т.ч. iPhone с приложением на экране «Домой») ---------- */
+const enc=s=>new TextEncoder().encode(s);
+const cat=(...a)=>{const n=a.reduce((x,y)=>x+y.length,0),o=new Uint8Array(n);let i=0;for(const x of a){o.set(x,i);i+=x.length}return o};
+const ub64=s=>{s=String(s).replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s),o=new Uint8Array(b.length);for(let i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o};
+let VAPID=null;
+async function vapid(env){
+  if(VAPID)return VAPID;
+  let row=await env.DB.prepare("SELECT v FROM kv WHERE k='vapid'").first();
+  if(!row){const kp=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+    const jwk=await crypto.subtle.exportKey('jwk',kp.privateKey),pub=new Uint8Array(await crypto.subtle.exportKey('raw',kp.publicKey));
+    await env.DB.prepare("INSERT OR IGNORE INTO kv VALUES('vapid',?)").bind(JSON.stringify({jwk,pub:b64u(pub)})).run();
+    row=await env.DB.prepare("SELECT v FROM kv WHERE k='vapid'").first()}
+  const v=JSON.parse(row.v);VAPID={pub:v.pub,key:await crypto.subtle.importKey('jwk',v.jwk,{name:'ECDSA',namedCurve:'P-256'},false,['sign'])};return VAPID}
+async function hkdf(salt,ikm,info,len){const k=await crypto.subtle.importKey('raw',ikm,'HKDF',false,['deriveBits']);return new Uint8Array(await crypto.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt,info},k,len*8))}
+async function pushEncrypt(sub,text){
+  const ua=ub64(sub.keys.p256dh),auth=ub64(sub.keys.auth);
+  const as=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
+  const asPub=new Uint8Array(await crypto.subtle.exportKey('raw',as.publicKey));
+  const uaKey=await crypto.subtle.importKey('raw',ua,{name:'ECDH',namedCurve:'P-256'},false,[]);
+  const shared=new Uint8Array(await crypto.subtle.deriveBits({name:'ECDH',public:uaKey},as.privateKey,256));
+  const ikm=await hkdf(auth,shared,cat(enc('WebPush: info\0'),ua,asPub),32);
+  const salt=rnd(16),cek=await hkdf(salt,ikm,enc('Content-Encoding: aes128gcm\0'),16),nonce=await hkdf(salt,ikm,enc('Content-Encoding: nonce\0'),12);
+  const k=await crypto.subtle.importKey('raw',cek,'AES-GCM',false,['encrypt']);
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:nonce},k,cat(enc(text),new Uint8Array([2]))));
+  return cat(salt,new Uint8Array([0,0,16,0]),new Uint8Array([65]),asPub,ct)}
+async function pushSend(env,row,payload,urgent){
+  const sub=JSON.parse(row.sub),V=await vapid(env),aud=new URL(sub.endpoint).origin;
+  const h=b64u(enc(JSON.stringify({typ:'JWT',alg:'ES256'}))),c=b64u(enc(JSON.stringify({aud,exp:Math.floor(Date.now()/1000)+12*3600,sub:'https://my-diabet.pages.dev'})));
+  const sig=new Uint8Array(await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},V.key,enc(h+'.'+c)));
+  const body=await pushEncrypt(sub,JSON.stringify(payload));
+  const r=await fetch(sub.endpoint,{method:'POST',headers:{'TTL':urgent?'600':'1800','Urgency':urgent?'high':'normal','Content-Encoding':'aes128gcm','Content-Type':'application/octet-stream','Authorization':`vapid t=${h}.${c}.${b64u(sig)}, k=${V.pub}`},body});
+  if(r.status===404||r.status===410)await env.DB.prepare('DELETE FROM push_subs WHERE endpoint=?').bind(row.endpoint).run();
+  return r.status}
+const PREF_DEF={low:3.9,high:13,lowOn:true,highOn:true,fallOn:true,staleOn:true,repeat:30,quietOn:false,quietFrom:'23:00',quietTo:'07:00',sound:true,tz:'Asia/Bishkek'};
+function localMin(tz){try{const p=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()).split(':');return (+p[0]%24)*60+(+p[1])}catch(e){const d=new Date();return d.getUTCHours()*60+d.getUTCMinutes()}}
+function inQuiet(P){if(!P.quietOn)return false;const m=localMin(P.tz),a=(s=>{const[x,y]=String(s).split(':');return(+x||0)*60+(+y||0)})(P.quietFrom),b=(s=>{const[x,y]=String(s).split(':');return(+x||0)*60+(+y||0)})(P.quietTo);return a<=b?(m>=a&&m<b):(m>=a||m<b)}
+const ARR={DoubleUp:'⇈',SingleUp:'↑',FortyFiveUp:'↗',Flat:'→',FortyFiveDown:'↘',SingleDown:'↓',DoubleDown:'⇊'};
+async function checkAlerts(env,pid,stale){
+  const subs=(await env.DB.prepare('SELECT * FROM push_subs WHERE patient_id=?').bind(pid).all()).results;if(!subs.length)return;
+  const L=await env.DB.prepare('SELECT ts,mgdl,direction FROM cgm WHERE patient_id=? ORDER BY ts DESC LIMIT 1').bind(pid).first();if(!L)return;
+  const pat=await env.DB.prepare('SELECT display_name FROM patients WHERE id=?').bind(pid).first(),who=(pat&&pat.display_name)||'';
+  const age=(Date.now()-L.ts)/60000,g=Math.round(L.mgdl/18.016*10)/10,gs=String(g).replace('.',','),arr=ARR[L.direction]||'';
+  for(const row of subs){
+    const P={...PREF_DEF,...JSON.parse(row.prefs||'{}')},S=JSON.parse(row.state||'{}'),t=Date.now(),out=[];
+    const cond={};
+    if(stale){cond.stale=P.staleOn&&age>=30&&age<12*60}
+    else if(age<=15){
+      cond.urgent=g<3.0;cond.low=P.lowOn&&!cond.urgent&&g<P.low;cond.high=P.highOn&&g>P.high&&!inQuiet(P);
+      cond.fall=P.fallOn&&(L.direction==='DoubleDown'||(L.direction==='SingleDown'&&g<7))&&!cond.low&&!cond.urgent&&!inQuiet(P);cond.stale=false}
+    else continue;
+    for(const [type,on] of Object.entries(cond)){
+      if(!on){if(S[type])delete S[type];continue}
+      const rep=(type==='urgent'?10:type==='stale'?60:Math.max(10,+P.repeat||30))*60e3;
+      if(S[type]&&t-S[type]<rep)continue;S[type]=t;
+      const tm=new Intl.DateTimeFormat('ru-RU',{timeZone:P.tz||'Asia/Bishkek',hour:'2-digit',minute:'2-digit'}).format(new Date(L.ts));
+      const T={urgent:`СРОЧНО: очень низкий сахар ${gs} ${arr}`,low:`Низкий сахар: ${gs} ${arr}`,high:`Высокий сахар: ${gs} ${arr}`,fall:`Сахар быстро падает: ${gs} ${arr}`,stale:`Нет данных с сенсора ${Math.round(age)} мин`}[type];
+      const B=type==='stale'?`${who?who+': ':''}последнее значение ${gs} ммоль/л в ${tm}. Проверьте телефон с сенсором: Bluetooth и интернет.`:`${who?who+' · ':''}${tm}. Проверьте и действуйте по плану врача.`;
+      out.push({type,payload:{title:T,body:B,tag:'dm-'+type,urgent:type==='urgent'||type==='low',sound:!!P.sound,url:'./'}});
+    }
+    for(const o of out)try{await pushSend(env,row,o.payload,o.payload.urgent)}catch(e){}
+    await env.DB.prepare('UPDATE push_subs SET state=? WHERE endpoint=?').bind(JSON.stringify(S),row.endpoint).run();
+  }
+}
+async function staleSweep(env){await ensureSchema(env);const r=(await env.DB.prepare('SELECT DISTINCT patient_id FROM push_subs').all()).results;for(const x of r)try{await checkAlerts(env,x.patient_id,true)}catch(e){}}
+
+/* ---------- Распознавание фото: лимит на семью и коды пополнения ---------- */
+async function isOwnerFamily(env,pid){
+  const list=String(env.OWNER_EMAILS||'').split(/[,; ]+/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+  if(list.length){const r=await env.DB.prepare("SELECT u.email FROM members m JOIN users u ON u.id=m.user_id WHERE m.patient_id=? AND m.status='active'").bind(pid).all();return r.results.some(x=>list.includes(String(x.email).toLowerCase()))}
+  const f=await env.DB.prepare('SELECT id FROM patients ORDER BY created_at LIMIT 1').first();return !!f&&f.id===pid}
+async function isOwnerUser(env,user){
+  const list=String(env.OWNER_EMAILS||'').split(/[,; ]+/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+  if(list.length)return list.includes(String(user.email).toLowerCase());
+  const f=await env.DB.prepare('SELECT id FROM patients ORDER BY created_at LIMIT 1').first();if(!f)return false;
+  const m=await env.DB.prepare("SELECT role FROM members WHERE patient_id=? AND user_id=? AND status='active'").bind(f.id,user.id).first();return !!m&&m.role!=='viewer'}
+async function quota(env,pid){
+  const free=Math.max(0,+(env.FREE_PHOTOS??10)||0);
+  const q=await env.DB.prepare('SELECT * FROM photo_quota WHERE patient_id=?').bind(pid).first()||{free_used:0,paid_left:0,total_used:0};
+  if(await isOwnerFamily(env,pid))return {unlimited:true,left:null,used:q.total_used,contact:env.PHOTO_CONTACT||''};
+  const freeLeft=Math.max(0,free-q.free_used);
+  return {unlimited:false,left:freeLeft+q.paid_left,freeLeft,paidLeft:q.paid_left,free,used:q.total_used,contact:env.PHOTO_CONTACT||''}}
+async function quotaSpend(env,pid){
+  const Q=await quota(env,pid);
+  if(Q.unlimited)return env.DB.prepare("INSERT INTO photo_quota(patient_id,total_used,updated_at) VALUES(?,1,?) ON CONFLICT(patient_id) DO UPDATE SET total_used=total_used+1,updated_at=excluded.updated_at").bind(pid,now()).run();
+  if(Q.freeLeft>0)return env.DB.prepare("INSERT INTO photo_quota(patient_id,free_used,total_used,updated_at) VALUES(?,1,1,?) ON CONFLICT(patient_id) DO UPDATE SET free_used=free_used+1,total_used=total_used+1,updated_at=excluded.updated_at").bind(pid,now()).run();
+  return env.DB.prepare("UPDATE photo_quota SET paid_left=MAX(paid_left-1,0),total_used=total_used+1,updated_at=? WHERE patient_id=?").bind(now(),pid).run()}
+/* Кто распознаёт: вошедший в «Семью» (лимит семьи) или старый способ — общий код доступа */
+async function photoGate(req,env,b){
+  const pid=String(b.patientId||'');
+  if(env.DB&&pid&&(req.headers.get('Authorization')||'').startsWith('Bearer ')){
+    await ensureSchema(env);const user=await authUser(req,env);
+    if(user&&await roleIn(env,user.id,pid)){const Q=await quota(env,pid);if(!Q.unlimited&&Q.left<=0)return {err:J(402,{error:'Распознавания по фото закончились. Введите код, чтобы продолжить.',quota:Q})};return {pid}}
+  }
+  if(env.PHOTO_ACCESS_CODE&&req.headers.get('X-Access-Code')===env.PHOTO_ACCESS_CODE)return {pid:null};
+  if(!env.PHOTO_ACCESS_CODE&&!env.DB)return {pid:null};
+  return {err:J(401,{error:'Чтобы распознавать фото, войдите в «Семью» (раздел «Ещё» → «Семья»).'})}}
+const PCODE=()=>'F-'+[...rnd(8)].map(x=>CODE_ALPH[x%CODE_ALPH.length]).join('').replace(/(.{4})(.{4})/,'$1-$2');
 
 async function sync(req,env,path){
   if(!env.DB)return J(503,{error:'База синхронизации не подключена (D1 binding DB).'});
@@ -144,6 +254,33 @@ async function sync(req,env,path){
     await env.DB.batch(ops);const p=await env.DB.prepare('SELECT id,display_name FROM patients WHERE id=?').bind(inv.patient_id).first();
     return J(200,{ok:true,patient:{id:p.id,displayName:p.display_name,role:ex||inv.role}});
   }
+  if(path==='/v1/push/key'&&M==='GET')return J(200,{key:(await vapid(env)).pub});
+  const pq=path.match(/^\/v1\/patients\/([^/]+)\/(push|push-test|photo-quota|photo-code)$/);
+  if(pq){const pid=pq[1],role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа к этому дневнику.'});
+    if(pq[2]==='push'&&M==='POST'){const b=await body(req),sub=b.subscription;
+      if(b.remove){await env.DB.prepare('DELETE FROM push_subs WHERE endpoint=?').bind(String(b.endpoint||'')).run();return J(200,{ok:true})}
+      if(!sub||!sub.endpoint||!sub.keys||!sub.keys.p256dh||!sub.keys.auth||!/^https:\/\//.test(sub.endpoint))return J(400,{error:'Нет подписки на уведомления.'});
+      const prefs={...PREF_DEF,...(b.prefs||{})};
+      await env.DB.prepare('INSERT INTO push_subs(endpoint,patient_id,user_id,sub,prefs,state,created_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(endpoint) DO UPDATE SET patient_id=excluded.patient_id,user_id=excluded.user_id,sub=excluded.sub,prefs=excluded.prefs').bind(sub.endpoint,pid,user.id,JSON.stringify(sub),JSON.stringify(prefs),'{}',now()).run();
+      return J(200,{ok:true})}
+    if(pq[2]==='push-test'&&M==='POST'){const b=await body(req);const row=await env.DB.prepare('SELECT * FROM push_subs WHERE endpoint=?').bind(String(b.endpoint||'')).first();if(!row)return J(404,{error:'Этот телефон не подписан. Включите уведомления ещё раз.'});
+      const P={...PREF_DEF,...JSON.parse(row.prefs||'{}')};const st=await pushSend(env,row,{title:'Мой диабет: проверка',body:'Уведомления работают. Так будут приходить сигналы о сахаре.',tag:'dm-test',urgent:false,sound:!!P.sound,url:'./'},false);
+      return st>=200&&st<300?J(200,{ok:true}):J(502,{error:'Сервис уведомлений ответил '+st})}
+    if(pq[2]==='photo-quota'&&M==='GET'){const Q=await quota(env,pid);Q.owner=await isOwnerUser(env,user);return J(200,Q)}
+    if(pq[2]==='photo-code'&&M==='POST'){const b=await body(req),code=String(b.code||'').trim().toUpperCase().replace(/\s+/g,'');
+      const c=await env.DB.prepare('SELECT * FROM photo_codes WHERE code=?').bind(code).first();
+      if(!c)return J(404,{error:'Код не найден. Проверьте, нет ли опечатки.'});if(c.used_by)return J(409,{error:'Этот код уже использован.'});
+      await env.DB.batch([env.DB.prepare('UPDATE photo_codes SET used_by=?,used_at=? WHERE code=? AND used_by IS NULL').bind(pid,now(),code),
+        env.DB.prepare("INSERT INTO photo_quota(patient_id,paid_left,updated_at) VALUES(?,?,?) ON CONFLICT(patient_id) DO UPDATE SET paid_left=paid_left+excluded.paid_left,updated_at=excluded.updated_at").bind(pid,c.photos,now())]);
+      return J(200,{ok:true,added:c.photos,quota:await quota(env,pid)})}
+  }
+  if(path==='/v1/admin/photo-codes'){if(!await isOwnerUser(env,user))return J(403,{error:'Создавать коды может только автор приложения.'});
+    if(M==='POST'){const b=await body(req),n=Math.min(Math.max(+b.count||1,1),20),ph=Math.min(Math.max(+b.photos||50,1),5000),note=String(b.note||'').slice(0,80),out=[];
+      for(let i=0;i<n;i++){const code=PCODE();out.push(code);await env.DB.prepare('INSERT INTO photo_codes(code,photos,note,created_by,created_at) VALUES(?,?,?,?,?)').bind(code,ph,note,user.id,now()).run()}
+      return J(200,{codes:out,photos:ph})}
+    const r=await env.DB.prepare('SELECT c.code,c.photos,c.note,c.created_at,c.used_at,p.display_name FROM photo_codes c LEFT JOIN patients p ON p.id=c.used_by ORDER BY c.created_at DESC LIMIT 60').all();
+    const fam=await env.DB.prepare('SELECT p.display_name,q.total_used,q.free_used,q.paid_left FROM photo_quota q JOIN patients p ON p.id=q.patient_id ORDER BY q.updated_at DESC LIMIT 40').all();
+    return J(200,{codes:r.results,families:fam.results})}
   const cm=path.match(/^\/v1\/patients\/([^/]+)\/(cgm|cgm-key|cgm-import)$/);
   if(cm){const role=await roleIn(env,user.id,cm[1]);if(!role)return J(403,{error:'Нет доступа к этому дневнику.'});
     if(cm[2]==='cgm-key'&&M==='POST'){if(!ROLES[role].write)return J(403,{error:'Нужны права на запись.'});
@@ -240,7 +377,7 @@ async function medicalDoc(req,env){
 }
 
 /* ---------- Приём данных сенсора от xDrip+ (совместимо с Nightscout REST API v1) ---------- */
-async function nightscout(req,env,path){
+async function nightscout(req,env,path,ctx){
   if(!env.DB)return J(503,{error:'D1 не подключена'});await ensureSchema(env);
   const u=new URL(req.url);let key=(req.headers.get('api-secret')||u.searchParams.get('secret')||'').trim().toLowerCase();
   const tok=u.searchParams.get('token');if(!key&&tok)key=await sha1(tok);
@@ -255,6 +392,7 @@ async function nightscout(req,env,path){
     const rows=b.filter(e=>e&&(e.type==='sgv'||e.sgv!=null)&&+e.sgv>=20&&+e.sgv<=600&&+(e.date||Date.parse(e.dateString||''))>0).slice(0,2000);
     if(rows.length)await env.DB.batch(rows.map(e=>env.DB.prepare('INSERT OR REPLACE INTO cgm VALUES(?,?,?,?,?)').bind(pid,Math.round(+(e.date||Date.parse(e.dateString))),+e.sgv,String(e.direction||''),String(e.device||'').slice(0,60))));
     if(Math.random()<0.02)await env.DB.prepare('DELETE FROM cgm WHERE ts<?').bind(Date.now()-180*864e5).run();
+    if(rows.length){const job=checkAlerts(env,pid,false).catch(()=>{});if(ctx&&ctx.waitUntil)ctx.waitUntil(job);else await job}
     return J(200,rows);
   }
   if((p==='/api/v1/entries'||p==='/api/v1/entries/sgv'||p==='/api/v1/entries/current')&&M==='GET'){
@@ -267,14 +405,15 @@ async function nightscout(req,env,path){
   return J(200,[]);
 }
 
-export default{async fetch(req,env){
+export default{async scheduled(ev,env,ctx){if(env.DB)ctx.waitUntil(staleSweep(env))},
+async fetch(req,env,ctx){
   const path=new URL(req.url).pathname;
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});
   try{
     if(req.method==='GET'&&(path==='/'||path==='/health'))return J(200,{ok:true,service:'my-diabet food-photo',sync:!!env.DB});
     if(path==='/v1/food-photo'&&req.method==='POST')return await foodPhoto(req,env);
     if(path==='/v1/medical-doc'&&req.method==='POST')return await medicalDoc(req,env);
-    if(path.startsWith('/api/v1/'))return await nightscout(req,env,path);
+    if(path.startsWith('/api/v1/'))return await nightscout(req,env,path,ctx);
     if(path.startsWith('/v1/')||path.startsWith('/v2/'))return await sync(req,env,path);
     return J(404,{error:'Не найдено'});
   }catch(e){return J(500,{error:'Ошибка сервера: '+(e&&e.message||e)})}
