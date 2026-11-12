@@ -57,14 +57,16 @@ function paintDashboard(){
 
 /* График за 24 часа в «Аналитике сахара» */
 function chartSvg(hours,cw){
-  const to=Date.now(),from=to-hours*3600e3,pts=readings.filter(x=>x.t>=from);
+  const pred=window.DMPredict?DMPredict.now(readings):null,ext=pred&&pred.type?Math.min(pred.line[pred.line.length-1].t-Date.now(),hours*3600e3*0.25):0;
+  const nowT=Date.now(),to=nowT+Math.max(0,ext),from=nowT-hours*3600e3,pts=readings.filter(x=>x.t>=from);
   const W=Math.max(300,Math.round(cw||640)),H=W<600?190:230,pl=0,pr=0,pt=14,pb=22,ymax=Math.max(16,...pts.map(x=>x.g+1)),X=t=>pl+(t-from)/(to-from)*(W-pl-pr),Y=g=>pt+(1-g/ymax)*(H-pt-pb);
   let grid='';for(let g=4;g<=ymax;g+=4)grid+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(g)}" y2="${Y(g)}" stroke="#e2e8f0"/><text x="${pl+3}" y="${Y(g)-3}" font-size="11" text-anchor="start" fill="#64748b" stroke="#fff" stroke-width="3" paint-order="stroke">${g}</text>`;
   {const step=(hours<=3?1:hours<=6?1:hours<=12?2:4)*3600e3,t0=new Date(from);t0.setMinutes(0,0,0);let t=t0.getTime();if(t<from)t+=3600e3;while(new Date(t).getHours()%(step/3600e3))t+=3600e3;for(;t<=to;t+=step){const x=X(t),d=new Date(t);if(x<=pl+4||x>=W-pr-4)continue;const an=x<22?'start':x>W-22?'end':'middle';grid+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${pt}" y2="${H-pb}" stroke="#e2e8f0"/>`;grid+=`<text x="${x.toFixed(1)}" y="${H-6}" font-size="11" text-anchor="${an}" fill="#64748b">${String(d.getHours()).padStart(2,'0')}:00</text>`}}
   const band=`<rect x="${pl}" y="${Y(10)}" width="${W-pl-pr}" height="${Y(3.9)-Y(10)}" fill="#dcfce7" opacity=".7"/>`;
   let path='',prev=null;pts.forEach(p=>{const gap=prev&&p.t-prev.t>15*60e3;path+=(path===''||gap?'M':'L')+X(p.t).toFixed(1)+','+Y(p.g).toFixed(1);prev=p});
   const dots=pts.filter(p=>p.g<3.9||p.g>10).map(p=>`<circle cx="${X(p.t).toFixed(1)}" cy="${Y(p.g).toFixed(1)}" r="2.2" fill="${p.g<3.9?'#dc2626':'#f59e0b'}"/>`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${band}${grid}<path d="${path}" fill="none" stroke="#0d9488" stroke-width="2"/>${dots}</svg>`;
+  const fut=ext>0?`<line x1="${X(nowT).toFixed(1)}" x2="${X(nowT).toFixed(1)}" y1="${pt}" y2="${H-pb}" stroke="#94a3b8" stroke-dasharray="3 3"/>`+DMPredict.svg(pred,X,Y):'';
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${band}${grid}<path d="${path}" fill="none" stroke="#0d9488" stroke-width="2"/>${dots}${fut}</svg>`;
 }
 function stats(hours){const from=Date.now()-hours*3600e3,p=readings.filter(x=>x.t>=from);if(!p.length)return null;const n=p.length,avg=p.reduce((s,x)=>s+x.g,0)/n;
   return {n,avg,low:p.filter(x=>x.g<3.9).length/n*100,inr:p.filter(x=>x.g>=3.9&&x.g<=10).length/n*100,high:p.filter(x=>x.g>10).length/n*100,min:Math.min(...p.map(x=>x.g)),max:Math.max(...p.map(x=>x.g))}}
@@ -85,7 +87,7 @@ function paintGlucose(){
   const s=stats(hoursSel);const [cls,txt]=!L.fresh?['statusHigh','● Нет новых данных']:L.g<3.9?['statusLow','● Низкий']:L.g>10?['statusHigh','● Высокий']:['statusGood','● В норме'];
   box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div style="min-width:0;max-width:100%"><div class="muted">Глюкоза с сенсора · ${ago(L.age)}</div><div class="cgmNow" style="margin-top:4px"><b style="color:${L.g<3.9?'#dc2626':L.g>10?'#d97706':'var(--text)'}">${L.g.toFixed(1).replace('.',',')}</b><span class="cgmArrow">${L.arrow}</span><span class="muted">ммоль/л</span></div><div class="${cls} cgmStatus" style="margin-top:6px">${txt}${L.fresh&&L.trend?', '+L.trend:''}</div></div>
 <div class="row cgmHours" style="gap:6px">${[3,6,12,24].map(h=>`<button class="btn ${h===hoursSel?'':'secondary'}" style="padding:6px 10px" onclick="DMCgm.hours(${h})">${h} ч</button>`).join('')}</div></div>
-<div class="cgmChartTap" onclick="window.DMCgmBig&&DMCgmBig.open(${hoursSel})" title="Открыть график крупно">${chartSvg(hoursSel,box.clientWidth)}<span class="cgmZoom">⤢ Крупно, за дни и недели</span></div>
+${L.fresh&&window.DMPredict?DMPredict.banner(DMPredict.now(readings)):''}<div class="cgmChartTap" onclick="window.DMCgmBig&&DMCgmBig.open(${hoursSel})" title="Открыть график крупно">${chartSvg(hoursSel,box.clientWidth)}<span class="cgmZoom">⤢ Крупно, за дни и недели</span></div>
 ${s?`<div class="kpi cgmKpi" style="margin-top:6px"><div class="mini"><span class="muted">Среднее<span class="onMobile"><br>&nbsp;</span></span><b>${s.avg.toFixed(1)}</b></div><div class="mini"><span class="muted">В диапазоне<span class="onMobile"><br></span> 3,9–10</span><b>${Math.round(s.inr)}%</b></div><div class="mini"><span class="muted">Ниже 3,9</span><b style="color:#dc2626">${Math.round(s.low)}%</b></div><div class="mini"><span class="muted">Выше 10</span><b style="color:#d97706">${Math.round(s.high)}%</b></div><div class="mini onMobile"><span class="muted">Мин</span><b>${s.min.toFixed(1)}</b></div><div class="mini onMobile"><span class="muted">Макс</span><b>${s.max.toFixed(1)}</b></div><div class="mini onDesktop"><span class="muted">Мин / макс</span><b>${s.min.toFixed(1)} / ${s.max.toFixed(1)}</b></div></div><div class="muted" style="font-size:13px;margin-top:6px">За последние ${hoursSel} ч · сахар в ммоль/л</div>`:''}
 ${L.fresh&&window.DMSafety?DMSafety.noteFor(L.g):''}${!L.fresh?`<div class="notice" style="margin-top:8px">Сенсор не присылает данные уже ${ago(L.age).replace(" назад","")}. Проверьте xDrip+ на телефоне сына и интернет.</div>`:''}`;
 }

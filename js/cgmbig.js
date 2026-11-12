@@ -20,7 +20,7 @@
 <div class="cgmBigHead"><b>Сахар с сенсора</b><span id="cgmBigWhen" class="muted"></span><button class="navClose" aria-label="Закрыть" onclick="DMCgmBig.close()">✕</button></div>
 <div class="cgmBigRanges" id="cgmBigRanges"></div>
 <div class="cgmBigNav"><button class="btn secondary small" onclick="DMCgmBig.shift(-1)">‹ Раньше</button><button class="btn secondary small" id="cgmBigNow" onclick="DMCgmBig.now()">Сейчас</button><button class="btn secondary small" id="cgmBigNext" onclick="DMCgmBig.shift(1)">Позже ›</button></div>
-<div class="cgmBigTip" id="cgmBigTip"></div>
+<div id="cgmBigPred"></div><div class="cgmBigTip" id="cgmBigTip"></div>
 <div class="cgmBigChart" id="cgmBigChart"></div>
 <div class="cgmBigStats" id="cgmBigStats"></div>
 <label class="cgmBigMed"><input type="checkbox" id="cgmBigMedOn" onchange="DMCgmBig.median(this.checked)"> <span class="medSw"></span> Медиана <span class="muted">(красная линия — середина значений за скользящий отрезок)</span></label>
@@ -39,7 +39,13 @@
     document.addEventListener('keydown', e => { if (!el.classList.contains('open')) return; if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') shift(-1); if (e.key === 'ArrowRight') shift(1) });
     return el;
   }
-  function range() { const to = nowEnd() ? Date.now() : end; return { from: to - hours * 3600e3, to } }
+  let pred = null;
+  function range() {
+    const base = nowEnd() ? Date.now() : end;
+    pred = nowEnd() && window.DMPredict ? DMPredict.now((window.DMCgm && DMCgm.readings()) || []) : null;
+    const ext = pred && pred.type && hours <= 24 ? Math.min(pred.line[pred.line.length - 1].t - base, hours * 3600e3 * 0.2) : 0;
+    return { from: base - hours * 3600e3, to: base + Math.max(0, ext), now: base };
+  }
 
   async function load() {
     const my = ++token, { from, to } = range();
@@ -97,6 +103,7 @@
       let d = '', pen = false; med.forEach(p => { if (!p) { pen = false; return } d += (pen ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1); pen = true });
       s += `<path d="${d}" fill="none" stroke="#dc2626" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`;
     }
+    if (pred && pred.type && to > (range().now || to)) { const xn = X(Date.now()); s += `<line x1="${xn.toFixed(1)}" x2="${xn.toFixed(1)}" y1="${pt}" y2="${H - pb}" stroke="#64748b" stroke-dasharray="4 3"/><text x="${(xn + 4).toFixed(1)}" y="${pt + 12}" font-size="11" fill="#64748b">прогноз</text>` + DMPredict.svg(pred, X, Y) }
     s += `<g id="cgmBigCur"></g>`;
     return { s: `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="display:block;touch-action:pan-y">${s}</svg>`, X, Y, from, to };
   }
@@ -113,6 +120,7 @@
     if (loading) { ch.innerHTML = `<div class="muted" style="height:100%;display:flex;align-items:center;justify-content:center">Загружаю показания…</div>`; geo = null; stats(); return }
     if (!pts.length) { ch.innerHTML = `<div class="muted" style="height:100%;display:flex;align-items:center;justify-content:center;text-align:center">За этот период показаний нет</div>`; geo = null; stats(); return }
     const r = svg(W, H); ch.innerHTML = r.s; geo = r; stats(); paintTip();
+    const pb = document.getElementById('cgmBigPred'); if (pb) pb.innerHTML = pred && pred.type ? DMPredict.banner(pred) : '';
   }
   function stats() {
     const el = $('cgmBigStats'); if (!el) return;

@@ -3,7 +3,7 @@
    Сервер присылает сигнал, когда xDrip+ передал новое значение: низкий, очень низкий, высокий, быстро падает;
    «нет данных» — если на сервере включён cron. Настройки хранятся на сервере для каждого телефона отдельно. */
 (function () {
-  const DEF = { low: 3.9, high: 13, lowOn: true, highOn: true, fallOn: true, staleOn: true, repeat: 30, quietOn: false, quietFrom: '23:00', quietTo: '07:00', sound: true };
+  const DEF = { predLowOn: true, predHighOn: false, low: 3.9, high: 13, lowOn: true, highOn: true, fallOn: true, staleOn: true, repeat: 30, quietOn: false, quietFrom: '23:00', quietTo: '07:00', sound: true };
   const LS = 'dm-alerts';
   let msg = '', busy = false;
   const C = () => (window.db && db.cloud2) || {};
@@ -78,6 +78,8 @@
 ${chk('lowOn', 'Низкий сахар')}<div class="alVal">ниже ${num('low', 0.1)}</div>
 ${chk('highOn', 'Высокий сахар')}<div class="alVal">выше ${num('high', 0.5)}</div>
 ${chk('fallOn', 'Быстро падает')}<div class="alVal muted">стрелка ↓ или ⇊</div>
+${chk('predLowOn', 'Прогноз низкого')}<div class="alVal muted">за 5–45 мин до</div>
+${chk('predHighOn', 'Прогноз высокого')}<div class="alVal muted">за 5–45 мин до</div>
 ${chk('staleOn', 'Нет данных с сенсора')}<div class="alVal muted">дольше 30 мин</div>
 </div>
 <div class="muted alNote">Очень низкий сахар (ниже 3,0) приходит всегда и повторяется каждые 10 минут.</div>

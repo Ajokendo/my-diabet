@@ -121,33 +121,51 @@ async function pushSend(env,row,payload,urgent){
   const r=await fetch(sub.endpoint,{method:'POST',headers:{'TTL':urgent?'600':'1800','Urgency':urgent?'high':'normal','Content-Encoding':'aes128gcm','Content-Type':'application/octet-stream','Authorization':`vapid t=${h}.${c}.${b64u(sig)}, k=${V.pub}`},body});
   if(r.status===404||r.status===410)await env.DB.prepare('DELETE FROM push_subs WHERE endpoint=?').bind(row.endpoint).run();
   return r.status}
-const PREF_DEF={low:3.9,high:13,lowOn:true,highOn:true,fallOn:true,staleOn:true,repeat:30,quietOn:false,quietFrom:'23:00',quietTo:'07:00',sound:true,tz:'Asia/Bishkek'};
+const PREF_DEF={predLowOn:true,predHighOn:false,low:3.9,high:13,lowOn:true,highOn:true,fallOn:true,staleOn:true,repeat:30,quietOn:false,quietFrom:'23:00',quietTo:'07:00',sound:true,tz:'Asia/Bishkek'};
 function localMin(tz){try{const p=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()).split(':');return (+p[0]%24)*60+(+p[1])}catch(e){const d=new Date();return d.getUTCHours()*60+d.getUTCMinutes()}}
 function inQuiet(P){if(!P.quietOn)return false;const m=localMin(P.tz),a=(s=>{const[x,y]=String(s).split(':');return(+x||0)*60+(+y||0)})(P.quietFrom),b=(s=>{const[x,y]=String(s).split(':');return(+x||0)*60+(+y||0)})(P.quietTo);return a<=b?(m>=a&&m<b):(m>=a||m<b)}
 const ARR={DoubleUp:'⇈',SingleUp:'↑',FortyFiveUp:'↗',Flat:'→',FortyFiveDown:'↘',SingleDown:'↓',DoubleDown:'⇊'};
+/* Прогноз: прямая по последним ~20 мин; если пересекает порог в ближайшие 45 мин — «через ~N мин». Как в js/predict.js */
+function predict(r,low,high){
+  if(!r||r.length<3)return null;const last=r[r.length-1];if(Date.now()-last.t>12*60e3)return null;
+  const p=r.filter(x=>x.t>=last.t-21*60e3);if(p.length<3||last.t-p[0].t<9*60e3)return null;
+  const n=p.length,xs=p.map(q=>(q.t-last.t)/60e3),ys=p.map(q=>q.g),mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;
+  let sxx=0,sxy=0;for(let i=0;i<n;i++){sxx+=(xs[i]-mx)**2;sxy+=(xs[i]-mx)*(ys[i]-my)}if(!sxx)return null;
+  const rate=sxy/sxx,c=my-rate*mx;let sd=0;for(let i=0;i<n;i++)sd+=(ys[i]-(c+rate*xs[i]))**2;if(Math.sqrt(sd/n)>0.6)return null;
+  const g=last.g;
+  if(rate<=-0.05&&g>low){const m=(g-low)/-rate;if(m<=45)return{type:'low',minutes:Math.max(5,Math.round(m/5)*5),per5:rate*5}}
+  if(rate>=0.07&&g<high){const m=(high-g)/rate;if(m<=45)return{type:'high',minutes:Math.max(5,Math.round(m/5)*5),per5:rate*5}}
+  return null}
 async function checkAlerts(env,pid,stale){
   const subs=(await env.DB.prepare('SELECT * FROM push_subs WHERE patient_id=?').bind(pid).all()).results;if(!subs.length)return;
   const L=await env.DB.prepare('SELECT ts,mgdl,direction FROM cgm WHERE patient_id=? ORDER BY ts DESC LIMIT 1').bind(pid).first();if(!L)return;
   const pat=await env.DB.prepare('SELECT display_name FROM patients WHERE id=?').bind(pid).first(),who=(pat&&pat.display_name)||'';
   const age=(Date.now()-L.ts)/60000,g=Math.round(L.mgdl/18.016*10)/10,gs=String(g).replace('.',','),arr=ARR[L.direction]||'';
+  const recent=(await env.DB.prepare('SELECT ts,mgdl FROM cgm WHERE patient_id=? AND ts>? ORDER BY ts').bind(pid,Date.now()-25*60e3).all()).results.map(x=>({t:x.ts,g:x.mgdl/18.016}));
   for(const row of subs){
     const P={...PREF_DEF,...JSON.parse(row.prefs||'{}')},S=JSON.parse(row.state||'{}'),t=Date.now(),out=[];
     const cond={};
     if(stale){cond.stale=P.staleOn&&age>=30&&age<12*60}
     else if(age<=15){
       cond.urgent=g<3.0;cond.low=P.lowOn&&!cond.urgent&&g<P.low;cond.high=P.highOn&&g>P.high&&!inQuiet(P);
-      cond.fall=P.fallOn&&(L.direction==='DoubleDown'||(L.direction==='SingleDown'&&g<7))&&!cond.low&&!cond.urgent&&!inQuiet(P);cond.stale=false}
+      const pr=predict(recent,+P.low||3.9,+P.high||13);
+      cond.predLow=P.predLowOn&&!!pr&&pr.type==='low'&&!cond.low&&!cond.urgent;
+      cond.predHigh=P.predHighOn&&!!pr&&pr.type==='high'&&!cond.high&&!inQuiet(P);
+      cond.fall=P.fallOn&&(L.direction==='DoubleDown'||(L.direction==='SingleDown'&&g<7))&&!cond.low&&!cond.urgent&&!cond.predLow&&!inQuiet(P);cond.stale=false;
+      S._pr=pr}
     else continue;
     for(const [type,on] of Object.entries(cond)){
       if(!on){if(S[type])delete S[type];continue}
-      const rep=(type==='urgent'?10:type==='stale'?60:Math.max(10,+P.repeat||30))*60e3;
+      const rep=(type==='urgent'?10:type==='stale'?60:type==='predLow'||type==='predHigh'?Math.max(30,+P.repeat||30):Math.max(10,+P.repeat||30))*60e3;
       if(S[type]&&t-S[type]<rep)continue;S[type]=t;
       const tm=new Intl.DateTimeFormat('ru-RU',{timeZone:P.tz||'Asia/Bishkek',hour:'2-digit',minute:'2-digit'}).format(new Date(L.ts));
-      const T={urgent:`СРОЧНО: очень низкий сахар ${gs} ${arr}`,low:`Низкий сахар: ${gs} ${arr}`,high:`Высокий сахар: ${gs} ${arr}`,fall:`Сахар быстро падает: ${gs} ${arr}`,stale:`Нет данных с сенсора ${Math.round(age)} мин`}[type];
-      const B=type==='stale'?`${who?who+': ':''}последнее значение ${gs} ммоль/л в ${tm}. Проверьте телефон с сенсором: Bluetooth и интернет.`:`${who?who+' · ':''}${tm}. Проверьте и действуйте по плану врача.`;
-      out.push({type,payload:{title:T,body:B,tag:'dm-'+type,urgent:type==='urgent'||type==='low',sound:!!P.sound,url:'./'}});
+      const pr=S._pr,pm=pr?pr.minutes:0,p5=pr?String(Math.abs(Math.round(pr.per5*10)/10)).replace('.',','):'';
+      const T={predLow:`Прогноз: сахар может стать ниже ${String(P.low).replace('.',',')} через ~${pm} мин`,predHigh:`Прогноз: сахар может стать выше ${String(P.high).replace('.',',')} через ~${pm} мин`,urgent:`СРОЧНО: очень низкий сахар ${gs} ${arr}`,low:`Низкий сахар: ${gs} ${arr}`,high:`Высокий сахар: ${gs} ${arr}`,fall:`Сахар быстро падает: ${gs} ${arr}`,stale:`Нет данных с сенсора ${Math.round(age)} мин`}[type];
+      const B=type==='predLow'||type==='predHigh'?`${who?who+' · ':''}сейчас ${gs} ${arr}, ${type==='predLow'?'падает':'растёт'} на ${p5} за 5 мин (${tm}). Прогноз примерный — проверьте и действуйте по плану врача.`:type==='stale'?`${who?who+': ':''}последнее значение ${gs} ммоль/л в ${tm}. Проверьте телефон с сенсором: Bluetooth и интернет.`:`${who?who+' · ':''}${tm}. Проверьте и действуйте по плану врача.`;
+      out.push({type,payload:{title:T,body:B,tag:'dm-'+type,urgent:type==='urgent'||type==='low'||type==='predLow',sound:!!P.sound,url:'./'}});
     }
     for(const o of out)try{await pushSend(env,row,o.payload,o.payload.urgent)}catch(e){}
+    delete S._pr;
     await env.DB.prepare('UPDATE push_subs SET state=? WHERE endpoint=?').bind(JSON.stringify(S),row.endpoint).run();
   }
 }
