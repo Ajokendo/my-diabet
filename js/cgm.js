@@ -82,7 +82,7 @@ function gmiHtml(){if(!gmi)return '';const ok=gmi.days>=13.5&&gmi.cover>=70;
 function paintGlucose(){
   const box=document.getElementById('cgmCard');if(!box)return;const manual=document.querySelector('#dashboard .glucoseManual');
   const L=latest();
-  if(!L){box.innerHTML=ready()&&connected?`<div class="muted" style="margin-bottom:8px">Сенсор подключён — ждём первые показания от xDrip+ (обычно до 5 минут).</div>`:'';if(manual)manual.style.display='';return}
+  if(!L){box.innerHTML=ready()&&connected?`<div class="muted" style="margin-bottom:8px">Сенсор подключён — ждём первые показания (обычно до 5 минут).</div>`:'';if(manual)manual.style.display='';return}
   if(manual)manual.style.display='none';
   const s=stats(hoursSel);const [cls,txt]=!L.fresh?['statusHigh','● Нет новых данных']:L.g<3.9?['statusLow','● Низкий']:L.g>10?['statusHigh','● Высокий']:['statusGood','● В норме'];
   box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div style="min-width:0;max-width:100%"><div class="muted">Глюкоза с сенсора · ${ago(L.age)}</div><div class="cgmNow" style="margin-top:4px"><b style="color:${L.g<3.9?'#dc2626':L.g>10?'#d97706':'var(--text)'}">${L.g.toFixed(1).replace('.',',')}</b><span class="cgmArrow">${L.arrow}</span><span class="muted">ммоль/л</span></div><div class="${cls} cgmStatus" style="margin-top:6px">${txt}${L.fresh&&L.trend?', '+L.trend:''}</div></div>

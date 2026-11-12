@@ -197,7 +197,7 @@ ${lastError?`<div class="notice" style="margin-top:8px">${esc(lastError)}</div>`
 <h3 style="margin-top:18px">Подключиться к другому дневнику</h3><div style="display:grid;gap:8px"><input id="s2JoinCode" class="input" placeholder="КОД" style="width:100%;text-align:center;text-transform:uppercase;letter-spacing:2px;box-sizing:border-box"><button class="btn secondary" style="width:100%;text-align:center" onclick="DMSync.acceptCode()">Подключиться</button></div></div></div>`;
   members();
   try{window.DMCgm&&DMCgm.paintFamily();window.DMCgm&&DMCgm.refresh()}catch(e){}
-  try{window.DMAlerts&&DMAlerts.render();window.DMPhotoQuota&&DMPhotoQuota.renderAdmin()}catch(e){}
+  try{window.DMSources&&DMSources.render();window.DMAlerts&&DMAlerts.render();window.DMPhotoQuota&&DMPhotoQuota.renderAdmin()}catch(e){}
 }
 function modeUi(){document.getElementById('s2CodeBox').style.display=v('s2Mode')==='join'?'':'none'}
 

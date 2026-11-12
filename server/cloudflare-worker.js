@@ -8,7 +8,8 @@
 //              и создание кодов. Если не задано — без лимита первая созданная семья.
 //              FREE_PHOTOS — бесплатных распознаваний для новой семьи (по умолчанию 10).
 //              PHOTO_CONTACT — куда писать за кодом (показывается в приложении), например «WhatsApp +996 …».
-//   Триггер (необязательно): Cron «*/10 * * * *» — уведомление «нет данных с сенсора».
+//   Триггер: Cron «*/5 * * * *» — забирать сахар из облаков (LibreLinkUp, Dexcom Share, Nightscout) и уведомление «нет данных».
+//   Секрет (желательно): CRED_KEY — любая длинная строка; ею шифруются пароли облаков сенсоров в базе.
 const REFS={card:'банковская карта 85,6 × 54 мм',plate:'тарелка/пиала, внешний диаметр {d} мм',none:null};
 const CORS={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, X-Access-Code, Authorization, api-secret','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS'};
 const J=(s,o)=>new Response(JSON.stringify(o),{status:s,headers:{...CORS,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
@@ -61,6 +62,7 @@ const SCHEMA=[
  "CREATE TABLE IF NOT EXISTS cgm_keys(key_hash TEXT PRIMARY KEY,patient_id TEXT NOT NULL,created_at TEXT NOT NULL)",
  "CREATE TABLE IF NOT EXISTS cgm(patient_id TEXT NOT NULL,ts INTEGER NOT NULL,mgdl REAL NOT NULL,direction TEXT,device TEXT,PRIMARY KEY(patient_id,ts))",
  "CREATE TABLE IF NOT EXISTS kv(k TEXT PRIMARY KEY,v TEXT)",
+ "CREATE TABLE IF NOT EXISTS cgm_sources(patient_id TEXT PRIMARY KEY,kind TEXT NOT NULL,cfg TEXT NOT NULL,state TEXT,last_poll INTEGER,last_ok INTEGER,last_err TEXT,created_at TEXT NOT NULL)",
  "CREATE TABLE IF NOT EXISTS push_subs(endpoint TEXT PRIMARY KEY,patient_id TEXT NOT NULL,user_id TEXT NOT NULL,sub TEXT NOT NULL,prefs TEXT,state TEXT,created_at TEXT NOT NULL)",
  "CREATE TABLE IF NOT EXISTS photo_quota(patient_id TEXT PRIMARY KEY,free_used INTEGER NOT NULL DEFAULT 0,paid_left INTEGER NOT NULL DEFAULT 0,total_used INTEGER NOT NULL DEFAULT 0,updated_at TEXT)",
  "CREATE TABLE IF NOT EXISTS photo_codes(code TEXT PRIMARY KEY,photos INTEGER NOT NULL,note TEXT,created_by TEXT,created_at TEXT NOT NULL,used_by TEXT,used_at TEXT)"
@@ -171,6 +173,76 @@ async function checkAlerts(env,pid,stale){
 }
 async function staleSweep(env){await ensureSchema(env);const r=(await env.DB.prepare('SELECT DISTINCT patient_id FROM push_subs').all()).results;for(const x of r)try{await checkAlerts(env,x.patient_id,true)}catch(e){}}
 
+
+/* ---------- Облака сенсоров: LibreLinkUp (FreeStyle Libre), Dexcom Share, Nightscout ----------
+   Пароли хранятся в D1 зашифрованными (AES-GCM, ключ из секрета CRED_KEY). Опрос — по cron и при открытии приложения. */
+async function credKey(env){
+  let raw=env.CRED_KEY;
+  if(!raw){let r=await env.DB.prepare("SELECT v FROM kv WHERE k='credkey'").first();if(!r){await env.DB.prepare("INSERT OR IGNORE INTO kv VALUES('credkey',?)").bind(b64u(rnd(32))).run();r=await env.DB.prepare("SELECT v FROM kv WHERE k='credkey'").first()}raw=r.v}
+  const h=await crypto.subtle.digest('SHA-256',enc('dm-cred:'+raw));return crypto.subtle.importKey('raw',h,'AES-GCM',false,['encrypt','decrypt'])}
+async function seal(env,obj){const iv=rnd(12),k=await credKey(env);const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,enc(JSON.stringify(obj))));return b64u(iv)+'.'+b64u(ct)}
+async function unseal(env,str){const [a,b]=String(str).split('.');const k=await credKey(env);const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(a)},k,ub64(b));return JSON.parse(new TextDecoder().decode(pt))}
+const LLU_ARROW={1:'SingleDown',2:'FortyFiveDown',3:'Flat',4:'FortyFiveUp',5:'SingleUp'};
+const DX_ARROW=['NONE','DoubleUp','SingleUp','FortyFiveUp','Flat','FortyFiveDown','SingleDown','DoubleDown','NOT COMPUTABLE','RATE OUT OF RANGE'];
+function lluTime(s){const m=String(s||'').match(/^(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)\s*(AM|PM)?$/i);if(!m)return Date.parse(s)||0;let h=+m[4]%12;if((m[7]||'').toUpperCase()==='PM')h+=12;if(!m[7])h=+m[4];return Date.UTC(+m[3],+m[1]-1,+m[2],h,+m[5],+m[6])}
+function lluHeaders(env,st){const h={'product':'llu.android','version':env.LLU_VERSION||'4.16.0','Accept':'application/json','Content-Type':'application/json','cache-control':'no-cache'};if(st&&st.token){h.Authorization='Bearer '+st.token;h['Account-Id']=st.acc}return h}
+async function lluLogin(env,cfg){
+  let base=cfg.base||'https://api.libreview.io';
+  for(let i=0;i<3;i++){
+    const r=await fetch(base+'/llu/auth/login',{method:'POST',headers:lluHeaders(env),body:JSON.stringify({email:cfg.user,password:cfg.pass})});
+    const j=await r.json().catch(()=>({}));
+    if(j&&j.data&&j.data.redirect&&j.data.region){base='https://api-'+j.data.region+'.libreview.io';continue}
+    if(j&&j.status===4)throw new Error('Откройте приложение LibreLinkUp на телефоне и примите новые условия использования, затем попробуйте снова.');
+    if(!r.ok||!j.data||!j.data.authTicket)throw new Error(j?.error?.message==='notAuthenticated'||r.status===401?'LibreLinkUp: неверная почта или пароль.':'LibreLinkUp не пустил ('+(j?.error?.message||r.status)+').');
+    return {base,token:j.data.authTicket.token,exp:(j.data.authTicket.expires||0)*1000,acc:await sha256(String(j.data.user.id))}}
+  throw new Error('LibreLinkUp: не удалось определить регион.')}
+async function lluFetch(env,cfg,st){
+  if(!st.token||Date.now()>(st.exp||0)-3600e3)Object.assign(st,await lluLogin(env,cfg));
+  let r=await fetch(st.base+'/llu/connections',{headers:lluHeaders(env,st)});
+  if(r.status===401){Object.assign(st,await lluLogin(env,cfg));r=await fetch(st.base+'/llu/connections',{headers:lluHeaders(env,st)})}
+  const j=await r.json().catch(()=>({}));const list=Array.isArray(j.data)?j.data:[];
+  if(!list.length)throw new Error('В LibreLinkUp нет подключённых людей. В приложении LibreLink на телефоне ребёнка пригласите этот аккаунт LibreLinkUp.');
+  const c=list.find(x=>x.patientId===cfg.patient)||list[0];st.patient=c.patientId;st.name=[c.firstName,c.lastName].filter(Boolean).join(' ');st.people=list.map(x=>[x.firstName,x.lastName].filter(Boolean).join(' '));
+  const g=await fetch(st.base+'/llu/connections/'+c.patientId+'/graph',{headers:lluHeaders(env,st)}).then(r=>r.json()).catch(()=>({}));
+  const rows=[];const push=(m,dir)=>{if(!m)return;const v=+m.ValueInMgPerDl||+m.Value*18.016;const t=lluTime(m.FactoryTimestamp||m.Timestamp);if(v>=20&&v<=600&&t)rows.push({t,v,d:dir||''})};
+  (g?.data?.graphData||[]).forEach(m=>push(m,''));const cur=g?.data?.connection?.glucoseMeasurement||c.glucoseMeasurement;push(cur,LLU_ARROW[cur&&cur.TrendArrow]||'');
+  return rows}
+const DX_BASE={us:'https://share2.dexcom.com/ShareWebServices/Services',ous:'https://shareous1.dexcom.com/ShareWebServices/Services',jp:'https://share.dexcom.jp/ShareWebServices/Services'};
+const DX_APP={us:'d89443d2-327c-4a6f-89e5-496bbb0317db',ous:'d89443d2-327c-4a6f-89e5-496bbb0317db',jp:'d8665ade-9673-4e27-9ff6-92db4ce13d13'};
+async function dxPost(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:body?JSON.stringify(body):undefined});const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){j=t}if(!r.ok)throw Object.assign(new Error(typeof j==='object'&&j?.Message||('Dexcom '+r.status)),{code:j?.Code});return j}
+async function dxLogin(cfg){const reg=cfg.region||'ous',B=DX_BASE[reg],app=DX_APP[reg];
+  let acc;try{acc=await dxPost(B+'/General/AuthenticatePublisherAccount',{accountName:cfg.user,password:cfg.pass,applicationId:app})}catch(e){throw new Error('Dexcom: неверный логин или пароль, либо выбран не тот регион.')}
+  const sid=await dxPost(B+'/General/LoginPublisherAccountById',{accountId:acc,password:cfg.pass,applicationId:app});return {sid,reg}}
+async function dxFetch(cfg,st,minutes){
+  if(!st.sid)Object.assign(st,await dxLogin(cfg));const B=DX_BASE[st.reg||cfg.region||'ous'];
+  const get=()=>dxPost(B+`/Publisher/ReadPublisherLatestGlucoseValues?sessionId=${encodeURIComponent(st.sid)}&minutes=${minutes}&maxCount=${Math.ceil(minutes/5)+2}`);
+  let a;try{a=await get()}catch(e){Object.assign(st,await dxLogin(cfg));a=await get()}
+  if(!Array.isArray(a))return [];if(!a.length&&!st.warned){st.warned=1}
+  return a.map(x=>({t:+(String(x.WT||x.ST||'').match(/\d+/)||[0])[0],v:+x.Value,d:typeof x.Trend==='number'?DX_ARROW[x.Trend]:String(x.Trend||'')})).filter(x=>x.t&&x.v>=20&&x.v<=600)}
+async function nsFetch(cfg,since){
+  let base=String(cfg.url||'').trim().replace(/\/+$/,'').replace(/\/api\/v1.*$/,'');const U=new URL(base);let tok='';if(U.username){tok=decodeURIComponent(U.username);U.username='';U.password=''}base=U.toString().replace(/\/+$/,'');
+  const secret=String(cfg.pass||tok||'').trim(),isTok=secret&&/-[0-9a-f]{8,}$/i.test(secret);
+  const q=`${base}/api/v1/entries/sgv.json?count=2000&find[date][$gt]=${since}`+(isTok?`&token=${encodeURIComponent(secret)}`:'');
+  const h={'Accept':'application/json'};if(secret&&!isTok)h['api-secret']=await sha1(secret);
+  const r=await fetch(q,{headers:h});if(r.status===401||r.status===403)throw new Error('Nightscout не пустил: нужен API secret или токен для чтения.');if(!r.ok)throw new Error('Nightscout ответил ошибкой '+r.status);
+  const a=await r.json();return (Array.isArray(a)?a:[]).map(e=>({t:Math.round(+e.date),v:+e.sgv,d:String(e.direction||'')})).filter(x=>x.t&&x.v>=20&&x.v<=600)}
+const SRC_NAME={libre:'LibreLinkUp',dexcom:'Dexcom Share',nightscout:'Nightscout'};
+async function pollSource(env,row,force){
+  const now=Date.now();if(!force&&row.last_poll&&now-row.last_poll<4*60e3)return {skipped:true};
+  await env.DB.prepare('UPDATE cgm_sources SET last_poll=? WHERE patient_id=?').bind(now,row.patient_id).run();
+  const cfg=await unseal(env,row.cfg),st=JSON.parse(row.state||'{}');let rows=[],err=null;
+  const last=await env.DB.prepare('SELECT MAX(ts) m FROM cgm WHERE patient_id=?').bind(row.patient_id).first();const since=Math.max(+(last&&last.m)||0,now-24*3600e3);
+  try{
+    if(row.kind==='libre')rows=await lluFetch(env,cfg,st);
+    else if(row.kind==='dexcom')rows=await dxFetch(cfg,st,Math.min(1440,Math.max(10,Math.ceil((now-since)/60e3)+10)));
+    else if(row.kind==='nightscout')rows=await nsFetch(cfg,since);
+  }catch(e){err=e.message||String(e)}
+  rows=rows.filter(x=>x.t>since-60e3);
+  for(let i=0;i<rows.length;i+=300)await env.DB.batch(rows.slice(i,i+300).map(x=>env.DB.prepare('INSERT OR IGNORE INTO cgm VALUES(?,?,?,?,?)').bind(row.patient_id,x.t,x.v,x.d,SRC_NAME[row.kind])));
+  await env.DB.prepare('UPDATE cgm_sources SET state=?,last_ok=?,last_err=? WHERE patient_id=?').bind(JSON.stringify(st),err?row.last_ok:now,err,row.patient_id).run();
+  if(rows.length)try{await checkAlerts(env,row.patient_id,false)}catch(e){}
+  return {added:rows.length,err,name:st.name||'',people:st.people||[]}}
+async function pollAll(env){const r=(await env.DB.prepare('SELECT * FROM cgm_sources').all()).results;for(const x of r)try{await pollSource(env,x,false)}catch(e){}}
 /* ---------- Распознавание фото: лимит на семью и коды пополнения ---------- */
 async function isOwnerFamily(env,pid){
   const list=String(env.OWNER_EMAILS||'').split(/[,; ]+/).map(x=>x.trim().toLowerCase()).filter(Boolean);
@@ -273,6 +345,23 @@ async function sync(req,env,path){
     return J(200,{ok:true,patient:{id:p.id,displayName:p.display_name,role:ex||inv.role}});
   }
   if(path==='/v1/push/key'&&M==='GET')return J(200,{key:(await vapid(env)).pub});
+  const cs=path.match(/^\/v1\/patients\/([^/]+)\/cgm-source$/);
+  if(cs){const pid=cs[1],role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа к этому дневнику.'});
+    const row=await env.DB.prepare('SELECT * FROM cgm_sources WHERE patient_id=?').bind(pid).first();
+    if(M==='GET'){if(!row)return J(200,{source:null});let u='';try{const c=await unseal(env,row.cfg);u=c.user||c.url||''}catch(e){}const st=JSON.parse(row.state||'{}');
+      return J(200,{source:{kind:row.kind,name:SRC_NAME[row.kind],user:u.replace(/(.{2}).*(@.*)/,'$1•••$2'),lastOk:row.last_ok,lastErr:row.last_err,person:st.name||'',people:st.people||[]}})}
+    if(M==='POST'){if(!ROLES[role].write)return J(403,{error:'Нужны права на запись.'});const b=await body(req);
+      if(b.remove){await env.DB.prepare('DELETE FROM cgm_sources WHERE patient_id=?').bind(pid).run();return J(200,{ok:true})}
+      if(b.poll){if(!row)return J(404,{error:'Облако не подключено.'});const r=await pollSource(env,row,true);return J(200,r)}
+      const kind=String(b.kind||'');if(!SRC_NAME[kind])return J(400,{error:'Неизвестный источник.'});
+      const cfg={user:String(b.user||'').trim(),pass:String(b.pass||''),region:['us','ous','jp'].includes(b.region)?b.region:'ous',url:String(b.url||'').trim()};
+      if(kind==='nightscout'?!cfg.url:(!cfg.user||!cfg.pass))return J(400,{error:kind==='nightscout'?'Укажите адрес Nightscout.':'Укажите логин и пароль.'});
+      const tmp={patient_id:pid,kind,cfg:await seal(env,cfg),state:'{}',last_poll:0,last_ok:null};
+      await env.DB.prepare('INSERT INTO cgm_sources(patient_id,kind,cfg,state,last_poll,last_ok,last_err,created_at) VALUES(?,?,?,?,0,NULL,NULL,?) ON CONFLICT(patient_id) DO UPDATE SET kind=excluded.kind,cfg=excluded.cfg,state=excluded.state,last_poll=0,last_ok=NULL,last_err=NULL').bind(pid,kind,tmp.cfg,'{}',now()).run();
+      const r=await pollSource(env,tmp,true);
+      if(r.err){await env.DB.prepare('DELETE FROM cgm_sources WHERE patient_id=?').bind(pid).run();return J(400,{error:r.err})}
+      return J(200,{ok:true,added:r.added,person:r.name,people:r.people})}
+  }
   const pq=path.match(/^\/v1\/patients\/([^/]+)\/(push|push-test|photo-quota|photo-code)$/);
   if(pq){const pid=pq[1],role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа к этому дневнику.'});
     if(pq[2]==='push'&&M==='POST'){const b=await body(req),sub=b.subscription;
@@ -319,11 +408,11 @@ async function sync(req,env,path){
       const rows=(Array.isArray(arr)?arr:[]).filter(e=>e&&+e.sgv>=20&&+e.sgv<=600&&+e.date>=from&&+e.date<to);
       for(let i=0;i<rows.length;i+=500)await env.DB.batch(rows.slice(i,i+500).map(e=>env.DB.prepare('INSERT OR IGNORE INTO cgm VALUES(?,?,?,?,?)').bind(cm[1],Math.round(+e.date),+e.sgv,String(e.direction||''),String(e.device||'').slice(0,60))));
       return J(200,{found:rows.length,first:rows.length?Math.min(...rows.map(e=>+e.date)):null})}
-    if(cm[2]==='cgm'&&M==='GET'){const q=new URL(req.url).searchParams;const since=Math.max(+q.get('since')||0,Date.now()-200*864e5);
+    if(cm[2]==='cgm'&&M==='GET'){try{const sr=await env.DB.prepare('SELECT * FROM cgm_sources WHERE patient_id=?').bind(cm[1]).first();if(sr)await pollSource(env,sr,false)}catch(e){}const q=new URL(req.url).searchParams;const since=Math.max(+q.get('since')||0,Date.now()-200*864e5);
       const r=await env.DB.prepare('SELECT ts,mgdl,direction FROM cgm WHERE patient_id=? AND ts>? ORDER BY ts LIMIT 5000').bind(cm[1],since).all();
       const k=await env.DB.prepare('SELECT created_at FROM cgm_keys WHERE patient_id=?').bind(cm[1]).first();
       let dev=null;try{dev=await env.DB.prepare('SELECT device FROM cgm WHERE patient_id=? ORDER BY ts DESC LIMIT 1').bind(cm[1]).first()}catch(e){}
-      return J(200,{connected:!!k,device:dev?.device||'',readings:r.results.map(x=>({t:x.ts,g:Math.round(x.mgdl/18.016*10)/10,d:x.direction||''}))})}
+      const src=await env.DB.prepare('SELECT kind FROM cgm_sources WHERE patient_id=?').bind(cm[1]).first();return J(200,{connected:!!k||!!src,source:src?SRC_NAME[src.kind]:null,device:dev?.device||'',readings:r.results.map(x=>({t:x.ts,g:Math.round(x.mgdl/18.016*10)/10,d:x.direction||''}))})}
   }
   if(M==='POST'&&(path==='/v2/sync/push'||path==='/v2/sync/pull')){
     const b=await body(req),pid=String(b.patientId||''),role=await roleIn(env,user.id,pid);if(!role)return J(403,{error:'Нет доступа к пациенту.'});
@@ -423,7 +512,7 @@ async function nightscout(req,env,path,ctx){
   return J(200,[]);
 }
 
-export default{async scheduled(ev,env,ctx){if(env.DB)ctx.waitUntil(staleSweep(env))},
+export default{async scheduled(ev,env,ctx){if(env.DB)ctx.waitUntil((async()=>{await ensureSchema(env);try{await pollAll(env)}catch(e){}if(new Date().getMinutes()%10<5)await staleSweep(env)})())},
 async fetch(req,env,ctx){
   const path=new URL(req.url).pathname;
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});

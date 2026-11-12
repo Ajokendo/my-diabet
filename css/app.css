@@ -551,3 +551,11 @@ html.dark .card,html.dark .stickyHead{box-shadow:none}
 .noInsBox{grid-column:1 / -1;margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}.noInsRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:4px}
 .noInsRow{grid-template-columns:1fr!important}.noInsRow .btn{width:100%}
 .insModal .insBox{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}.insModal .insBody{overflow:visible!important}
+
+/* v64.45: облака сенсоров */
+.srcOpts{display:grid;gap:8px}.srcOpt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;font:inherit;text-align:left;cursor:pointer;color:var(--text)}
+.srcOpt b{font-size:15px}.srcOpt span{font-size:12.5px;color:var(--muted)}.srcOpt.on{border-color:#14b8a6;background:#f0fdfa}
+.srcForm{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}.srcSteps{padding-left:20px;margin:0 0 10px;line-height:1.45}.srcSteps li{margin:3px 0}
+.srcNote{font-size:12px;margin-top:8px;line-height:1.4}.srcNow{background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:10px 12px}
+.srcBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.srcErr{color:#b91c1c;margin-top:4px}.srcMsg{margin-top:10px}
+.srcOther{margin-top:12px}.srcOther summary{cursor:pointer;font-weight:700}
