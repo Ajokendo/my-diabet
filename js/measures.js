@@ -33,8 +33,8 @@
     let out = [];
     for (const [re, l] of BY_NAME) if (re.test(f.name)) { out = l; break }
     const cat = BY_CAT[f.category] || [];
-    const seen = new Set(out.map(x => x[0]));
-    return out.concat(cat.filter(x => !seen.has(x[0]))).slice(0, 4);
+    const w1 = l => l.split(' ')[0], seen = new Set(out.map(x => w1(x[0])));
+    return out.concat(cat.filter(x => !seen.has(w1(x[0])))).slice(0, 4);
   }
   const N = [0.5, 1, 1.5, 2, 3, 4, 5];
   const fmtN = n => String(n).replace('.', ',');
