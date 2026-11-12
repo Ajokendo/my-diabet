@@ -34,6 +34,7 @@
     let box = $('cgmSources');
     if (!box) { box = document.createElement('div'); box.id = 'cgmSources'; box.className = 'card'; box.style.marginTop = '14px'; const after = $('cgmFamily'); after && after.nextSibling ? host.insertBefore(box, after.nextSibling) : host.appendChild(box) }
     if (box.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName)) return;
+    const otherOpen = !!window.DMSources && DMSources._o;
     const canWrite = C().role !== 'viewer';
     let html = `<h3 style="margin-top:0">Другие сенсоры</h3>`;
     if (src) {
@@ -45,7 +46,7 @@ ${canWrite ? `<div class="srcBtns"><button class="btn secondary" ${busy ? 'disab
 ${form ? `<div class="srcForm">${formHtml(form)}<button class="btn" style="width:100%;margin-top:10px" ${busy ? 'disabled' : ''} onclick="DMSources.save()">${busy ? 'Проверяю…' : 'Подключить'}</button>
 <div class="muted srcNote">Пароль сохраняется на нашем сервере в зашифрованном виде и нужен только для того, чтобы забирать сахар каждые 5 минут. Это неофициальный способ, которым пользуются Nightscout и другие приложения: производитель может его изменить, тогда подключение придётся обновить.</div></div>` : ''}`;
     } else html += '<p class="muted">Подключить может только родитель или сам пациент.</p>';
-    html += `<details class="srcOther"><summary>LinX, AiDEX, Yuwell Anytime, Sibionics, Ottai и другие</summary><p class="muted">У этих сенсоров нет открытого облака. Работает так: <b>xDrip+</b> (режим «Companion App» читает уведомления официального приложения) или <b>Juggluco</b>, а они отправляют сахар сюда — карточка «Сенсор (xDrip+)» выше. Если ваше приложение сенсора умеет отправлять в Nightscout — выберите «Nightscout».</p></details>`;
+    html += `<details class="srcOther"${otherOpen?' open':''} ontoggle="DMSources._o=this.open"><summary>LinX, AiDEX, Yuwell Anytime, Sibionics, Ottai и другие</summary><p class="muted">У этих сенсоров нет открытого облака. Работает так: <b>xDrip+</b> (режим «Companion App» читает уведомления официального приложения) или <b>Juggluco</b>, а они отправляют сахар сюда — карточка «Сенсор (xDrip+)» выше. Если ваше приложение сенсора умеет отправлять в Nightscout — выберите «Nightscout».</p></details>`;
     if (msg) html += `<div class="srcMsg">${msg}</div>`;
     box.innerHTML = html;
   }

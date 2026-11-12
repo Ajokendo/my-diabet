@@ -90,7 +90,7 @@ async function pullAll(shadow,markApplied,dirty){
 }
 async function syncNow(manual){
   const c=C();if(!c.token||!c.patientId)return;if(staleCheck())return;if(busy){if(manual)setTimeout(()=>syncNow(true),800);return}
-  busy=true;lastError='';render();
+  busy=true;lastError='';render(true);
   try{
     let shadow=loadShadow(),applied=0;const touched=new Set();
     if(!c.initialized){c.cursor=0;shadow={};applied+=await pullAll(shadow,touched);const cur=records();touched.forEach(k=>{if(k in cur)shadow[k]=hash(cur[k])});c.initialized=true;saveShadow(shadow);storage.save(db)}
@@ -109,7 +109,7 @@ async function syncNow(manual){
     saveShadow(shadow);if(again)setTimeout(()=>syncNow(false),1500);c.lastSyncAt=new Date().toISOString();storage.save(db);
     if(applied)refreshUi();
   }catch(e){lastError=e.message||String(e);if(e.status===401){c.token=null;storage.save(db);lastError='Сессия закончилась — войдите снова.'}if(manual)alert(lastError)}
-  finally{busy=false;render()}
+  finally{busy=false;render(true)}
 }
 function pending(){const c=C();if(!c.token||!c.initialized)return 0;const s=loadShadow(),cur=records();let n=0;for(const [k,v] of Object.entries(cur))if(s[k]!==hash(v))n++;for(const k of Object.keys(s))if(!(k in cur))n++;return n}
 function schedule(ms){clearTimeout(timer);if(C().token)timer=setTimeout(()=>syncNow(false),ms??1500)}
@@ -172,7 +172,10 @@ function logout(){if(!confirm('Выйти из семейного аккаунт
 function v(id){return (document.getElementById(id)?.value||'').trim()}
 
 /* ---- Экран ---- */
-function render(){
+function statusHtml(){const c=C();const n=pending();return `<div class="syncInfo"><div class="mini"><span class="muted">Последняя синхронизация</span><b>${c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</b></div><div class="mini"><span class="muted">Не отправлено на сервер</span><b>${busy?'…':n}</b><span class="muted" style="font-size:12px">${busy?'отправляю…':n?'уйдёт при появлении связи':'всё синхронизировано'}</span></div></div>
+${lastError?`<div class="notice" style="margin-top:8px">${esc(lastError)}</div>`:''}
+`}
+function render(light){
   const el=document.getElementById('sync2');if(!el)return;const c=C();
   if(!c.token||!c.patientId){
     el.innerHTML=`<div class="grid"><div class="card s7"><h3>Подключить семью</h3>
@@ -188,10 +191,9 @@ function render(){
     return;
   }
   const n=pending();
+  if(light&&el.querySelector('#s2Status')){const st=el.querySelector('#s2Status');st.innerHTML=statusHtml();const b=el.querySelector('#s2SyncBtn');if(b){b.disabled=busy;b.textContent=busy?'Синхронизация…':'Синхронизировать сейчас'}return}
   el.innerHTML=`<div class="grid"><div class="card s6"><h3>Общий дневник: ${esc(c.patientName||'')}</h3>
-<div class="syncInfo"><div class="mini"><span class="muted">Последняя синхронизация</span><b>${c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</b></div><div class="mini"><span class="muted">Не отправлено на сервер</span><b>${busy?'…':n}</b><span class="muted" style="font-size:12px">${busy?'отправляю…':n?'уйдёт при появлении связи':'всё синхронизировано'}</span></div></div>
-${lastError?`<div class="notice" style="margin-top:8px">${esc(lastError)}</div>`:''}
-<div class="syncBtns"><button class="btn" onclick="DMSync.syncNow(true)" ${busy?'disabled':''}>${busy?'Синхронизация…':'Синхронизировать сейчас'}</button><button class="btn secondary" onclick="DMLink.scan()">Подключить компьютер</button><div class="two"><button class="btn secondary" onclick="DMSync.changePassword()">Сменить пароль</button><button class="btn secondary" onclick="DMSync.logout()">Выйти</button></div></div>
+<div id="s2Status">${statusHtml()}</div><div class="syncBtns"><button class="btn" id="s2SyncBtn" onclick="DMSync.syncNow(true)" ${busy?'disabled':''}>${busy?'Синхронизация…':'Синхронизировать сейчас'}</button><button class="btn secondary" onclick="DMLink.scan()">Подключить компьютер</button><div class="two"><button class="btn secondary" onclick="DMSync.changePassword()">Сменить пароль</button><button class="btn secondary" onclick="DMSync.logout()">Выйти</button></div></div>
 <h3 style="margin-top:18px">Участники</h3><div id="s2Members" class="muted">Загрузка…</div></div>
 <div class="card s6"><h3>Пригласить в дневник</h3>${c.role==='viewer'?'<p class="muted">У вас доступ только для просмотра.</p>':`<div class="two"><div><label>Кого</label><input id="s2InvName" class="input" placeholder="например, Мама"></div><div><label>Права</label><select id="s2InvRole" class="select"><option value="guardian">Родитель — видит и вносит</option><option value="patient">Пациент — видит и вносит</option><option value="viewer">Только просмотр (например, врач)</option></select></div></div><button class="btn" style="width:100%;text-align:center;margin-top:10px" onclick="DMSync.invite()">Создать код приглашения</button><div id="s2InvOut"></div>`}
 <h3 style="margin-top:18px">Подключиться к другому дневнику</h3><div style="display:grid;gap:8px"><input id="s2JoinCode" class="input" placeholder="КОД" style="width:100%;text-align:center;text-transform:uppercase;letter-spacing:2px;box-sizing:border-box"><button class="btn secondary" style="width:100%;text-align:center" onclick="DMSync.acceptCode()">Подключиться</button></div></div></div>`;
