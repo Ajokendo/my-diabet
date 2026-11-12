@@ -23,7 +23,7 @@
     if (!ready()) { const legacy = !!(db.settings && db.settings.photo && db.settings.photo.code); el.innerHTML = legacy ? '' : `<div class="pqLine empty"><span>Чтобы распознавать фото, войдите в «Семью»: «Ещё» → «Семья».</span></div>`; return }
     if (!Q) { el.innerHTML = err ? `<div class="muted">${esc(err)}</div>` : ''; return }
     const codeBox = `<div class="pqCode"><input id="pqCodeIn" class="input" placeholder="Код, например F-ABCD-EFGH" autocomplete="off"><button class="btn" onclick="DMPhotoQuota.redeem()">Активировать</button></div>`;
-    if (Q.unlimited) { el.innerHTML = `<div class="pqLine"><span>Распознавание по фото: <b>без ограничений</b></span><span class="muted">${Q.used || 0} фото</span></div>`; return }
+    if (Q.unlimited) { el.innerHTML = `<div class="pqLine"><span>Распознавание по фото:<br><b style="white-space:nowrap">без ограничений</b></span><span class="muted">${Q.used || 0} фото</span></div>`; return }
     const left = +Q.left || 0;
     if (left <= 0) {
       el.innerHTML = `<div class="pqLine empty"><span><b>Распознавания закончились.</b> Чтобы продолжить, получите код${Q.contact ? ': ' + esc(Q.contact) : ' у автора приложения'} и введите его.</span></div>${codeBox}<div id="pqMsg" class="muted" style="margin-top:6px"></div>`;
