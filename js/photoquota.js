@@ -14,7 +14,7 @@
   }
   async function refresh() {
     if (!ready() || loading) { render(); return } loading = true;
-    try { Q = await api(`/v1/patients/${encodeURIComponent(C().patientId)}/photo-quota`); err = '' } catch (e) { err = e.status === 404 ? '' : e.message }
+    try { Q = await api(`/v1/patients/${encodeURIComponent(C().patientId)}/photo-quota`); err = '' } catch (e) { err = e.status === 404 ? 'Сервер ещё старой версии: счётчик фото появится, когда в Cloudflare будет вставлен новый код воркера.' : e.message }
     loading = false; render(); renderAdmin();
   }
   function set(q) { if (q) { Q = Object.assign({}, Q || {}, q); render() } }
