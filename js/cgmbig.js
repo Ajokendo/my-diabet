@@ -64,15 +64,18 @@
     const X = t => pl + (t - from) / (to - from) * (W - pl - pr), Y = g => pt + (1 - g / ymax) * (H - pt - pb);
     let s = `<rect x="0" y="${Y(10)}" width="${W}" height="${Y(3.9) - Y(10)}" fill="#dcfce7" opacity=".75"/>`;
     s += `<line x1="0" x2="${W}" y1="${Y(3.9)}" y2="${Y(3.9)}" stroke="#ef4444" stroke-dasharray="4 4" opacity=".6"/><line x1="0" x2="${W}" y1="${Y(10)}" y2="${Y(10)}" stroke="#f59e0b" stroke-dasharray="4 4" opacity=".6"/>`;
-    for (let g = 4; g <= ymax; g += 4) s += `<line x1="0" x2="${W}" y1="${Y(g)}" y2="${Y(g)}" stroke="#e2e8f0"/><text x="4" y="${Y(g) - 3}" font-size="12" fill="#64748b" stroke="#fff" stroke-width="3" paint-order="stroke">${g}</text>`;
+    for (let g = 2; g <= ymax; g += 1) { const major = g % 4 === 0; s += `<line x1="0" x2="${W}" y1="${Y(g)}" y2="${Y(g)}" stroke="${major ? '#dbe3ea' : '#eef2f6'}"/><text x="4" y="${Y(g) - 2}" font-size="${major ? 12 : 10.5}" font-weight="${major ? 700 : 400}" fill="${major ? '#475569' : '#94a3b8'}" stroke="#fff" stroke-width="3" paint-order="stroke">${g}</text>` }
     // подписи времени: часы для коротких периодов, даты для длинных
-    const H1 = 3600e3, stepH = hours <= 6 ? 1 : hours <= 12 ? 2 : hours <= 24 ? 4 : hours <= 72 ? 12 : hours <= 168 ? 24 : hours <= 336 ? 48 : 96;
-    const t0 = new Date(from); t0.setMinutes(0, 0, 0); let t = t0.getTime() + H1;
-    while (stepH >= 24 ? new Date(t).getHours() !== 0 : new Date(t).getHours() % stepH) t += H1;
-    for (; t <= to; t += stepH * H1) {
-      const x = X(t); if (x < 18 || x > W - 18) continue; const midnight = new Date(t).getHours() === 0;
-      s += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${pt}" y2="${H - pb}" stroke="${midnight ? '#94a3b8' : '#e2e8f0'}"${midnight && hours <= 72 ? ' stroke-dasharray="3 3"' : ''}/>`;
-      s += `<text x="${x.toFixed(1)}" y="${H - 8}" font-size="12" text-anchor="middle" fill="#64748b">${stepH >= 24 || (midnight && hours > 24) ? dm(t) : midnight ? dm(t) : hm(t)}</text>`;
+    // вертикальная сетка: шаг в минутах — подробнее на широком экране
+    const wide = W >= 700, M = 60e3;
+    const STEP = wide ? { 3: 30, 6: 30, 12: 60, 24: 120, 72: 360, 168: 720, 336: 1440, 720: 2880 } : { 3: 30, 6: 60, 12: 120, 24: 240, 72: 720, 168: 1440, 336: 2880, 720: 5760 };
+    const step = (STEP[hours] || 60) * M, d0 = new Date(from); d0.setHours(0, 0, 0, 0);
+    let t = d0.getTime(); while (t <= from) t += step;
+    for (; t <= to; t += step) {
+      const x = X(t); if (x < 16 || x > W - 16) continue; const dt = new Date(t), midnight = dt.getHours() === 0 && dt.getMinutes() === 0, half = dt.getMinutes() !== 0;
+      s += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${pt}" y2="${H - pb}" stroke="${midnight ? '#94a3b8' : half ? '#eef2f6' : '#e2e8f0'}"${midnight && hours <= 72 ? ' stroke-dasharray="3 3"' : ''}/>`;
+      const lbl = step >= 1440 * M || midnight && hours > 6 ? dm(t) : hm(t);
+      s += `<text x="${x.toFixed(1)}" y="${H - 8}" font-size="${wide ? 12 : 11}" text-anchor="middle" fill="${half ? '#94a3b8' : '#64748b'}">${lbl}</text>`;
     }
     let path = '', prev = null;
     pts.forEach(p => { const gap = prev && p.t - prev.t > 15 * 60e3; path += (path === '' || gap ? 'M' : 'L') + X(p.t).toFixed(1) + ',' + Y(p.g).toFixed(1); prev = p });
@@ -118,7 +121,7 @@
     const mn = Math.min(...pts.map(x => x.g)), mx = Math.max(...pts.map(x => x.g));
     const sv = pts.map(x => x.g).sort((a, b) => a - b), md = sv.length % 2 ? sv[(sv.length - 1) / 2] : (sv[sv.length / 2 - 1] + sv[sv.length / 2]) / 2;
     const T = (l, v, c) => `<div class="bs"><span>${l}</span><b${c ? ` style="color:${c}"` : ''}>${v}</b></div>`;
-    el.innerHTML = T('Среднее', f1(avg)) + T('Медиана', f1(md), medOn ? '#dc2626' : '') + T('В норме', q(x => x.g >= 3.9 && x.g <= 10) + '%', '#0f766e') + T('Ниже 3,9', q(x => x.g < 3.9) + '%', '#dc2626') + T('Выше 10', q(x => x.g > 10) + '%', '#d97706') + T('Мин', f1(mn)) + T('Макс', f1(mx)) + T('Точек', n);
+    el.innerHTML = T('Среднее', f1(avg)) + T('Медиана', f1(md), medOn ? '#dc2626' : '') + T('Выше 10', q(x => x.g > 10) + '%', '#d97706') + T('Ниже 3,9', q(x => x.g < 3.9) + '%', '#dc2626') + T('Макс', f1(mx)) + T('Мин', f1(mn)) + T('В норме', q(x => x.g >= 3.9 && x.g <= 10) + '%', '#0f766e') + T('Точек', n);
   }
   function move(e) {
     if (!geo) return; const r = e.currentTarget.getBoundingClientRect(); cursorX = (e.clientX - r.left) * (geo.s ? 1 : 1); paintTip();

@@ -431,3 +431,4 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
  .cgmBigMed{margin-top:6px}.cgmBigMed .muted{display:none}
 }
 .phQuota .pqLine>span:last-child{white-space:nowrap;flex:none}
+@media(max-width:950px){.cgmBigStats{grid-template-rows:repeat(2,auto);grid-auto-flow:column}}
