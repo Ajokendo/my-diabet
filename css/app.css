@@ -439,3 +439,22 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 .predBanner.low{background:#fef2f2;border:1px solid #fecaca}.predBanner.low b{color:#b91c1c}
 .predBanner.high{background:#fffbeb;border:1px solid #fde68a}.predBanner.high b{color:#b45309}
 @media(max-width:950px){.cgmBig .predBanner{margin:4px 0 2px;padding:6px 10px}.cgmBig .predBanner span{display:none}}
+
+/* v64.31: обзор и тёмная тема графика */
+.cgmBigOv{height:46px;margin-top:4px;border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:ew-resize;user-select:none;-webkit-user-select:none;touch-action:none}
+.cgmBigSw{display:flex;gap:18px;flex-wrap:wrap}
+.medSw.dk{background:#cbd5e1}.cgmBigMed input:checked+.medSw.dk{background:#0f172a}
+.cgmBigBox.dark{background:#0f172a;color:#e2e8f0}
+.cgmBigBox.dark .muted,.cgmBigBox.dark .cgmBigStats .bs span{color:#94a3b8}
+.cgmBigBox.dark .btn.secondary{background:#1e293b;color:#e2e8f0;border-color:#334155}
+.cgmBigBox.dark .navClose{background:#1e293b;color:#e2e8f0}
+.cgmBigBox.dark .cgmBigStats .bs{background:#111c2e;border-color:#243341}
+.cgmBigBox.dark .cgmBigStats .bs b{color:#f1f5f9}
+.cgmBigBox.dark .cgmBigOv{border-color:#243341;background:#0b1322}
+.cgmBigBox.dark .predBanner.low{background:#3b0d0d;border-color:#7f1d1d}.cgmBigBox.dark .predBanner.low b{color:#fca5a5}
+.cgmBigBox.dark .predBanner.high{background:#3a2a06;border-color:#78530f}.cgmBigBox.dark .predBanner.high b{color:#fcd34d}
+.cgmBigBox.dark .predBanner span{color:#94a3b8}
+@media(max-width:950px){.cgmBigOv{height:40px}.cgmBigSw{gap:14px}}
+.cgmBigMed input:checked+.medSw.dk{background:#14b8a6}
+.cgmBigBox.dark .cgmBigMed{color:#e2e8f0}.cgmBigBox.dark .medSw:not(.dk){background:#475569}.cgmBigBox.dark .cgmBigMed input:checked+.medSw:not(.dk){background:#ef4444}
+.cgmBigBox.dark .cgmBigStats .bs b[style*="#0f766e"]{color:#2dd4bf!important}
