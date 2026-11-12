@@ -542,3 +542,4 @@ html.dark .card,html.dark .stickyHead{box-shadow:none}
 @media(max-width:950px){.gdImgs img{height:300px}}
 .gdZoom{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:140;display:none;align-items:center;justify-content:center;padding:10px}
 .gdZoom.open{display:flex}.gdZoom img{max-width:100%;max-height:100%;border-radius:14px}
+.mealEmpty{white-space:nowrap}
