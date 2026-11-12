@@ -48,7 +48,7 @@
     const C = dark ? { grid: '#243341', lbl: '#94a3b8', band: '#14532d', o: '.45', p95: '#1e3a5f', p25: '#2b5c8f', med: '#60a5fa' } : { grid: '#e2e8f0', lbl: '#64748b', band: '#dcfce7', o: '.8', p95: '#dbeafe', p25: '#93c5fd', med: '#1d4ed8' };
     let s = `<rect x="${pl}" y="${Y(10)}" width="${W - pl - pr}" height="${Y(3.9) - Y(10)}" fill="${C.band}" opacity="${C.o}"/>`;
     for (let g = 4; g <= ymax; g += 4) s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(g)}" y2="${Y(g)}" stroke="${C.grid}"/><text x="${pl - 4}" y="${Y(g) + 4}" font-size="11" text-anchor="end" fill="${C.lbl}">${g}</text>`;
-    for (let h = 0; h <= 24; h += 3) { const x = X(h * 4); s += `<line x1="${x}" x2="${x}" y1="${pt}" y2="${H - pb}" stroke="${C.grid}"/><text x="${x}" y="${H - 6}" font-size="11" text-anchor="${h === 0 ? 'start' : h === 24 ? 'end' : 'middle'}" fill="${C.lbl}">${p2(h % 24)}:00</text>` }
+    for (let h = 0; h <= 24; h += 3) { const x = X(h * 4); s += `<line x1="${x}" x2="${x}" y1="${pt}" y2="${H - pb}" stroke="${C.grid}"/>`; if (W < 600 && h % 6) continue; s += `<text x="${x}" y="${H - 6}" font-size="11" text-anchor="${h === 0 ? 'start' : h === 24 ? 'end' : 'middle'}" fill="${C.lbl}">${p2(h % 24)}:00</text>` }
     const area = (lo, hi) => { const seg = []; let cur = []; T.agp.forEach((v, i) => { if (v) cur.push([i, v]); else if (cur.length) { seg.push(cur); cur = [] } }); if (cur.length) seg.push(cur);
       return seg.map(c => 'M' + c.map(([i, v]) => X(i + .5).toFixed(1) + ',' + Y(v[hi]).toFixed(1)).join('L') + 'L' + c.slice().reverse().map(([i, v]) => X(i + .5).toFixed(1) + ',' + Y(v[lo]).toFixed(1)).join('L') + 'Z').join('') };
     const line = j => { let d = '', pen = false; T.agp.forEach((v, i) => { if (!v) { pen = false; return } d += (pen ? 'L' : 'M') + X(i + .5).toFixed(1) + ',' + Y(v[j]).toFixed(1); pen = true }); return d };
@@ -59,11 +59,11 @@
 
   function overlaySvg(T, sel, W, H, dark) {
     const pl = 26, pr = 6, pt = 8, pb = 22, keys = Object.keys(T.byDay).sort();
-    const ymax = Math.max(16, Math.ceil(T.max + 1)), X = m => pl + m / 1440 * (W - pl - pr), Y = g => pt + (1 - g / ymax) * (H - pt - pb);
+    const selMax = Math.max(0, ...keys.filter(k => sel.has(k)).flatMap(k => T.byDay[k].map(p => p.g))), ymax = Math.max(16, Math.ceil(selMax + 1)), X = m => pl + m / 1440 * (W - pl - pr), Y = g => pt + (1 - g / ymax) * (H - pt - pb);
     const grid = dark ? '#243341' : '#e2e8f0', lbl = dark ? '#94a3b8' : '#64748b';
     let s = `<rect x="${pl}" y="${Y(10)}" width="${W - pl - pr}" height="${Y(3.9) - Y(10)}" fill="${dark ? '#14532d' : '#dcfce7'}" opacity="${dark ? .45 : .8}"/>`;
     for (let g = 4; g <= ymax; g += 4) s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(g)}" y2="${Y(g)}" stroke="${grid}"/><text x="${pl - 4}" y="${Y(g) + 4}" font-size="11" text-anchor="end" fill="${lbl}">${g}</text>`;
-    for (let h = 0; h <= 24; h += 3) { const x = X(h * 60); s += `<line x1="${x}" x2="${x}" y1="${pt}" y2="${H - pb}" stroke="${grid}"/><text x="${x}" y="${H - 6}" font-size="11" text-anchor="${h === 0 ? 'start' : h === 24 ? 'end' : 'middle'}" fill="${lbl}">${p2(h % 24)}:00</text>` }
+    for (let h = 0; h <= 24; h += 3) { const x = X(h * 60); s += `<line x1="${x}" x2="${x}" y1="${pt}" y2="${H - pb}" stroke="${grid}"/>`; if (W < 600 && h % 6) continue; s += `<text x="${x}" y="${H - 6}" font-size="11" text-anchor="${h === 0 ? 'start' : h === 24 ? 'end' : 'middle'}" fill="${lbl}">${p2(h % 24)}:00</text>` }
     keys.forEach((k, i) => { if (!sel.has(k)) return; let d = '', prev = null; T.byDay[k].forEach(p => { const dt = new Date(p.t), m = dt.getHours() * 60 + dt.getMinutes() + dt.getSeconds() / 60, gap = prev && p.t - prev.t > 15 * 60e3; d += (d === '' || gap ? 'M' : 'L') + X(m).toFixed(1) + ',' + Y(p.g).toFixed(1); prev = p }); s += `<path d="${d}" fill="none" stroke="${COLORS[i % COLORS.length]}" stroke-width="1.6" opacity=".9"/>` });
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${s}</svg>`;
   }
