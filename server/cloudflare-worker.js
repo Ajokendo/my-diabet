@@ -6,7 +6,7 @@
 //   Binding:   D1 database, имя переменной DB (для синхронизации). Таблицы создаются сами.
 //   Переменные (необязательно): OWNER_EMAILS — почты (через запятую) вашей семьи: распознавание фото без лимита
 //              и создание кодов. Если не задано — без лимита первая созданная семья.
-//              FREE_PHOTOS — бесплатных распознаваний для новой семьи (по умолчанию 10).
+//              FREE_PHOTOS — бесплатных распознаваний для новой семьи (по умолчанию 3).
 //              PHOTO_CONTACT — куда писать за кодом (показывается в приложении), например «WhatsApp +996 …».
 //   Триггер: Cron «*/5 * * * *» — забирать сахар из облаков (LibreLinkUp, Dexcom Share, Nightscout) и уведомление «нет данных».
 //   Секрет (желательно): CRED_KEY — любая длинная строка; ею шифруются пароли облаков сенсоров в базе.
@@ -254,7 +254,7 @@ async function isOwnerUser(env,user){
   const f=await env.DB.prepare('SELECT id FROM patients ORDER BY created_at LIMIT 1').first();if(!f)return false;
   const m=await env.DB.prepare("SELECT role FROM members WHERE patient_id=? AND user_id=? AND status='active'").bind(f.id,user.id).first();return !!m&&m.role!=='viewer'}
 async function quota(env,pid){
-  const free=Math.max(0,+(env.FREE_PHOTOS??10)||0);
+  const free=Math.max(0,+(env.FREE_PHOTOS??3)||0);
   const q=await env.DB.prepare('SELECT * FROM photo_quota WHERE patient_id=?').bind(pid).first()||{free_used:0,paid_left:0,total_used:0};
   if(await isOwnerFamily(env,pid))return {unlimited:true,left:null,used:q.total_used,contact:env.PHOTO_CONTACT||''};
   const freeLeft=Math.max(0,free-q.free_used);
