@@ -491,3 +491,14 @@ html.dark .card,html.dark .stickyHead{box-shadow:none}
 .cgmBigBox.dark .trS{background:#111c2e;border-color:#243341}.cgmBigBox.dark .trS b{color:#f1f5f9}
 @media(max-width:950px){.trSum{grid-template-columns:repeat(2,minmax(0,1fr))}.cgmTabs button{padding:5px 11px;font-size:13px}.cgmBigHead #cgmBigWhen{display:none}}
 .trTir{max-width:680px}
+
+/* v64.38: меры и «сахар не измерял» */
+.gCell{display:flex;align-items:center;gap:4px}.mBtn{border:1px solid var(--line);background:#f0fdfa;color:#0f766e;border-radius:8px;font:inherit;font-size:11.5px;font-weight:700;padding:5px 6px;cursor:pointer}
+.mLbl{font-size:11.5px;margin-top:2px;white-space:nowrap}
+.measureBox{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:130;display:none;align-items:flex-end;justify-content:center}
+.measureBox.open{display:flex}.measureCard{background:#fff;border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));width:min(560px,100%)}
+@media(min-width:951px){.measureBox{align-items:center}.measureCard{border-radius:18px}}
+.mBtns{display:flex;flex-wrap:wrap;gap:6px}.mBtns .btn{padding:7px 10px!important}.mSum{margin:12px 0 10px;font-size:16px;text-align:center}
+.noG{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin-top:4px;cursor:pointer}.noG input{width:16px;height:16px;margin:0}
+.noGNote{margin-top:8px;padding:8px 10px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;font-size:13.5px;line-height:1.4}
+.mBtns .btn:not(.secondary) .muted{color:inherit;opacity:.85}

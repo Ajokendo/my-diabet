@@ -63,16 +63,43 @@
 
   /* обёртки: калькулятор считает в граммах, переводим перед расчётом */
   const wrap = (name, after) => { const f = window[name]; if (typeof f !== 'function') return; window[name] = function () { const r = f.apply(this, arguments); try { after.apply(this, arguments) } catch (e) {} return r } };
+  /* «Сахар не измерял»: доза считается только на еду (коррекция = 0), в журнал пишется пометка «без замера» */
+  const NOG_NOTE = '<div class="noGNote"><b>Сахар не измерен — посчитана доза только на еду, без коррекции.</b><br>Если есть признаки низкого сахара (слабость, дрожь, пот, бледность) — сначала измерьте и действуйте по плану врача.</div>';
+  function noGBox(input, id, onChange) {
+    if (!input || document.getElementById(id)) return;
+    const l = document.createElement('label'); l.className = 'noG'; l.innerHTML = `<input type="checkbox" id="${id}"> Сахар не измерял`;
+    input.after(l); const c = l.querySelector('input');
+    c.onchange = () => { input.disabled = c.checked; if (c.checked) { input.dataset.prev = input.value; input.value = '' } else if (input.dataset.prev) input.value = input.dataset.prev; onChange && onChange() };
+  }
+  function markLast() {
+    try { const L = db.medical.calculationLog, rec = L[L.length - 1]; if (rec) { rec.noGlucose = true; if (rec.input) rec.input.glucose = null; save() } } catch (e) {}
+  }
+  function withTarget(gInput, target, fn) {
+    gInput.disabled = false; gInput.value = String(target); let r;
+    try { r = fn() } finally { gInput.value = ''; gInput.disabled = true }
+    markLast(); return r;
+  }
   const origCalc = window.calcInsulin;
   if (typeof origCalc === 'function') window.calcInsulin = function () {
     const inp = document.getElementById('iCarb'); let back = null;
     if (inp && unit() === 'xe' && inp.value) { back = inp.value; inp.value = String(+inp.value * xeG()) }
-    let r; try { r = origCalc.apply(this, arguments) } finally { if (back != null) inp.value = back }
-    try { const g = +document.getElementById('iG').value, box = document.getElementById('iResult'); if (box) { const n = noteFor(g); if (n) box.insertAdjacentHTML('beforeend', n) } } catch (e) {}
+    const gI = document.getElementById('iG'), noG = document.getElementById('iNoG')?.checked;
+    let r; try { r = noG ? withTarget(gI, +document.getElementById('iTarget').value || 6, () => origCalc.apply(this, arguments)) : origCalc.apply(this, arguments) } finally { if (back != null) inp.value = back }
+    try { const box = document.getElementById('iResult'); if (box) { if (noG) box.insertAdjacentHTML('afterbegin', NOG_NOTE); else { const n = noteFor(+gI.value); if (n) box.insertAdjacentHTML('beforeend', n) } } } catch (e) {}
     return r;
   };
+  const origModal = window.calculateModalInsulin;
+  if (typeof origModal === 'function') window.calculateModalInsulin = function () {
+    const gI = document.getElementById('modalG'), noG = document.getElementById('mNoG')?.checked;
+    const t = +(db.profile && db.profile.target) || +(db.settings && db.settings.target) || 6;
+    const r = noG ? withTarget(gI, t, () => origModal.apply(this, arguments)) : origModal.apply(this, arguments);
+    try { const box = document.getElementById('modalHistory'); if (box && noG) box.insertAdjacentHTML('afterbegin', NOG_NOTE) } catch (e) {}
+    return r;
+  };
+  wrap('openInsulinForMeal', () => { const c = document.getElementById('mNoG'), g = document.getElementById('modalG'); if (c && c.checked) { c.checked = false; if (g) g.disabled = false } });
+  setTimeout(() => { noGBox(document.getElementById('iG'), 'iNoG'); noGBox(document.getElementById('modalG'), 'mNoG') }, 400);
   wrap('takeCarbsFromMenu', () => { const inp = document.getElementById('iCarb'); if (inp && unit() === 'xe' && inp.value) inp.value = (+inp.value / xeG()).toFixed(1); hint() });
-  wrap('calculateModalInsulin', () => { const g = +document.getElementById('modalG').value, box = document.getElementById('modalHistory'); if (box) { const n = noteFor(g); if (n) box.insertAdjacentHTML('beforeend', n) } });
+  wrap('calculateModalInsulin', () => { if (document.getElementById('mNoG')?.checked) return; const g = +document.getElementById('modalG').value, box = document.getElementById('modalHistory'); if (box) { const n = noteFor(g); if (n) box.insertAdjacentHTML('beforeend', n) } });
   wrap('calcInit', setupUnit);
   wrap('show', id => { if (id === 'insulin') setTimeout(setupUnit, 60) });
 
