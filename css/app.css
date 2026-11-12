@@ -548,3 +548,5 @@ html.dark .card,html.dark .stickyHead{box-shadow:none}
 .gdPh:before{content:"Загружается скриншот…";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:12px;color:var(--muted)}
 .gdPh.ok:before{display:none}.gdPh.err:before{content:"Скриншот не загрузился — проверьте интернет"}
 .gdPh img{height:100%!important;width:100%;position:relative}.gdPh:not(.ok) img{opacity:0}
+.noInsBox{grid-column:1 / -1;margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}.noInsRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:4px}
+.noInsRow{grid-template-columns:1fr!important}.noInsRow .btn{width:100%}
