@@ -55,7 +55,8 @@
     const base = nowEnd() ? Date.now() : end;
     pred = nowEnd() && window.DMPredict ? DMPredict.now((window.DMCgm && DMCgm.readings()) || []) : null;
     const ext = pred && pred.type && hours <= 24 ? Math.min(pred.line[pred.line.length - 1].t - base, hours * 3600e3 * 0.2) : 0;
-    return { from: base - hours * 3600e3, to: base + Math.max(0, ext), now: base };
+    const pad = nowEnd() ? Math.max(10 * 60e3, hours * 3600e3 * 0.05) : 0; // небольшой отступ справа от «сейчас»
+    return { from: base - hours * 3600e3, to: base + Math.max(pad, ext), now: base };
   }
 
   /* видимый кусок берём из уже загруженного обзора, без запроса */
