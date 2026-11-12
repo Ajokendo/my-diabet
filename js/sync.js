@@ -6,7 +6,11 @@
 (function(){
 const DEFAULT_SERVER='https://my-diabet.ajokendo.workers.dev';
 const SHADOW_PREFIX='dm-sync2-shadow:';
-let busy=false,timer=null,lastError='';
+let busy=false,timer=null,lastError='',warnedFull=false,reloading=false;
+/* Приложение открыто дважды на одном устройстве (вкладка + установленное приложение): окно с устаревшими
+   данными не должно ни сохранять, ни отправлять их — оно перечитывает свежие. */
+try{if(window.db&&db.menuDel)delete db.menuDel}catch(e){}
+function staleCheck(){if(reloading)return true;try{if(storage.stale&&storage.stale()){reloading=true;clearTimeout(timer);location.reload();return true}}catch(e){}return false}
 
 function C(){db.cloud2=db.cloud2||{};return db.cloud2}
 function server(){return (C().server||db.settings?.photo?.server||DEFAULT_SERVER).replace(/\/$/,'')}
@@ -17,19 +21,13 @@ function shadowKey(){return SHADOW_PREFIX+(C().patientId||'')}
 function loadShadow(){try{return JSON.parse(localStorage.getItem(shadowKey())||'{}')}catch(e){return {}}}
 function saveShadow(s){try{localStorage.setItem(shadowKey(),JSON.stringify(s))}catch(e){}}
 /* Меню дня сливается по продуктам, а не перезаписывается целиком.
-   Удалённые продукты помнятся отдельно (menuDel|день), чтобы не «воскресали». */
+   Удалённые продукты помнятся отдельно (menuGone|день), чтобы не «воскресали»:
+   их записывает само действие «удалить» (menuForget в app.js), а не сравнение снимков. */
 const remerge=new Set();
-function baseKey(){return shadowKey()+':menuBase'}
-function loadBase(){try{return JSON.parse(localStorage.getItem(baseKey())||'{}')}catch(e){return {}}}
-function saveBase(b){try{localStorage.setItem(baseKey(),JSON.stringify(b))}catch(e){}}
 function menuIds(m){const r=[];Object.values(m||{}).forEach(a=>{if(Array.isArray(a))a.forEach(x=>{if(x&&x.id)r.push(String(x.id))})});return r}
 function menuHasItems(m){return menuIds(m).length>0}
-function noteRemovals(){const b=loadBase();db.menuDel=db.menuDel||{};
-  for(const [day,ids] of Object.entries(b)){const cur=new Set(menuIds(db.menus?.[day]));const gone=ids.filter(i=>!cur.has(i));
-    if(gone.length){const t=new Set(db.menuDel[day]||[]);gone.forEach(i=>t.add(i));db.menuDel[day]=[...t].slice(-400)}}}
-function rememberBase(){const b={};Object.entries(db.menus||{}).forEach(([d,m])=>{const ids=menuIds(m);if(ids.length)b[d]=ids});saveBase(b)}
 function mergeMenu(day,remote){
-  db.menus=db.menus||{};const local=db.menus[day]||{},dead=new Set((db.menuDel?.[day])||[]),out={};let extra=false;
+  db.menus=db.menus||{};const local=db.menus[day]||{},dead=new Set((db.menuGone?.[day])||[]),out={};let extra=false;
   const keys=new Set([...Object.keys(remote||{}),...Object.keys(local)]);
   keys.forEach(k=>{const r=Array.isArray(remote?.[k])?remote[k]:[],l=Array.isArray(local[k])?local[k]:[];
     if(!Array.isArray(remote?.[k])&&!Array.isArray(local[k]))return;
@@ -37,7 +35,7 @@ function mergeMenu(day,remote){
     l.forEach(x=>{if(x&&x.id&&!seen.has(String(x.id))&&!dead.has(String(x.id))){a.push(x);extra=true}});out[k]=a});
   db.menus[day]=out;if(extra)remerge.add('menu|'+day);
 }
-function applyMenuDel(day,ids){db.menuDel=db.menuDel||{};const t=new Set(db.menuDel[day]||[]);(ids||[]).forEach(i=>t.add(String(i)));db.menuDel[day]=[...t].slice(-400);
+function applyMenuDel(day,ids){db.menuGone=db.menuGone||{};const t=new Set(db.menuGone[day]||[]);(ids||[]).forEach(i=>t.add(String(i)));db.menuGone[day]=[...t].slice(-400);
   const m=db.menus?.[day];if(m)Object.keys(m).forEach(k=>{if(Array.isArray(m[k]))m[k]=m[k].filter(x=>!t.has(String(x?.id)))})}
 function clone(v){return v==null?v:JSON.parse(JSON.stringify(v))}
 
@@ -61,9 +59,8 @@ function records(){
   const med=clone(db.medical||{});delete med.calculationLog;delete med.actualInsulinLog;delete med.safetyEvents;put('medical','1',med);
   for(const [t,get] of Object.entries(COLLECTIONS))(get()||[]).forEach(x=>{if(x&&x.id!=null)put(t,x.id,x)});
   (db.foods||[]).forEach(f=>{if(/^u\d/.test(String(f.id)))put('food',f.id,f)});
-  noteRemovals();
   Object.entries(db.menus||{}).forEach(([day,v])=>{if(menuHasItems(v))put('menu',day,v)});
-  Object.entries(db.menuDel||{}).forEach(([day,v])=>{if(v&&v.length)put('menuDel',day,{ids:v})});
+  Object.entries(db.menuGone||{}).forEach(([day,v])=>{if(v&&v.length)put('menuGone',day,{ids:v})});
   Object.entries(db.dayNotes||{}).forEach(([day,v])=>put('dayNote',day,v));
   return m;
 }
@@ -76,7 +73,8 @@ function apply(ch){
   if(['profile','settings','ratios','favorites','preferences','waterLog'].includes(t)){if(!del)db[t]=p||{};return}
   if(t==='medical'){if(!del){const keep={calculationLog:db.medical?.calculationLog,actualInsulinLog:db.medical?.actualInsulinLog,safetyEvents:db.medical?.safetyEvents};db.medical={...(p||{}),...keep}}return}
   if(t==='menu'){if(!del&&p)mergeMenu(id,p);return}
-  if(t==='menuDel'){if(!del&&p)applyMenuDel(id,p.ids);return}
+  if(t==='menuGone'){if(!del&&p)applyMenuDel(id,p.ids);return}
+  if(t==='menuDel')return; /* отметки v64.21 могли быть ошибочными (два окна приложения) — не применяем */
   if(t==='dayNote'){db.dayNotes=db.dayNotes||{};if(del)delete db.dayNotes[id];else db.dayNotes[id]=p;try{window.DMDayNote&&DMDayNote.render()}catch(e){}return}
   if(t==='food'){db.foods=db.foods||[];const i=db.foods.findIndex(f=>String(f.id)===id);if(del){if(i>=0)db.foods.splice(i,1)}else if(i>=0)db.foods[i]=p;else db.foods.push(p);return}
   if(COLLECTIONS[t]){const a=listFor(t),i=a.findIndex(x=>String(x?.id)===id);if(del){if(i>=0)a.splice(i,1)}else if(i>=0)a[i]=p;else a.push(p)}
@@ -91,7 +89,7 @@ async function pullAll(shadow,markApplied){
   return applied;
 }
 async function syncNow(manual){
-  const c=C();if(!c.token||!c.patientId)return;if(busy){if(manual)setTimeout(()=>syncNow(true),800);return}
+  const c=C();if(!c.token||!c.patientId)return;if(staleCheck())return;if(busy){if(manual)setTimeout(()=>syncNow(true),800);return}
   busy=true;lastError='';render();
   try{
     let shadow=loadShadow(),applied=0;const touched=new Set();
@@ -99,13 +97,13 @@ async function syncNow(manual){
     if(c.role!=='viewer'){
       const cur=records(),ev=[];
       for(const [k,v] of Object.entries(cur)){const h=hash(v);if(shadow[k]!==h){const [t,...r]=k.split('|');ev.push({recordType:t,recordId:r.join('|'),operation:'upsert',payload:v,clientEventId:k+'@'+h,_h:h})}}
-      for(const k of Object.keys(shadow))if(!(k in cur)){const [t,...r]=k.split('|');if(t==='menu'||t==='menuDel'){delete shadow[k];continue}ev.push({recordType:t,recordId:r.join('|'),operation:'delete',clientEventId:k+'@del',_h:null})}
+      for(const k of Object.keys(shadow))if(!(k in cur)){const [t,...r]=k.split('|');if(t==='menu'||t==='menuDel'||t==='menuGone'){delete shadow[k];continue}ev.push({recordType:t,recordId:r.join('|'),operation:'delete',clientEventId:k+'@del',_h:null})}
       for(let i=0;i<ev.length;i+=250){const part=ev.slice(i,i+250);const j=await api('/v2/sync/push',{patientId:c.patientId,events:part.map(({_h,...e})=>e)});
         const ok=new Set((j.accepted||[]).map(a=>a.recordType+'|'+a.recordId));part.forEach(e=>{const k=e.recordType+'|'+e.recordId;if(ok.has(k)){if(e._h)shadow[k]=e._h;else delete shadow[k]}});saveShadow(shadow)}
     }
     const t2=new Set();applied+=await pullAll(shadow,t2);
     if(t2.size){const cur=records();t2.forEach(k=>{if(k in cur)shadow[k]=hash(cur[k])})}
-    const again=remerge.size>0;remerge.forEach(k=>delete shadow[k]);remerge.clear();rememberBase();
+    const again=remerge.size>0;remerge.forEach(k=>delete shadow[k]);remerge.clear();
     saveShadow(shadow);if(again)setTimeout(()=>syncNow(false),1500);c.lastSyncAt=new Date().toISOString();storage.save(db);
     if(applied)refreshUi();
   }catch(e){lastError=e.message||String(e);if(e.status===401){c.token=null;storage.save(db);lastError='Сессия закончилась — войдите снова.'}if(manual)alert(lastError)}
@@ -113,7 +111,11 @@ async function syncNow(manual){
 }
 function pending(){const c=C();if(!c.token||!c.initialized)return 0;const s=loadShadow(),cur=records();let n=0;for(const [k,v] of Object.entries(cur))if(s[k]!==hash(v))n++;for(const k of Object.keys(s))if(!(k in cur))n++;return n}
 function schedule(ms){clearTimeout(timer);if(C().token)timer=setTimeout(()=>syncNow(false),ms??1500)}
-function refreshUi(){try{if(typeof syncCatalog==='function')syncCatalog(db)}catch(e){}try{loadDay()}catch(e){}try{const a=document.querySelector('.section.active')?.id;if(a&&a!=='dashboard'&&a!=='menu'&&a!=='account')show(a)}catch(e){}}
+/* пока человек печатает, экран не перерисовываем — обновим, когда поле потеряет фокус */
+let uiWait=false;
+function typing(){const a=document.activeElement;return !!a&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!/^(button|checkbox|radio|date|file)$/.test(a.type)))}
+function refreshUi(){if(typing()){if(!uiWait){uiWait=true;document.activeElement.addEventListener('blur',()=>{uiWait=false;setTimeout(refreshUi,50)},{once:true})}return}refreshUi0()}
+function refreshUi0(){try{if(typeof syncCatalog==='function')syncCatalog(db)}catch(e){}try{loadDay()}catch(e){}try{const a=document.querySelector('.section.active')?.id;if(a&&a!=='dashboard'&&a!=='menu'&&a!=='account')show(a)}catch(e){}}
 
 /* ---- Аккаунт, приглашения ---- */
 function wipeLocal(){db.menus={};db.diary=[];db.activity=[];db.labs=[];db.docs=[];db.waterLog={};db.medical=db.medical||{};db.medical.actualInsulinLog=[];db.medical.calculationLog=[];db.foods=(db.foods||[]).filter(f=>!/^u\d/.test(String(f.id)))}
@@ -198,7 +200,8 @@ function modeUi(){document.getElementById('s2CodeBox').style.display=v('s2Mode')
 
 window.DMSync={members,editMember,saveMember,removeMember,changePassword,adopt:(j,p)=>startSession(j,p,true),syncNow,register,login,logout,invite,acceptCode,copyInvite,render,modeUi,pending};
 /* Автосинхронизация: после каждого сохранения, при открытии и раз в минуту, когда приложение на экране. */
-const origSave=window.save;window.save=function(){const r=origSave.apply(this,arguments);schedule();return r};
+const origSave=window.save;window.save=function(){if(staleCheck())return;const r=origSave.apply(this,arguments);if(storage.failed&&!warnedFull){warnedFull=true;alert('Не удалось сохранить запись: память приложения на этом устройстве заполнена. Удалите старые фото документов в разделе «Анализы» или освободите место, затем повторите.')}schedule();return r};
+window.addEventListener('storage',e=>{if(e.key==='dmFull:rev'&&document.visibilityState==='visible'&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||''))staleCheck()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')schedule(300)});
 window.addEventListener('online',()=>schedule(300));
 setInterval(()=>{if(document.visibilityState==='visible')schedule(0)},60000);

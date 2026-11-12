@@ -352,3 +352,21 @@ input[type=date],input[type=time],input[type=month]{min-width:0;max-width:100%;b
 .sensorLeft.warn{color:#a15c00;background:#fff1d6}.sensorLeft.bad{color:#b42318;background:#fde8e8}
 .dnShow{margin:8px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .dnEarly{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:14px}
+
+/* v64.22: компактные шапка и нижняя панель на телефоне */
+@media(max-width:950px){
+ #dashboard>.stickyHead{padding:6px 13px 6px}
+ #dashboard .top{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:8px;padding-bottom:0}
+ #dashboard .homeTitle{align-items:center;gap:8px;min-width:0}
+ #dashboard .homeTitle .homeLogo{width:34px;height:34px;margin:0}
+ #dashboard .homeTitle h1{font-size:19px;line-height:1.1;white-space:nowrap}
+ #dashboard .homeTitle .brandSlogan{font-size:10px;letter-spacing:0;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ #dashboard .dayPick{flex:none}
+ #dashboard .dayPick #dayLabel{display:none!important}
+ #dashboard .dayPick .date{padding:4px 6px;font-size:14px;min-height:0;height:34px;width:124px;min-width:0;font-family:inherit}
+ #dashboard>.secLead{display:none}
+ .mobilebar{padding:3px 4px calc(3px + env(safe-area-inset-bottom))}
+ .mobilebar button{min-height:46px;padding:4px 2px;gap:1px}
+ .mobilebar .ic{font-size:20px}.mobilebar .lb{font-size:11.5px;white-space:nowrap}
+ .main{padding-bottom:70px!important}
+}

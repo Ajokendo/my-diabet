@@ -34,7 +34,12 @@
 
   function render() {
     const box = document.getElementById('dayNoteCard'); if (!box) return;
-    const d = day(), n = notes()[d] || { text: '', tags: [] }, S = sensorLeft();
+    const d = day(), S = sensorLeft();
+    /* пока человек печатает заметку, карточку не перерисовываем: иначе поле теряет курсор и экран прыгает */
+    const act = document.activeElement;
+    if (act && act.id === 'dayNoteText' && box.contains(act) && box.dataset.day === d) return;
+    box.dataset.day = d;
+    const n = notes()[d] || { text: '', tags: [] };
     let sensor = '';
     if (S) {
       const cls = S.left <= 0 ? 'bad' : S.left <= 1 ? 'warn' : '';
