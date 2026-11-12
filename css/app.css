@@ -502,3 +502,4 @@ html.dark .card,html.dark .stickyHead{box-shadow:none}
 .noG{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin-top:4px;cursor:pointer}.noG input{width:16px;height:16px;margin:0}
 .noGNote{margin-top:8px;padding:8px 10px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;font-size:13.5px;line-height:1.4}
 .mBtns .btn:not(.secondary) .muted{color:inherit;opacity:.85}
+.phQuota .pqLine>span:first-child{min-width:0;flex:1 1 auto}.phQuota .pqLine{flex-wrap:wrap}

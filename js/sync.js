@@ -81,10 +81,10 @@ function apply(ch){
 }
 
 /* ---- Синхронизация ---- */
-async function pullAll(shadow,markApplied){
+async function pullAll(shadow,markApplied,dirty){
   const c=C();let more=true,applied=0;
   while(more){const j=await api('/v2/sync/pull',{patientId:c.patientId,cursor:c.cursor||0,limit:500});
-    for(const ch of j.changes||[]){apply(ch);applied++;const k=ch.recordType+'|'+ch.recordId;if(ch.deleted)delete shadow[k];else markApplied.add(k)}
+    for(const ch of j.changes||[]){if(dirty&&dirty.has(ch.recordType+'|'+ch.recordId)&&ch.recordType!=='menu'&&ch.recordType!=='menuGone')continue;apply(ch);applied++;const k=ch.recordType+'|'+ch.recordId;if(ch.deleted)delete shadow[k];else markApplied.add(k)}
     c.cursor=j.cursor||c.cursor||0;more=!!j.hasMore}
   return applied;
 }
@@ -94,6 +94,8 @@ async function syncNow(manual){
   try{
     let shadow=loadShadow(),applied=0;const touched=new Set();
     if(!c.initialized){c.cursor=0;shadow={};applied+=await pullAll(shadow,touched);const cur=records();touched.forEach(k=>{if(k in cur)shadow[k]=hash(cur[k])});c.initialized=true;saveShadow(shadow);storage.save(db)}
+    /* сначала забираем чужие изменения: меню дня сливается до отправки, иначе наша версия дня затёрла бы чужую на сервере */
+    if(c.initialized&&c.role!=='viewer'){const t1=new Set(),cur1=records(),dirty=new Set(Object.keys(cur1).filter(k=>shadow[k]!==hash(cur1[k])));applied+=await pullAll(shadow,t1,dirty);if(t1.size){const cur0=records();t1.forEach(k=>{if(k in cur0&&!remerge.has(k))shadow[k]=hash(cur0[k])})}}
     if(c.role!=='viewer'){
       const cur=records(),ev=[];
       for(const [k,v] of Object.entries(cur)){const h=hash(v);if(shadow[k]!==h){const [t,...r]=k.split('|');ev.push({recordType:t,recordId:r.join('|'),operation:'upsert',payload:v,clientEventId:k+'@'+h,_h:h})}}
