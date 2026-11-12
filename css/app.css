@@ -467,3 +467,27 @@ html.dark .card,html.dark .stickyHead{box-shadow:none}
 .themeRow{display:flex;align-items:center;gap:12px;justify-content:space-between;cursor:pointer}.themeRow input{position:absolute;opacity:0;pointer-events:none}.themeRow input:checked+.medSw.dk{background:#14b8a6}
 .themeRow .medSw{width:44px;height:26px}.themeRow .medSw:after{width:20px;height:20px}.themeRow input:checked+.medSw:after{left:21px}
 .themeBtn{margin-left:auto;margin-right:8px;border:0;background:rgba(255,255,255,.12);border-radius:999px;width:36px;height:36px;font-size:18px;cursor:pointer}
+
+/* v64.36: тенденции */
+.cgmTabs{display:inline-flex;background:#eef2f6;border-radius:999px;padding:3px;gap:2px}
+.cgmTabs button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font:inherit;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer}
+.cgmTabs button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.cgmBigTrends{display:none;flex:1 1 auto;overflow:auto;padding:4px 2px 8px}
+.trendsMode .cgmBigTrends{display:block}
+.trendsMode .cgmBigRanges,.trendsMode .cgmBigNav,.trendsMode #cgmBigPred,.trendsMode .cgmBigTip,.trendsMode .cgmBigChart,.trendsMode .cgmBigOv,.trendsMode .cgmBigStats,.trendsMode .cgmBigSw .cgmBigMed:first-child{display:none!important}
+.trPer{display:flex;gap:6px;margin:8px 0}.trPer .btn{flex:1}
+.trSum{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.trS{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:7px 8px;min-width:0}
+.trS span{display:block;font-size:12px;color:var(--muted)}.trS b{display:block;font-size:18px;line-height:1.25}.trS small{display:block;font-size:11.5px;color:var(--muted);line-height:1.25}
+.trH{margin:16px 0 6px;font-size:15px}.trNote{font-size:12.5px;margin-bottom:6px}
+.trTir{display:flex;gap:14px;align-items:stretch}.trBar{width:46px;flex:none;display:flex;flex-direction:column;border-radius:8px;overflow:hidden;min-height:220px}
+.trRows{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:4px}
+.trZ{display:flex;align-items:center;gap:8px}.trZ i{width:12px;height:12px;border-radius:3px;flex:none}.trZ>span{flex:1;font-size:13.5px;line-height:1.25}.trGoal{font-size:11.5px}.trPct{font-size:19px}
+.trLegend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:4px}.trLegend i{display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.trDays{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:6px 10px;margin-top:8px}
+.trDay{display:flex;align-items:center;gap:6px;font-size:13.5px;cursor:pointer}.trDay i{width:12px;height:12px;border-radius:50%;flex:none}.trDay input{width:16px;height:16px;margin:0}
+.trDayBtns{display:flex;gap:8px;margin-top:8px}
+.cgmBigBox.dark .cgmTabs{background:#1e293b}.cgmBigBox.dark .cgmTabs button.on{background:#334155;color:#f1f5f9}
+.cgmBigBox.dark .trS{background:#111c2e;border-color:#243341}.cgmBigBox.dark .trS b{color:#f1f5f9}
+@media(max-width:950px){.trSum{grid-template-columns:repeat(2,minmax(0,1fr))}.cgmTabs button{padding:5px 11px;font-size:13px}.cgmBigHead #cgmBigWhen{display:none}}
+.trTir{max-width:680px}

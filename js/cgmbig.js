@@ -21,8 +21,8 @@
     let el = $('cgmBig'); if (el) return el;
     el = document.createElement('div'); el.id = 'cgmBig'; el.className = 'cgmBig';
     el.innerHTML = `<div class="cgmBigBox" role="dialog" aria-label="График сахара">
-<div class="cgmBigHead"><b>Сахар с сенсора</b><span id="cgmBigWhen" class="muted"></span><button class="navClose" aria-label="Закрыть" onclick="DMCgmBig.close()">✕</button></div>
-<div class="cgmBigRanges" id="cgmBigRanges"></div>
+<div class="cgmBigHead"><div class="cgmTabs"><button class="on" data-m="chart" onclick="DMCgmBig.mode('chart')">График</button><button data-m="trends" onclick="DMCgmBig.mode('trends')">Тенденции</button></div><span id="cgmBigWhen" class="muted"></span><button class="navClose" aria-label="Закрыть" onclick="DMCgmBig.close()">✕</button></div>
+<div class="cgmBigTrends" id="cgmBigTrends"></div><div class="cgmBigRanges" id="cgmBigRanges"></div>
 <div class="cgmBigNav"><button class="btn secondary small" onclick="DMCgmBig.shift(-1)">‹ Раньше</button><button class="btn secondary small" id="cgmBigNow" onclick="DMCgmBig.now()">Сейчас</button><button class="btn secondary small" id="cgmBigNext" onclick="DMCgmBig.shift(1)">Позже ›</button></div>
 <div id="cgmBigPred"></div><div class="cgmBigTip" id="cgmBigTip"></div>
 <div class="cgmBigChart" id="cgmBigChart"></div>
@@ -176,12 +176,16 @@
     if (g) g.innerHTML = `<line x1="${x}" x2="${x}" y1="0" y2="2000" stroke="${dark ? '#cbd5e1' : '#334155'}" stroke-width="1" opacity=".5"/><circle cx="${x}" cy="${y}" r="5" fill="${dark ? '#0f172a' : '#fff'}" stroke="${col}" stroke-width="3"/>`;
     tip.innerHTML = `<b style="color:${col}">${f1(best.g)} ммоль/л</b> · ${dm(best.t)} в ${hm(best.t)}`;
   }
-  function open(h) { box().classList.add('open'); document.body.classList.add('sheetOpen'); if (h) hours = h; end = null; load() }
+  function open(h) { box().classList.add('open'); if (mode !== 'chart') setMode('chart'); document.body.classList.add('sheetOpen'); if (h) hours = h; end = null; load() }
   function close() { const el = $('cgmBig'); if (el) el.classList.remove('open'); document.body.classList.remove('sheetOpen') }
   function shift(dir) {
     const ne = range().now + dir * hours * 3600e3 * 0.5;
     if (ne >= Date.now() - 60e3) end = null; else end = ne; cursorX = null; load();
   }
   window.addEventListener('resize', () => { if ($('cgmBig')?.classList.contains('open')) paint() });
-  window.DMCgmBig = { dark(on) { dark = !!on; try { localStorage.setItem('dm-cgm-dark', on ? '1' : '0') } catch (e) {} paint() }, median(on) { medOn = !!on; try { localStorage.setItem('dm-cgm-median', on ? '1' : '0') } catch (e) {} paint() }, open, close, shift, range(h) { hours = h; cursorX = null; load() }, now() { end = null; load() } };
+  let mode = 'chart';
+  function setMode(m) { mode = m; const el = box(), bx = el.querySelector('.cgmBigBox'); bx.classList.toggle('trendsMode', m === 'trends');
+    el.querySelectorAll('.cgmTabs button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+    if (m === 'trends') { const w = $('cgmBigWhen'); if (w) w.textContent = ''; window.DMTrends && DMTrends.load($('cgmBigTrends')) } else paint() }
+  window.DMCgmBig = { mode: setMode, dark(on) { dark = !!on; try { localStorage.setItem('dm-cgm-dark', on ? '1' : '0') } catch (e) {} paint(); if (mode === 'trends' && window.DMTrends) DMTrends.render() }, median(on) { medOn = !!on; try { localStorage.setItem('dm-cgm-median', on ? '1' : '0') } catch (e) {} paint() }, open, close, shift, range(h) { hours = h; cursorX = null; load() }, now() { end = null; load() } };
 })();
