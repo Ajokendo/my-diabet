@@ -550,3 +550,4 @@ html.dark .card,html.dark .stickyHead{box-shadow:none}
 .gdPh img{height:100%!important;width:100%;position:relative}.gdPh:not(.ok) img{opacity:0}
 .noInsBox{grid-column:1 / -1;margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}.noInsRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:4px}
 .noInsRow{grid-template-columns:1fr!important}.noInsRow .btn{width:100%}
+.insModal .insBox{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}.insModal .insBody{overflow:visible!important}
