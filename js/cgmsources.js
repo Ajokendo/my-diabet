@@ -10,9 +10,10 @@
   async function api(method, body) {
     const r = await fetch(server() + `/v1/patients/${encodeURIComponent(C().patientId)}/cgm-source`, { method, headers: { Authorization: 'Bearer ' + C().token, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
     let j = {}; try { j = await r.json() } catch (e) {}
+    if (r.status === 404 && j.error === 'Не найдено') throw new Error('Сервер ещё старой версии: в Cloudflare нужно вставить новый код (cloudflare-worker-NEW-v64.js) и нажать Deploy.');
     if (!r.ok) throw new Error(j.error || ('Ошибка ' + r.status)); return j;
   }
-  async function load() { if (!ready()) return; try { const j = await api('GET'); src = j.source; loaded = true } catch (e) { loaded = true; src = null; if (!/404|Не найдено/.test(e.message)) msg = '' } render() }
+  async function load() { if (!ready()) return; try { const j = await api('GET'); src = j.source; loaded = true } catch (e) { loaded = true; src = null; if (!/404|Не найдено|старой версии/.test(e.message)) msg = '' } render() }
   const ago = t => { if (!t) return 'ещё не было'; const m = Math.round((Date.now() - t) / 60e3); return m < 1 ? 'только что' : m < 60 ? m + ' мин назад' : Math.round(m / 60) + ' ч назад' };
   const OPT = [
     ['libre', 'FreeStyle Libre 2 / 3', 'через LibreLinkUp'],
