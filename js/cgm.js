@@ -112,6 +112,7 @@ async function connect(){
   }catch(e){if(out)out.innerHTML=`<div class="notice">${esc(e.message)}</div>`}
 }
 function copy(){const i=document.getElementById('cgmUrl');if(!i)return;i.select();try{navigator.clipboard.writeText(i.value).catch(()=>document.execCommand('copy'))}catch(e){document.execCommand('copy')}}
+function ownerImp(){try{return !!(window.DMPhotoQuota&&DMPhotoQuota.owner())}catch(e){return false}}
 function paintFamily(){
   const host=document.getElementById('sync2');if(!host||!ready())return;let box=document.getElementById('cgmFamily');
   if(!box){box=document.createElement('div');box.id='cgmFamily';box.className='card';box.style.marginTop='14px';host.appendChild(box)}
@@ -122,10 +123,10 @@ ${L?`<p>Последнее показание: <b>${L.g.toFixed(1)} ${L.arrow}</
 ${canWrite?`<button class="btn ${connected?'secondary':''}" style="width:100%;text-align:center" onclick="DMCgm.connect()">${connected?'Показать адрес заново<br><span style="font-weight:400;font-size:.88em">(создать новый ключ)</span>':'Подключить сенсор (xDrip+)'}</button>`:'<p class="muted">Подключить может только родитель или сам пациент.</p>'}
 <div id="cgmConnect" style="margin-top:10px">${connectHtml}</div>
 ${canWrite?`<details style="margin-top:14px"${importOpen?' open':''}><summary><b>Загрузить прошлую историю из Nightscout</b></summary>
-<p class="muted">Если xDrip+ раньше отправлял данные в другой Nightscout (например, на jino), историю за прошлые месяцы можно перенести сюда — для отчёта врачу и GMI. Уже имеющиеся показания не меняются.</p>
+<p class="muted">Если xDrip+ раньше отправлял данные в другой Nightscout (например, на jino), ${ownerImp()?'историю за прошлые месяцы можно перенести сюда — для отчёта врачу и GMI.':'показания за последние 3 дня можно перенести сюда.'} Уже имеющиеся показания не меняются.</p>
 <label>Адрес Nightscout</label><input id="nsUrl" class="input" placeholder="https://имя.nightscout-jino.ru" value="${esc(nsSaved())}">
 <label style="margin-top:8px">API secret или токен (если сайт закрыт)</label><input id="nsSecret" class="input" type="password" autocomplete="off" placeholder="можно оставить пустым">
-<div class="row" style="margin-top:8px;gap:8px"><select id="nsDays" class="select" style="max-width:180px"><option value="1">1 день</option><option value="3">3 дня</option><option value="7" selected>7 дней</option><option value="30">30 дней</option><option value="90">90 дней</option><option value="180">180 дней</option></select><button class="btn" onclick="DMCgm.importNs()" ${importBusy?'disabled':''}>${importBusy?'Загрузка…':'Загрузить'}</button></div>
+<div class="row" style="margin-top:8px;gap:8px"><select id="nsDays" class="select" style="max-width:180px"><option value="1">1 день</option><option value="3"${ownerImp()?'':' selected'}>3 дня</option>${ownerImp()?'<option value="7" selected>7 дней</option><option value="30">30 дней</option><option value="90">90 дней</option>':''}</select><button class="btn" onclick="DMCgm.importNs()" ${importBusy?'disabled':''}>${importBusy?'Загрузка…':'Загрузить'}</button></div>
 <div id="nsOut" style="margin-top:8px">${importMsg}</div></details>`:''}`;
 }
 

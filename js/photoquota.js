@@ -15,7 +15,7 @@
   async function refresh() {
     if (!ready() || loading) { render(); return } loading = true;
     try { Q = await api(`/v1/patients/${encodeURIComponent(C().patientId)}/photo-quota`); err = '' } catch (e) { err = e.status === 404 ? 'Сервер ещё старой версии: счётчик фото появится, когда в Cloudflare будет вставлен новый код воркера.' : e.message }
-    loading = false; render(); renderAdmin();
+    loading = false; render(); renderAdmin(); try { window.DMCgm && DMCgm.paintFamily() } catch (e) {}
   }
   function set(q) { if (q) { Q = Object.assign({}, Q || {}, q); render() } }
   function render() {
@@ -62,5 +62,5 @@ ${fam.length ? `<details style="margin-top:6px"><summary style="cursor:pointer;f
   const origShow = window.show;
   if (typeof origShow === 'function') window.show = function (id) { const r = origShow.apply(this, arguments); if (id === 'photo') refresh(); if (id === 'account') setTimeout(refresh, 100); return r };
   setTimeout(refresh, 2000);
-  window.DMPhotoQuota = { refresh, render, renderAdmin, redeem, create, set, toggleCode() { showCode = !showCode; render() }, headers() { return ready() ? { 'Authorization': 'Bearer ' + C().token } : {} }, patientId: () => C().patientId || '' };
+  window.DMPhotoQuota = { refresh, render, renderAdmin, redeem, create, set, toggleCode() { showCode = !showCode; render() }, headers() { return ready() ? { 'Authorization': 'Bearer ' + C().token } : {} }, patientId: () => C().patientId || '', owner: () => !!(Q && Q.owner) };
 })();

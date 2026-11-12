@@ -7,6 +7,7 @@
 //   Переменные (необязательно): OWNER_EMAILS — почты (через запятую) вашей семьи: распознавание фото без лимита
 //              и создание кодов. Если не задано — без лимита первая созданная семья.
 //              FREE_PHOTOS — бесплатных распознаваний для новой семьи (по умолчанию 3).
+//              IMPORT_DAILY_LIMIT — сколько показаний сенсора можно загрузить из Nightscout за сутки на весь сервер (по умолчанию 20000).
 //              PHOTO_CONTACT — куда писать за кодом (показывается в приложении), например «WhatsApp +996 …».
 //   Триггер: Cron «*/5 * * * *» — забирать сахар из облаков (LibreLinkUp, Dexcom Share, Nightscout) и уведомление «нет данных».
 //   Секрет (желательно): CRED_KEY — любая длинная строка; ею шифруются пароли облаков сенсоров в базе.
@@ -399,6 +400,11 @@ async function sync(req,env,path){
       const b=await body(req);let base=String(b.url||'').trim().replace(/\/+$/,'').replace(/\/api\/v1.*$/,'');
       let tok='';try{const U=new URL(base);if(U.protocol!=='https:'&&U.protocol!=='http:')throw 0;if(U.username){tok=decodeURIComponent(U.username);U.username='';U.password=''}base=U.toString().replace(/\/+$/,'')}catch(e){return J(400,{error:'Неверный адрес Nightscout.'})}
       const secret=String(b.secret||tok||'').trim(),from=Math.round(+b.from||0),to=Math.round(+b.to||Date.now());if(!from||to<=from||to-from>15*864e5)return J(400,{error:'Неверный период.'});
+      /* v64.48: чужие семьи — история только за последние 3 дня; общий дневной потолок импорта, чтобы не исчерпать лимит записей D1 */
+      const own=await isOwnerFamily(env,cm[1]);if(!own&&from<Date.now()-3*864e5-3*36e5)return J(403,{error:'Загрузка истории доступна только за последние 3 дня.'});
+      const capKey='import:'+new Date().toISOString().slice(0,10),cap=Math.max(0,+(env.IMPORT_DAILY_LIMIT??20000)||0);
+      const usedRow=await env.DB.prepare('SELECT v FROM kv WHERE k=?').bind(capKey).first();const used=+(usedRow&&usedRow.v)||0;
+      if(used>=cap)return J(429,{error:'На сегодня лимит загрузки истории на сервере исчерпан. Попробуйте завтра после 06:00. Сенсор и синхронизация работают как обычно.'});
       const q=`${base}/api/v1/entries/sgv.json?count=6000&find[date][$gte]=${from}&find[date][$lt]=${to}`+(secret&&/-[0-9a-f]{8,}$/i.test(secret)?`&token=${encodeURIComponent(secret)}`:'');
       const h={'Accept':'application/json'};if(secret&&!/-[0-9a-f]{8,}$/i.test(secret))h['api-secret']=await sha1(secret);
       let r;try{r=await fetch(q,{headers:h})}catch(e){return J(502,{error:'Nightscout не отвечает: '+(e.message||e)})}
@@ -406,6 +412,8 @@ async function sync(req,env,path){
       if(!r.ok)return J(502,{error:'Nightscout ответил ошибкой '+r.status});
       let arr;try{arr=await r.json()}catch(e){return J(502,{error:'Nightscout вернул не JSON. Проверьте адрес.'})}
       const rows=(Array.isArray(arr)?arr:[]).filter(e=>e&&+e.sgv>=20&&+e.sgv<=600&&+e.date>=from&&+e.date<to);
+      if(used+rows.length>cap)return J(429,{error:'На сегодня лимит загрузки истории на сервере исчерпан. Попробуйте завтра после 06:00. Сенсор и синхронизация работают как обычно.'});
+      await env.DB.prepare('INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=CAST(v AS INTEGER)+?').bind(capKey,String(rows.length),rows.length).run();
       for(let i=0;i<rows.length;i+=500)await env.DB.batch(rows.slice(i,i+500).map(e=>env.DB.prepare('INSERT OR IGNORE INTO cgm VALUES(?,?,?,?,?)').bind(cm[1],Math.round(+e.date),+e.sgv,String(e.direction||''),String(e.device||'').slice(0,60))));
       return J(200,{found:rows.length,first:rows.length?Math.min(...rows.map(e=>+e.date)):null})}
     if(cm[2]==='cgm'&&M==='GET'){try{const sr=await env.DB.prepare('SELECT * FROM cgm_sources WHERE patient_id=?').bind(cm[1]).first();if(sr)await pollSource(env,sr,false)}catch(e){}const q=new URL(req.url).searchParams;const since=Math.max(+q.get('since')||0,Date.now()-200*864e5);
