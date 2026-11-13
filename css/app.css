@@ -590,3 +590,6 @@ html.dark .card,html.dark .stickyHead{box-shadow:none}
 .vcRow span{display:flex;flex-direction:column}.vcRow small{color:#475569}.vcRow.bad span{color:#b45309}
 html[lang=ky] .mobilebar .lb{font-size:10.5px;letter-spacing:-.2px}
 .catRows .catRow .catalogCat{min-width:0;white-space:normal}
+html[lang=ky] .subTabs button{white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;font-size:13px;padding-left:6px;padding-right:6px}
+.navSheetGrid button span:last-child{flex:1 1 auto;white-space:normal;hyphens:auto;-webkit-hyphens:auto;line-height:1.2}
+html[lang=ky] .navSheetGrid button{font-size:13.5px;gap:7px;padding-left:9px;padding-right:6px}html[lang=ky] .navSheetGrid .ic{font-size:21px}
