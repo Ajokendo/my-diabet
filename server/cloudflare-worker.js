@@ -526,12 +526,13 @@ async function nightscout(req,env,path,ctx){
   return J(200,[]);
 }
 
+const SERVER_VERSION='v64.54'; /* меняется при каждом изменении кода сервера; приложение сравнивает с файлом на сайте */
 export default{async scheduled(ev,env,ctx){if(env.DB)ctx.waitUntil((async()=>{await ensureSchema(env);try{await pollAll(env)}catch(e){}if(new Date().getMinutes()%10<5)await staleSweep(env)})())},
 async fetch(req,env,ctx){
   const path=new URL(req.url).pathname;
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers:CORS});
   try{
-    if(req.method==='GET'&&(path==='/'||path==='/health'))return J(200,{ok:true,service:'my-diabet food-photo',sync:!!env.DB});
+    if(req.method==='GET'&&(path==='/'||path==='/health'))return J(200,{ok:true,service:'my-diabet food-photo',sync:!!env.DB,version:SERVER_VERSION});
     if(path==='/v1/food-photo'&&req.method==='POST')return await foodPhoto(req,env);
     if(path==='/v1/medical-doc'&&req.method==='POST')return await medicalDoc(req,env);
     if(path.startsWith('/api/v1/'))return await nightscout(req,env,path,ctx);

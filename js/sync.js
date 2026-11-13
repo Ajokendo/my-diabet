@@ -175,6 +175,23 @@ function v(id){return (document.getElementById(id)?.value||'').trim()}
 function statusHtml(){const c=C();const n=pending();return `<div class="syncInfo"><div class="mini"><span class="muted">Последняя синхронизация</span><b>${c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</b></div><div class="mini"><span class="muted">Не отправлено на сервер</span><b>${busy?'…':n}</b><span class="muted" style="font-size:12px">${busy?'отправляю…':n?'уйдёт при появлении связи':'всё синхронизировано'}</span></div></div>
 ${lastError?`<div class="notice" style="margin-top:8px">${esc(lastError)}</div>`:''}
 `}
+
+/* v64.54: версия кода сервера — сравниваем с файлом server/cloudflare-worker.js на сайте */
+let srvVer=null,srvLatest=null,srvVerAt=0;
+async function checkServerVersion(){
+  if(Date.now()-srvVerAt<10*60e3&&srvVer!==null)return;srvVerAt=Date.now();
+  try{const r=await fetch(server()+'/health',{cache:'no-store'});const j=await r.json();srvVer=j.version||'old'}catch(e){srvVer='?'}
+  try{const t=await (await fetch('server/cloudflare-worker.js',{cache:'no-store'})).text();const m=t.match(/SERVER_VERSION='([^']+)'/);srvLatest=m?m[1]:null}catch(e){srvLatest=null}
+  const el=document.getElementById('s2SrvVer');if(el)el.innerHTML=srvVerHtml();
+}
+function vnum(v){const m=String(v||'').match(/v?(\d+)\.(\d+)/);return m?(+m[1])*1000+(+m[2]):0}
+function srvVerHtml(){
+  if(srvVer===null)return '<span class="muted">Проверяю версию сервера…</span>';
+  if(srvVer==='?')return '<span class="muted">Версию сервера проверить не удалось (нет связи).</span>';
+  const cur=srvVer==='old'?'старше v64.54':srvVer;
+  if(srvLatest&&(srvVer==='old'||vnum(srvVer)<vnum(srvLatest)))return `<div class="notice" style="margin-top:8px"><b>Доступна новая версия кода сервера: ${esc(srvLatest)}</b> (у вас ${esc(cur)}).<br>Скачайте файл <a class="btn small secondary" style="display:inline-block;margin:4px 0;white-space:nowrap" href="server/cloudflare-worker.js" download="cloudflare-worker.js">⬇ cloudflare-worker.js</a><br>и в Cloudflare: ваш Worker → <b>Edit code</b> → удалить весь код → вставить содержимое файла → <b>Deploy</b>. Данные сохраняются.</div>`;
+  return `<span class="muted">Версия сервера: ${esc(cur)} — актуальная.</span>`;
+}
 function render(light){
   const el=document.getElementById('sync2');if(!el)return;const c=C();
   if(!c.token||!c.patientId){
@@ -205,11 +222,11 @@ function render(light){
   const n=pending();
   if(light&&el.querySelector('#s2Status')){const st=el.querySelector('#s2Status');st.innerHTML=statusHtml();const b=el.querySelector('#s2SyncBtn');if(b){b.disabled=busy;b.textContent=busy?'Синхронизация…':'Синхронизировать сейчас'}return}
   el.innerHTML=`<div class="grid"><div class="card s6"><h3>Общий дневник: ${esc(c.patientName||'')}</h3>
-<div id="s2Status">${statusHtml()}</div><div class="syncBtns"><button class="btn" id="s2SyncBtn" onclick="DMSync.syncNow(true)" ${busy?'disabled':''}>${busy?'Синхронизация…':'Синхронизировать сейчас'}</button><button class="btn secondary" onclick="DMLink.scan()">Подключить компьютер</button><div class="two"><button class="btn secondary" onclick="DMSync.changePassword()">Сменить пароль</button><button class="btn secondary" onclick="DMSync.logout()">Выйти</button></div></div>
+<div id="s2Status">${statusHtml()}</div><div id="s2SrvVer" style="margin-top:6px;font-size:14px">${srvVerHtml()}</div><div class="syncBtns"><button class="btn" id="s2SyncBtn" onclick="DMSync.syncNow(true)" ${busy?'disabled':''}>${busy?'Синхронизация…':'Синхронизировать сейчас'}</button><button class="btn secondary" onclick="DMLink.scan()">Подключить компьютер</button><div class="two"><button class="btn secondary" onclick="DMSync.changePassword()">Сменить пароль</button><button class="btn secondary" onclick="DMSync.logout()">Выйти</button></div></div>
 <h3 style="margin-top:18px">Участники</h3><div id="s2Members" class="muted">Загрузка…</div></div>
 <div class="card s6"><h3>Пригласить в дневник</h3>${c.role==='viewer'?'<p class="muted">У вас доступ только для просмотра.</p>':`<div class="two"><div><label>Кого</label><input id="s2InvName" class="input" placeholder="например, Мама"></div><div><label>Права</label><select id="s2InvRole" class="select"><option value="guardian">Родитель — видит и вносит</option><option value="patient">Пациент — видит и вносит</option><option value="viewer">Только просмотр (например, врач)</option></select></div></div><button class="btn" style="width:100%;text-align:center;margin-top:10px" onclick="DMSync.invite()">Создать код приглашения</button><div id="s2InvOut"></div>`}
 <h3 style="margin-top:18px">Подключиться к другому дневнику</h3><div style="display:grid;gap:8px"><input id="s2JoinCode" class="input" placeholder="КОД" style="width:100%;text-align:center;text-transform:uppercase;letter-spacing:2px;box-sizing:border-box"><button class="btn secondary" style="width:100%;text-align:center" onclick="DMSync.acceptCode()">Подключиться</button></div></div></div>`;
-  members();
+  members();checkServerVersion();
   try{window.DMCgm&&DMCgm.paintFamily();window.DMCgm&&DMCgm.refresh()}catch(e){}
   try{window.DMSources&&DMSources.render();window.DMAlerts&&DMAlerts.render();window.DMPhotoQuota&&DMPhotoQuota.renderAdmin()}catch(e){}
 }
