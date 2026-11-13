@@ -619,3 +619,10 @@ body.dark .langSw,html.dark .langSw{background:transparent}
  .helpBtns{max-width:none}
 }
 @media(max-width:700px){#picker .fooditem{flex-wrap:wrap}#picker .fooditem>.row{width:100%;justify-content:flex-end}}
+/* v64.61 */
+.backupInfo{text-align:center}
+.careKinds{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+.careKinds button{width:100%;white-space:normal;line-height:1.2;text-align:center}
+.labWrap{overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;max-width:100%}
+.labWrap table{min-width:520px}
+.labWrap td,.labWrap th{white-space:nowrap}

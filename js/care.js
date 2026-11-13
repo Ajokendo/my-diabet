@@ -97,7 +97,7 @@ table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6p
     return `<h3>Места уколов</h3>
 <p class="muted">Меняйте места уколов, чтобы под кожей не появлялись уплотнения (липодистрофии) — из них инсулин всасывается хуже. Нажмите на зону после укола.</p>
 <div class="siteSug">Сегодня лучше колоть: <b>${esc(zname(sug))}</b> <small class="muted">(${esc(ago(m[sug]))})</small></div>
-<div class="afChips" style="margin:8px 0">${['короткий', 'длинный'].map(k => `<button class="${k === pickKind ? 'on' : ''}" onclick="DMCare.kind('${k}')">${k === 'короткий' ? 'Короткий (на еду)' : 'Длинный (базальный)'}</button>`).join('')}</div>
+<div class="afChips careKinds" style="margin:8px 0">${['короткий', 'длинный'].map(k => `<button class="${k === pickKind ? 'on' : ''}" onclick="DMCare.kind('${k}')">${k === 'короткий' ? 'Короткий (на еду)' : 'Длинный (базальный)'}</button>`).join('')}</div>
 <div class="bodyWrap">${body('front')}${body('back')}</div>
 <div class="siteLegend"><span><i class="sug"></i>советуем</span><span><i class="rest"></i>отдыхает (до 3 дней)</span><span><i class="ok"></i>можно</span></div>
 ${last.length ? `<div class="siteLast"><b>Последние уколы</b>${last.map(x => `<div>${new Date(x.t).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} — ${esc(zname(x.z))}${x.k ? ' · ' + esc(x.k) : ''}</div>`).join('')}<button class="btn secondary small" style="margin-top:6px" onclick="DMCare.undoSite()">Отменить последнюю отметку</button></div>` : ''}
@@ -129,8 +129,8 @@ ${last.length ? `<div class="siteLast"><b>Последние уколы</b>${las
     const t = lastBackup(), days = t ? Math.floor((Date.now() - t) / 864e5) : null;
     return `<h3>Резервная копия</h3>
 <p class="muted">${hasFamily() ? 'Записи хранятся и на телефоне, и в общем дневнике семьи. Копия — дополнительная страховка.' : 'Без сервера записи хранятся только на этом телефоне. Если телефон потеряется или сломается, они пропадут. Раз в неделю сохраняйте копию — себе в Telegram, WhatsApp «Избранное», Google Диск или на почту.'}</p>
-<div class="siteSug">${t ? `Последняя копия: <b>${days === 0 ? 'сегодня' : days + ' дн. назад'}</b>` : '<b>Копий ещё не было.</b>'}</div>
-<div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn" onclick="DMCare.backup()">💾 Сохранить копию</button><button class="btn secondary" onclick="document.getElementById('careRestore').click()">Восстановить из файла</button></div>
+<div class="siteSug backupInfo">${t ? `Последняя копия: <b>${days === 0 ? 'сегодня' : days + ' дн. назад'}</b>` : '<b>Копий ещё не было.</b>'}</div>
+<div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn" onclick="DMCare.backup()">Сохранить копию</button><button class="btn secondary" onclick="document.getElementById('careRestore').click()">Восстановить из файла</button></div>
 <input type="file" id="careRestore" accept=".json,application/json" hidden onchange="importData(event)">
 <p class="muted" style="font-size:13px">Копия не зашифрована: храните её только у себя. Зашифрованная копия с паролем — в «Настройках».</p>`;
   }
