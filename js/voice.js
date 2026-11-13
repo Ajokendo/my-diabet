@@ -7,11 +7,12 @@
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const f1 = v => (Math.round(v * 10) / 10).toString().replace('.', ',');
   const norm = s => String(s || '').toLowerCase().replace(/ё/g, 'е').replace(/[«»"„“().!?]/g, ' ').replace(/\s+/g, ' ').trim();
-  const NUM = { 'пол': 0.5, 'половина': 0.5, 'половину': 0.5, 'половинка': 0.5, 'половинку': 0.5, 'полтора': 1.5, 'полторы': 1.5, 'один': 1, 'одна': 1, 'одну': 1, 'одно': 1, 'два': 2, 'две': 2, 'три': 3, 'четыре': 4, 'пять': 5, 'шесть': 6, 'семь': 7, 'восемь': 8, 'девять': 9, 'десять': 10, 'двадцать': 20, 'тридцать': 30, 'сорок': 40, 'пятьдесят': 50, 'шестьдесят': 60, 'семьдесят': 70, 'восемьдесят': 80, 'девяносто': 90, 'сто': 100, 'двести': 200, 'триста': 300, 'четыреста': 400, 'пятьсот': 500 };
+  const NUM = { 'пол': 0.5, 'половина': 0.5, 'половину': 0.5, 'половинка': 0.5, 'половинку': 0.5, 'полтора': 1.5, 'четверть': 0.25, 'четвертинка': 0.25, 'треть': 0.33, 'полторы': 1.5, 'один': 1, 'одна': 1, 'одну': 1, 'одно': 1, 'два': 2, 'две': 2, 'три': 3, 'четыре': 4, 'пять': 5, 'шесть': 6, 'семь': 7, 'восемь': 8, 'девять': 9, 'десять': 10, 'двадцать': 20, 'тридцать': 30, 'сорок': 40, 'пятьдесят': 50, 'шестьдесят': 60, 'семьдесят': 70, 'восемьдесят': 80, 'девяносто': 90, 'сто': 100, 'двести': 200, 'триста': 300, 'четыреста': 400, 'пятьсот': 500 };
   const STOP = new Set(['я', 'он', 'она', 'мы', 'съел', 'съела', 'съели', 'выпил', 'выпила', 'выпили', 'кушал', 'кушала', 'поел', 'поела', 'ел', 'ела', 'пил', 'пила', 'добавь', 'добавить', 'запиши', 'на', 'завтрак', 'обед', 'ужин', 'перекус', 'еще', 'ещё', 'потом', 'немного', 'примерно', 'около', 'где-то', 'штуки', 'штук', 'штука', 'шт', 'грамм', 'граммов', 'грамма', 'гр', 'г', 'мл', 'миллилитров']);
-  const UNIT_G = /^(г|гр|грамм\w*|мл|миллилитр\w*)$/;
-  const UNIT_M = /^(стакан\w*|чаш\w*|кружк\w*|ложк\w*|ложеч\w*|кус\w*|ломтик\w*|ломт\w*|тарелк\w*|порци\w*|половник\w*|пиал\w*|горст\w*|штук\w*|шт|бутерброд\w*)$/;
+  const UNIT_G = /^(г|гр|грамм[а-яё]*|мл|миллилитр[а-яё]*)$/;
+  const UNIT_M = /^(стакан[а-яё]*|чаш[а-яё]*|кружк[а-яё]*|ложк[а-яё]*|ложеч[а-яё]*|кус[а-яё]*|ломтик[а-яё]*|ломт[а-яё]*|тарелк[а-яё]*|порци[а-яё]*|половник[а-яё]*|пиал[а-яё]*|горст[а-яё]*|штук[а-яё]*|шт|бутерброд[а-яё]*)$/;
   let rec = null, items = [], heard = '';
+  function near(a, b) { let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++; const m = Math.min(a.length, b.length); return i >= 2 && i >= m - 1 && m >= 3 && (m >= 5 || Math.abs(a.length - b.length) <= 1) }
   const stem = w => w.length > 5 ? w.slice(0, w.length - 2) : w.length > 3 ? w.slice(0, w.length - 1) : w;
 
   function bestFood(words) {
@@ -21,7 +22,7 @@
     for (const f of db.foods) {
       if (typeof isFoodVisible === 'function' && !isFoodVisible(f)) continue;
       const nt = norm(f.name).split(' ').filter(w => w.length > 1);
-      let hit = 0; qs.forEach(q => { if (nt.some(n => n.startsWith(q) || q.startsWith(stem(n)))) hit++ });
+      let hit = 0; qs.forEach(q => { if (nt.some(n => n.startsWith(q) || q.startsWith(stem(n)) || near(q, n))) hit++ });
       if (!hit) continue;
       const first = nt[0] && qs.some(q => nt[0].startsWith(q)) ? 0.25 : 0;
       const sc = hit / qs.length + first - (nt.length - hit) * 0.04;
@@ -45,7 +46,9 @@
     if (grams) g = grams;
     else {
       let m = null;
-      if (unit) { const u = stem(unit); m = L.find(([l]) => norm(l).split(' ').some(x => x.startsWith(u) || u.startsWith(stem(x)))) }
+      if (L.length) { const lw = w.filter(x => !STOP.has(x)); for (const it of L) { const first = norm(it[0]).split(' ')[0]; if (lw.some(x => x.length > 2 && (x.startsWith(stem(first)) || near(x, first)))) { m = it; break } } }
+      if (m && (m[0] === 'четверть' || m[0] === 'половина') && n != null && n < 1) n = null;
+      if (!m && unit) { const u = stem(unit); m = L.find(([l]) => norm(l).split(' ').some(x => x.startsWith(u) || u.startsWith(stem(x)))) }
       if (!m && (n != null || unit) && L.length) m = L[0];
       if (m) { const c = n != null ? n : 1; g = m[1] * c; measure = { l: m[0], n: c } }
       else if (n != null && n >= 20) g = n;
