@@ -559,3 +559,34 @@ html.dark .card,html.dark .stickyHead{box-shadow:none}
 .srcNote{font-size:12px;margin-top:8px;line-height:1.4}.srcNow{background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:10px 12px}
 .srcBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.srcErr{color:#b91c1c;margin-top:4px}.srcMsg{margin-top:10px}
 .srcOther{margin-top:12px}.srcOther summary{cursor:pointer;font-weight:700}
+
+/* v64.55 Безопасность */
+.sosChip{background:#dc2626;color:#fff;border:0;border-radius:999px;font-weight:800;padding:6px 12px;font-size:14px;letter-spacing:.5px;cursor:pointer;box-shadow:0 2px 8px rgba(220,38,38,.35)}
+.sosCard{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border:2px solid #fecaca;background:#fff5f5}
+.sosBtn{background:#dc2626!important;border-color:#dc2626!important;font-size:17px;padding:12px 22px}
+.sosScreen{position:fixed;inset:0;z-index:9998;background:#fff;overflow:auto;padding:22px 18px 30px;text-align:center;color:#111}
+.sosScreen h1{font-size:30px;line-height:1.15;margin:6px 0;color:#b91c1c}.sosScreen h2{font-size:21px;margin:0 0 10px;color:#7f1d1d;font-weight:700}
+.sosTop{font-size:46px}.sosName{font-size:22px;font-weight:800;margin:6px 0}.sosG{font-size:19px;margin:6px 0 10px}
+.sosBox{text-align:left;font-size:18px;line-height:1.45;background:#fef3c7;border-radius:14px;padding:12px 14px;margin:10px auto;max-width:560px}.sosBox.red{background:#fee2e2}
+.sosBox .ky{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(0,0,0,.2);font-size:16px}
+.sosCalls{display:grid;gap:10px;max-width:560px;margin:14px auto}.sosCall{display:flex;flex-direction:column;align-items:center;background:#0f8f80;color:#fff!important;text-decoration:none;font-size:20px;font-weight:800;border-radius:14px;padding:12px}
+.sosCall small{font-weight:600;font-size:15px;opacity:.9}.sosCall.amb{background:#dc2626}.sosHint{color:#6b7280}
+.sosClose{position:fixed;top:10px;right:12px;width:44px;height:44px;border-radius:50%;border:0;background:#f3f4f6;font-size:20px;cursor:pointer}
+.careContact{display:grid;grid-template-columns:1fr 1.2fr auto;gap:6px;margin-bottom:6px}
+#careBody label{display:block;margin-top:10px;font-weight:700;font-size:14px}
+.schoolCard{margin-top:12px;border:1px solid #e5e7eb;border-radius:12px;padding:12px;font-size:14px}.schoolCard h1{font-size:18px;margin:0 0 8px}.schoolCard h2{font-size:15px;color:#b91c1c;margin:12px 0 4px}
+.schoolCard table{border-collapse:collapse;width:100%}.schoolCard th,.schoolCard td{border:1px solid #e5e7eb;padding:5px 7px;text-align:left;vertical-align:top}.schoolCard th{width:40%;background:#f9fafb}.schoolCard .small{color:#6b7280;font-size:12px}
+.siteSug{background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:8px 12px;margin:8px 0}
+.bodyWrap{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.bodyFig{margin:0;text-align:center}.bodyFig svg{width:170px;height:auto}.bodyFig figcaption{font-weight:700;color:#475569}
+.bodyFig .sil *{fill:#e2e8f0}.bodyFig .z{cursor:pointer;stroke:#fff;stroke-width:2}.bodyFig .z.ok{fill:#5eead4}.bodyFig .z.rest{fill:#fca5a5}.bodyFig .z.sug{fill:#0f8f80;stroke:#134e4a;stroke-width:3}
+.siteLegend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:13px;color:#475569;margin:6px 0}.siteLegend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:4px;vertical-align:-1px}.siteLegend i.sug{background:#0f8f80}.siteLegend i.rest{background:#fca5a5}.siteLegend i.ok{background:#5eead4}
+.siteLast{margin-top:8px;font-size:14px}.siteLast div{color:#475569}
+.bkBanner{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#fffbeb;border:1px solid #fde68a}
+#dashboard .glucoseHero{position:relative}.glucoseHero .sosChip{position:absolute;top:10px;right:10px;z-index:3}
+.glucoseHero #sGlucoseLabel{padding-right:64px}
+
+.afSearchRow{display:flex;gap:8px;align-items:center}.afSearchRow .afSearch{flex:1;min-width:0}.afMic{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid #99f6e4;background:#f0fdfa;font-size:21px;cursor:pointer}
+.vcBox{margin:8px 0;padding:10px 12px;border:1px solid #99f6e4;background:#f0fdfa;border-radius:12px}.vcRow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #ccfbf1}
+.vcRow span{display:flex;flex-direction:column}.vcRow small{color:#475569}.vcRow.bad span{color:#b45309}
+html[lang=ky] .mobilebar .lb{font-size:10.5px;letter-spacing:-.2px}
+.catRows .catRow .catalogCat{min-width:0;white-space:normal}

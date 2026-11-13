@@ -57,7 +57,7 @@ ${added.length ? `<div class="afAdded">✓ Добавлено в «${esc(meal)}�
     const L = list();
     const tabs = [['recent', 'Недавние'], ['fav', 'Избранное'], ['all', 'Все']];
     el.innerHTML = `<div class="afCard">${head()}
-<input id="afQ" class="input afSearch" placeholder="Найти: гречка, хлеб, плов…" value="${esc(q)}" autocomplete="off" oninput="DMAddFood.search(this.value)">
+<div class="afSearchRow"><input id="afQ" class="input afSearch" placeholder="Найти: гречка, хлеб, плов…" value="${esc(q)}" autocomplete="off" oninput="DMAddFood.search(this.value)">${window.DMVoice && DMVoice.ok() ? `<button class="afMic" onclick="DMVoice.start()" aria-label="Сказать голосом" title="Сказать голосом">🎤</button>` : ''}</div><div id="afVoice"></div>
 ${q ? '' : `<div class="afTabs">${tabs.map(([k, l]) => `<button class="${k === tab ? 'on' : ''}" onclick="DMAddFood.tab('${k}')">${l}</button>`).join('')}</div>`}
 <div class="afList" id="afList">${rows(L)}</div>
 <div class="afFoot muted">Нет нужного? Добавьте свой продукт в «Продукты» → «＋ Свой продукт».</div></div>`;
@@ -91,6 +91,16 @@ ${msr ? `<div class="afLbl">Сколько</div><div class="afChips">${[0.5, 1, 
   }
   window.DMAddFood = {
     open, close, choose, add,
+    curMeal() { return meal },
+    addItem(foodId, g, measure) {
+      const f = db.foods.find(x => x.id === foodId); if (!f || !(g > 0)) return false;
+      if (typeof canAddToMeal === 'function' && !canAddToMeal(foodId, meal)) return false;
+      const day = key(); db.menus[day] = db.menus[day] || Object.fromEntries(mealList().map(m => [m, []]));
+      const m = db.menus[day]; m[meal] = m[meal] || [];
+      const it = { id: crypto.randomUUID(), foodId, g: Math.round(g) }; if (measure) it.measure = measure;
+      m[meal].push(it); added.push(f.name); return true;
+    },
+    done() { save(); pick = null; q = ''; paint(); try { loadDay() } catch (e) {} },
     meal(m) { meal = m; added = []; paint() }, tab(t) { tab = t; paint() },
     search(v) { q = v; const l = $('afList'); if (l) { l.innerHTML = rows(list()); const t = document.querySelector('.afTabs'); if (t) t.style.display = q ? 'none' : '' } else paint() },
     msr(l, w) { msr = l; if (l) { cnt = 1; grams = w } paint() }, count(n) { cnt = n; const L = DMMeasure.list(pick), w = (L.find(x => x[0] === msr) || [0, 100])[1]; grams = Math.round(w * n); paint() },

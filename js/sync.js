@@ -55,7 +55,7 @@ function records(){
   const m={},put=(t,id,v)=>{m[t+'|'+id]=v};
   ['diary','activity'].forEach(k=>(db[k]||[]).forEach(x=>{if(x&&!x.id)x.id=rid()}));
   put('profile','1',db.profile||{});put('settings','1',db.settings||{});put('ratios','1',db.ratios||{});
-  put('favorites','1',db.favorites||{});put('preferences','1',db.preferences||{});put('waterLog','1',db.waterLog||{});
+  put('favorites','1',db.favorites||{});put('preferences','1',db.preferences||{});put('waterLog','1',db.waterLog||{});if(db.care)put('care','1',db.care);
   const med=clone(db.medical||{});delete med.calculationLog;delete med.actualInsulinLog;delete med.safetyEvents;put('medical','1',med);
   for(const [t,get] of Object.entries(COLLECTIONS))(get()||[]).forEach(x=>{if(x&&x.id!=null)put(t,x.id,x)});
   (db.foods||[]).forEach(f=>{if(/^u\d/.test(String(f.id)))put('food',f.id,f)});
@@ -70,7 +70,7 @@ function listFor(t){
 }
 function apply(ch){
   const t=ch.recordType,id=ch.recordId,p=ch.payload,del=ch.deleted;
-  if(['profile','settings','ratios','favorites','preferences','waterLog'].includes(t)){if(!del)db[t]=p||{};return}
+  if(['profile','settings','ratios','favorites','preferences','waterLog','care'].includes(t)){if(!del)db[t]=p||{};return}
   if(t==='medical'){if(!del){const keep={calculationLog:db.medical?.calculationLog,actualInsulinLog:db.medical?.actualInsulinLog,safetyEvents:db.medical?.safetyEvents};db.medical={...(p||{}),...keep}}return}
   if(t==='menu'){if(!del&&p)mergeMenu(id,p);return}
   if(t==='menuGone'){if(!del&&p)applyMenuDel(id,p.ids);return}
