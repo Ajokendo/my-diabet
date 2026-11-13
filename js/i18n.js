@@ -169,6 +169,7 @@
   let obs = null;
   function start() {
     document.documentElement.lang = lang() === 'ky' ? 'ky' : 'ru';
+    document.querySelectorAll('.langSw button').forEach(b => b.classList.toggle('on', b.dataset.l === lang()));
     const sel = document.getElementById('setLanguage');
     if (sel) sel.value = lang();
     if (lang() !== 'ky') { if (obs) { obs.disconnect(); obs = null } return }

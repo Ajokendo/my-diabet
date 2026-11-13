@@ -601,3 +601,10 @@ html[lang=ky] .foodmeta{min-width:0;flex:1}
 html[lang=ky] .catalogCats.catRows{flex-direction:row;flex-wrap:wrap}
 html[lang=ky] .catRows .catRow{display:contents}
 html[lang=ky] .catRows .catRow .catalogCat{flex:0 1 auto;white-space:normal;min-width:0}
+/* v64.59: язык на главной */
+.langSw{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:#fff;flex:none}
+.langSw button{border:0;background:transparent;padding:6px 11px;font:inherit;font-size:12.5px;font-weight:800;color:var(--muted);cursor:pointer;letter-spacing:.03em}
+.langSw button.on{background:var(--brand,#14b8a6);color:#fff}
+@media(max-width:950px){#dashboard .dayPick{flex-direction:column;align-items:flex-end;gap:6px}#dashboard .langSw button{padding:5px 10px;font-size:12px}}
+body.dark .langSw,html.dark .langSw{background:transparent}
+@media(max-width:950px){#dashboard .top>div:first-child{min-width:0;flex:1 1 auto}#dashboard .top>div:first-child>div{min-width:0}#dashboard .brandSlogan{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#dashboard .top h1{white-space:nowrap}html[lang=ky] #dashboard .homeTitle h1{white-space:normal;line-height:1.05}}
