@@ -1,3 +1,5 @@
+// © 2026 Азамат Орозобеков (Azamat Orozobekov). Бесплатная установка на свой сервер для себя и своей семьи разрешена;
+// продажа, выдача за своё и распространение изменённых версий без разрешения автора запрещены. Без гарантий. См. LICENSE.
 // Cloudflare Worker «Мой диабет»: распознавание еды по фото + семейная синхронизация.
 //
 // Настройки воркера (Settings):
@@ -275,7 +277,7 @@ async function photoGate(req,env,b){
   }
   if(env.PHOTO_ACCESS_CODE&&req.headers.get('X-Access-Code')===env.PHOTO_ACCESS_CODE)return {pid:null};
   if(!env.PHOTO_ACCESS_CODE&&!env.DB)return {pid:null};
-  return {err:J(401,{error:'Чтобы распознавать фото, войдите в «Семью» (раздел «Ещё» → «Семья»).'})}}
+  return {err:J(401,{error:'Фото еды работает только через сервер семьи: войдите в свой общий дневник («Ещё» → «Семья») или заведите свой сервер («Семья» → «Свой сервер»).'})}}
 const PCODE=()=>'F-'+[...rnd(8)].map(x=>CODE_ALPH[x%CODE_ALPH.length]).join('').replace(/(.{4})(.{4})/,'$1-$2');
 
 async function sync(req,env,path){

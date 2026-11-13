@@ -20,7 +20,7 @@
   function set(q) { if (q) { Q = Object.assign({}, Q || {}, q); render() } }
   function render() {
     const el = document.getElementById('phQuota'); if (!el) return;
-    if (!ready()) { const legacy = !!(db.settings && db.settings.photo && db.settings.photo.code); el.innerHTML = legacy ? '' : `<div class="pqLine empty"><span>Чтобы распознавать фото, войдите в «Семью»: «Ещё» → «Семья».</span></div>`; return }
+    if (!ready()) { const legacy = !!(db.settings && db.settings.photo && db.settings.photo.code); el.innerHTML = legacy ? '' : `<div class="pqLine empty" style="display:block;white-space:normal"><span style="white-space:normal;display:block;line-height:1.45"><b>Фото еды работает только через сервер семьи.</b> Если у вас уже есть общий дневник — войдите: «Ещё» → «Семья». Если нет — можно завести свой бесплатный сервер: «Семья» → «Свой сервер» (нужен свой ключ Anthropic, ≈2–3 цента за фото). Без сервера добавляйте еду из каталога: «Питание» → «＋ Добавить еду».</span></div>`; return }
     if (!Q) { el.innerHTML = err ? `<div class="muted">${esc(err)}</div>` : ''; return }
     const codeBox = `<div class="pqCode"><input id="pqCodeIn" class="input" placeholder="Код, например F-ABCD-EFGH" autocomplete="off"><button class="btn" onclick="DMPhotoQuota.redeem()">Активировать</button></div>`;
     if (Q.unlimited) { el.innerHTML = `<div class="pqLine"><span>Распознавание по фото:<br><b style="white-space:nowrap">без ограничений</b></span><span class="muted">${Q.used || 0} фото</span></div>`; return }

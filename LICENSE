@@ -2,5 +2,19 @@
 © 2026 Azamat Orozobekov. All rights reserved.
 
 Приложение «Мой диабет»: программный код, дизайн, логотип, тексты, база продуктов и изображения
-защищены авторским правом. Копирование, распространение и изменение без письменного разрешения
-автора запрещены.
+защищены авторским правом.
+
+Разрешается бесплатно пользоваться приложением, делиться ссылкой на него, а также скачивать
+код сервера (server/cloudflare-worker.js) и устанавливать его на собственный сервер для себя
+и своей семьи.
+
+Запрещено продавать приложение, его код или доступ к ним, выдавать их за свои и распространять
+изменённые версии без письменного разрешения автора.
+
+Приложение предоставляется «как есть», без каких-либо гарантий. Оно не является медицинским
+изделием и не заменяет лечащего врача.
+
+Free use of the app, sharing its link, and installing the server code on your own server
+for yourself and your family are permitted. Selling the app, its code or access to them,
+claiming them as your own, or distributing modified versions without the author's written
+permission is prohibited. Provided "as is", without warranty.
