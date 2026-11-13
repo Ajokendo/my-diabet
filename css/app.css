@@ -626,3 +626,6 @@ body.dark .langSw,html.dark .langSw{background:transparent}
 .labWrap{overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;max-width:100%}
 .labWrap table{min-width:520px}
 .labWrap td,.labWrap th{white-space:nowrap}
+/* v64.62: инструкция — серверный раздел отдельно; кнопка записи сахара */
+.gdG.gdAdv{margin-top:26px;padding-top:14px;border-top:2px dashed #f2d48a;color:#9a6700}
+.glAddBtn{margin-top:10px}
