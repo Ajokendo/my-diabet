@@ -3,7 +3,7 @@
  * (kcal — ккал, c — углеводы, p — белки, f — жиры, fib — клетчатка, г; se — селен, мкг).
  * id менять нельзя: на них ссылаются меню, избранное и история пользователей.
  * Картинки: assets/foods/<slug>.jpg, JPEG 512×512, белый фон. */
-window.DM_CATALOG={version:"v64.51",foods:[
+window.DM_CATALOG={version:"v64.52",foods:[
 {"id":"b247","name":"Горох зеленый вареный","category":"Бобовые","kcal":84,"c":15.6,"p":5.4,"f":0.2,"fib":5.5,"se":0,"image":"assets/foods/goroh-zelenyy-varenyy.webp","sourceLabel":"USDA: peas, green, cooked, boiled","h":"c7dc6a86"},
 {"id":"b196","name":"Маш варёный","category":"Бобовые","kcal":105,"c":19.2,"p":7,"f":0.4,"fib":7.6,"se":0,"image":"assets/foods/mash-varenyy.webp","h":"0c342a55"},
 {"id":"b57","name":"Нут варёный","category":"Бобовые","kcal":164,"c":27.4,"p":8.9,"f":2.6,"fib":7.6,"se":0,"image":"assets/foods/nut-varenyy.webp","h":"10d80ee7"},
@@ -141,7 +141,7 @@ window.DM_CATALOG={version:"v64.51",foods:[
 {"id":"cheese-12","name":"Сыр сулугуни","category":"Молочные продукты","kcal":286,"c":0.4,"p":20.5,"f":22,"fib":0,"se":0,"image":"assets/foods/suluguni.webp","h":"8e0b5c4b"},
 {"id":"b28","name":"Сыр твёрдый","category":"Молочные продукты","kcal":350,"c":1.3,"p":25,"f":27,"fib":0,"se":0,"image":"assets/foods/syr-tverdyy.webp","h":"652070c7"},
 {"id":"cheese-chechil","name":"Сыр чечил","category":"Молочные продукты","kcal":313,"c":1.5,"p":24.5,"f":23.0,"fib":0,"se":0,"image":"assets/foods/syr-chechil.webp","note":"Источник КБЖУ: по данным Gemini, требует сверки.","h":"67434ebf"},
-{"id":"cheese-24","name":"Сыр швейцарский","category":"Молочные продукты","kcal":393,"c":1.4,"p":27,"f":31,"fib":0,"se":0,"image":"assets/foods/shveytsarskiy-syr.webp","note":"Источник КБЖУ: USDA FoodData Central, FDC 746767 (Cheese, swiss).","h":"92991a3a"},
+{"id":"cheese-24","name":"Сыр швейцарский","category":"Молочные продукты","kcal":393,"c":1.4,"p":27,"f":31,"fib":0,"se":0,"image":"assets/foods/shveytsarskiy-syr.webp","note":"Источник КБЖУ: USDA FoodData Central, FDC 746767 (Cheese, swiss).","h":"340d6fe6"},
 {"id":"b25","name":"Творог 5%","category":"Молочные продукты","kcal":121,"c":1.8,"p":17.2,"f":5,"fib":0,"se":0,"image":"assets/foods/tvorog-5pct.webp","note":"Источник КБЖУ: таблицы химического состава российских продуктов (творог 5%: Б 17.2, Ж 5, У 1.8). У разных производителей углеводы 1.5–3 г — сверяйтесь с упаковкой.","h":"950016e8"},
 {"id":"b26","name":"Творог 9%","category":"Молочные продукты","kcal":159,"c":2.8,"p":16.7,"f":9,"fib":0,"se":0,"image":"assets/foods/tvorog-9pct.webp","h":"950016e8"},
 {"id":"b177","name":"Творог обезжиренный","category":"Молочные продукты","kcal":88,"c":1.8,"p":18,"f":0.6,"fib":0,"se":0,"image":"assets/foods/tvorog-obezzhirennyy.webp","h":"950016e8"},
@@ -353,6 +353,7 @@ window.DM_CATALOG={version:"v64.51",foods:[
 {"id":"b311","name":"Пирожки запечённые с капустой","category":"Хлеб и выпечка","kcal":220,"c":33,"p":5.5,"f":7,"fib":0,"se":0,"image":"assets/foods/pirozhki-zapechennye-s-kapustoy.webp","note":"Усреднённо, по типичному рецепту. Сверяйте с упаковкой/меню, если есть.","h":"61d6a0c6"},
 {"id":"b312","name":"Пирожки запечённые с картошкой","category":"Хлеб и выпечка","kcal":235,"c":36,"p":6,"f":7.3,"fib":0,"se":0,"image":"assets/foods/pirozhki-zapechennye-s-kartoshkoy.webp","note":"Усреднённо, по типичному рецепту. Сверяйте с упаковкой/меню, если есть.","h":"4b3656ce"},
 {"id":"b313","name":"Пирожки запечённые с луком и яйцом","category":"Хлеб и выпечка","kcal":240,"c":32,"p":8,"f":8.8,"fib":0,"se":0,"image":"assets/foods/pirozhki-zapechennye-s-lukom-i-yaytsom.webp","note":"Усреднённо, по типичному рецепту. Сверяйте с упаковкой/меню, если есть.","h":"e36b1804"},
+{"id":"b-sochniki-tvorog","name":"Сочники с творогом","category":"Хлеб и выпечка","kcal":380,"c":50,"p":8,"f":17,"fib":0.8,"se":0,"image":"assets/foods/sochniki-s-tvorogom.webp","isDish":true,"note":"Усреднённо по нескольким рецептам: углеводы у разных рецептов 36–54 г на 100 г — зависит от доли теста и сахара. Один сочник обычно 70–100 г: лучше один раз взвесить.","source":"https://health-diet.ru/table_calorie_users/816151/","sourceLabel":"Ориентир: health-diet.ru (рецепты пользователей)","h":"a9b08964"},
 {"id":"b103","name":"Сухари","category":"Хлеб и выпечка","kcal":335,"c":72,"p":11,"f":1.5,"fib":4,"se":0,"image":"assets/foods/suhari.webp","note":"Сверено с российскими таблицами состава (сухари из пшеничного хлеба: Б 11.2, Ж 1.4, У 72.2 г).","h":"d5356bf5"},
 {"id":"b329","name":"Тосты с сыром и огурцом","category":"Хлеб и выпечка","kcal":230,"c":26,"p":10,"f":9.5,"fib":0,"se":0,"image":"assets/foods/tosty-s-syrom-i-ogurtsom.webp","note":"Усреднённо, по типичному рецепту. Сверяйте с упаковкой/меню, если есть.","h":"904948e9"},
 {"id":"b330","name":"Тосты с сыром и помидором","category":"Хлеб и выпечка","kcal":225,"c":26,"p":10,"f":9,"fib":0,"se":0,"image":"assets/foods/tosty-s-syrom-i-pomidorom.webp","note":"Усреднённо, по типичному рецепту. Сверяйте с упаковкой/меню, если есть.","h":"a309f218"},
