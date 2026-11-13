@@ -73,12 +73,87 @@
   };
   const LANG_KEY = 'dm-lang';
   const lang = () => { try { return localStorage.getItem(LANG_KEY) || 'ru' } catch (e) { return 'ru' } };
-  const EMO = /^([\p{Extended_Pictographic}☀-➿️‍＋+‹●•↗]+\s*)(.+)$/u;
+  const EMO = /^([\p{Extended_Pictographic}☀-➿️‍＋+‹●•↗⤢→←✕×]+\s*)(.+)$/u;
+  // v64.58: кошумча сөздүк + сандуу/динамикалык саптар үчүн эрежелер
+  if (window.DM_KY_EXTRA) for (const k in window.DM_KY_EXTRA) if (!(k in KY)) KY[k] = window.DM_KY_EXTRA[k];
+  const CYR = /[А-Яа-яЁё]/;
+  // санга чыгыш жөндөмө (-дан/-ден/-дон/-төн…)
+  function abl(n) {
+    const d = String(n).replace(/[^0-9]/g, ''); if (!d) return n + '-дан';
+    let last = d[d.length - 1], suf;
+    const U = { '1': 'ден', '2': 'ден', '3': 'төн', '4': 'төн', '5': 'тен', '6': 'дан', '7': 'ден', '8': 'ден', '9': 'дан' };
+    if (last !== '0') suf = U[last];
+    else { const t = d.length > 1 ? d[d.length - 2] : '0'; suf = ({ '1': 'дон', '2': 'дан', '3': 'дан', '4': 'тан', '5': 'дөн', '6': 'тан', '7': 'тен', '8': 'ден', '9': 'дон', '0': 'дөн' })[t] }
+    return n + suf;
+  }
+  const W = s => KY[s] || s;
+  const RULES = [
+    [/^осталось (\d+) дн\. \(до ([\d.]+)\)$/, (m, n, d) => `${n} күн калды (${d} чейин)`],
+    [/^срок вышел (.+)$/, (m, d) => `мөөнөтү бүттү ${d}`],
+    [/^За последние (\d+) ч$/, (m, n) => `Акыркы ${n} саат`],
+    [/^сахар в ммоль\/л$/, () => 'кант ммоль/л менен'],
+    [/^(Выше|Ниже) ([\d,.]+)$/, (m, w, n) => `${abl(n)} ${w === 'Выше' ? 'жогору' : 'төмөн'}`],
+    [/^В диапазоне ([\d,.–-]+)$/, (m, r) => `${r} аралыгында`],
+    [/^сегодня в ([\d:]+)$/, (m, t) => `бүгүн ${t}`],
+    [/^вчера в ([\d:]+)$/, (m, t) => `кечээ ${t}`],
+    [/^(\d+) мин назад$/, (m, n) => `${n} мүн. мурун`],
+    [/^\((\d+) мин назад\)$/, (m, n) => `(${n} мүн. мурун)`],
+    [/^Подставлено с сенсора \((\d+) мин назад\)$/, (m, n) => `Сенсордон коюлду (${n} мүн. мурун)`],
+    [/^(\d+) ?ч$/, (m, n) => `${n} саат`],
+    [/^(\d+) ?дн\.?$/, (m, n) => `${n} күн`],
+    [/^за (\d+) дн\.$/, (m, n) => `${n} күндө`],
+    [/^(\d+) (день|дня|дней)$/, (m, n) => `${n} күн`],
+    [/^(\d+) (месяц|месяца|месяцев)$/, (m, n) => `${n} ай`],
+    [/^(\d+) запис\.$/, (m, n) => `${n} жазуу`],
+    [/^(\d+) приём\.$/, (m, n) => `${n} тамактануу`],
+    [/^(\d+) рецепт(а|ов)?$/, (m, n) => `${n} рецепт`],
+    [/^(\d+) мин$/, (m, n) => `${n} мүн`],
+    [/^GMI · средний ([\d.,]+), (\d+) дн\.$/, (m, a, n) => `GMI · орточо ${a}, ${n} күн`],
+    [/^\+?＋? ?Добавить еду в «(.+)»$/, (m, x) => `Тамак кошуу: «${W(x)}»`],
+    [/^Добавить в «(.+)»$/, (m, x) => `Кошуу: «${W(x)}»`],
+    [/^Общий дневник: (.+)$/, (m, x) => `Жалпы күндөлүк: ${x}`],
+    [/^Чаще всего: (.+)$/, (m, x) => `Көбүнчө: ${W(x)}`],
+    [/^Из анализа от ([\d.]+)$/, (m, d) => `${d} анализинен`],
+    [/^от ([\d.]+)$/, (m, d) => `${d} күнкү`],
+    [/^Доступна новая версия кода сервера: (.+)$/, (m, v) => `Сервер кодунун жаңы версиясы бар: ${v}`],
+    [/^\(у вас старше (.+)\)\.?$/, (m, v) => `(сиздеги ${v} версиядан эски).`],
+    [/^За период записано (\d+) минут физической активности\.$/, (m, n) => `Мезгил ичинде ${n} мүнөт дене кыймылы жазылды.`],
+    [/^Автоматически по данным xDrip\+: последнее значение ([\d,.]+) ммоль\/л, (\d+) мин назад$/, (m, v, n) => `xDrip+ маалыматы боюнча автоматтык: акыркы маани ${v} ммоль/л, ${n} мүн. мурун`],
+    [/^устройство: (.+)$/, (m, x) => `түзмөк: ${x}`],
+    [/^Средняя глюкоза за период: ([\d,.]+) ммоль\/л, в диапазоне ([\d,.–-]+) — (\d+)% времени\.$/, (m, a, r, p) => `Мезгилдеги орточо глюкоза: ${a} ммоль/л, ${r} аралыгында — убакыттын ${p}%.`],
+    [/^коэффициент приёма ×(.+)$/, (m, x) => `тамактануу коэффициенти ×${x}`],
+    [/^округление до (\d+(?:[.,]\d+)?)\.?$/, (m, x) => `${x} чейин тегеректөө.`],
+    [/^Записать (\d+) г$/, (m, n) => `${n} г жазуу`],
+    [/^Жиры: (.+)$/, (m, x) => `Майлар: ${x}`],
+    [/^клетчатка: (.+)$/, (m, x) => `клетчатка: ${x}`],
+    [/^(Белок|Овощи|Основа) (\d+)$/, (m, w, n) => `${W(w)} ${n}`],
+    [/^ммоль\/л, (\d+) мин назад\.$/, (m, n) => `ммоль/л, ${n} мүн. мурун.`]
+  ];
+  // сан менен келген сөздөрдү алмаштыруу (ккал · У · Б · Ж · ХЕ · БЖЕ · ЕД…)
+  const TOK = [
+    [/(^|[\s·(])Ж(?=[\s/:]|$)/g, '$1М'], [/БЖЕ/g, 'БМБ'], [/(\d) ?ЕД(?![А-Яа-яЁё])/g, '$1 БИР'], [/(\d) ?ед(\.|$)/g, '$1 бир$2'], [/округление до (\d+(?:[.,]\d+)?)/g, '$1 чейин тегеректөө'], [/ед\. ·/g, 'бир. ·'], [/\/ед\./g, '/бир.'],
+    [/ХЕ на 100 г/g, 'ХЕ 100 гда'], [/г углеводов на 100 г/g, 'г углевод 100 гда'], [/г углеводов/g, 'г углевод'], [/углеводы (\d)/g, 'углеводдор $1'],
+    [/(\d) × штука/g, '$1 × даана'], [/(\d) × тарелка/g, '$1 × табак'], [/(\d) поз\./g, '$1 поз.'], [/(\d) мин назад/g, '$1 мүн. мурун'], [/ мин\b/g, ' мүн']
+  ];
+  function seg(p) {
+    const k = p.trim(); if (!k || !CYR.test(k)) return p;
+    if (KY[k]) return p.replace(k, KY[k]);
+    const m = k.match(EMO); if (m && KY[m[2]]) return p.replace(m[2], KY[m[2]]);
+    for (const [re, f] of RULES) { const r = k.match(re); if (r) return p.replace(k, f(...r)) }
+    let o = k; for (const [re, rep] of TOK) o = o.replace(re, rep);
+    return o !== k ? p.replace(k, o) : p;
+  }
   function tr(t) {
-    const k = t.trim(); if (!k) return null;
+    const k = t.trim(); if (!k || !CYR.test(k)) return null;
     if (KY[k]) return t.replace(k, KY[k]);
     const m = k.match(EMO); if (m && KY[m[2]]) return t.replace(m[2], KY[m[2]]);
-    return null;
+    const pre = (k.match(/^[^А-Яа-яЁёA-Za-z0-9(«]*/) || [''])[0], body = k.slice(pre.length);
+    for (const [re, f] of RULES) { const r = body.match(re); if (r) return t.replace(k, pre + f(...r)) }
+    const sents = body.split(/(?<=[.;]) (?=[А-ЯЁA-Z«])/);
+    if (sents.length > 1 && sents.every(x => KY[x])) return t.replace(k, pre + sents.map(x => KY[x]).join(' '));
+    const parts = body.split(/( · |, |: | → )/);
+    const out = pre + parts.map((p, i) => i % 2 ? p : seg(p)).join('');
+    return out !== k ? t.replace(k, out) : null;
   }
   let busy = false, queued = false;
   function walk(root) {
@@ -87,7 +162,7 @@
       const w = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentNode && /^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.nodeName) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
       let n; while ((n = w.nextNode())) { const v = tr(n.nodeValue); if (v && v !== n.nodeValue) n.nodeValue = v }
       (root || document.body).querySelectorAll('[placeholder],[title],[aria-label]').forEach(el => ['placeholder', 'title', 'aria-label'].forEach(a => { const v = el.getAttribute(a); const t = v && tr(v); if (t && t !== v) el.setAttribute(a, t) }));
-      (root || document.body).querySelectorAll('option').forEach(o => { const t = tr(o.textContent); if (t) o.textContent = t });
+      (root || document.body).querySelectorAll('option').forEach(o => { const t = tr(o.textContent); if (t) { if (!o.hasAttribute('value')) o.setAttribute('value', o.textContent); o.textContent = t } });
     } finally { busy = false }
   }
   function schedule() { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; walk() }) }
@@ -105,8 +180,9 @@
     if (prev === 'ky' && l !== 'ky') { location.reload(); return }
     start();
   }
+  ['alert', 'confirm', 'prompt'].forEach(fn => { const o = window[fn]; if (!o) return; window[fn] = function (msg, ...a) { if (lang() === 'ky' && typeof msg === 'string') { msg = msg.split('\n').map(l => tr(l) || l).join('\n') } return o.call(window, msg, ...a) } });
   window.DMI18N = {
-    get locale() { return lang() }, set, apply() { start() }, t: k => lang() === 'ky' && KY[k] ? KY[k] : k
+    get locale() { return lang() }, set, apply() { start() }, t: k => lang() === 'ky' ? (tr(k) || k) : k
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(start, 500)); else setTimeout(start, 500);
 })();
