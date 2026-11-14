@@ -93,9 +93,9 @@ ${L.fresh&&window.DMSafety?DMSafety.noteFor(L.g):''}${!L.fresh?`<div class="noti
 }
 
 /* Расчёт дозы: подставляем свежий сахар с сенсора, если поле пустое */
-function fillCalc(){const i=document.getElementById('iG');const L=latest();if(!i)return;if(!i.value&&L&&L.age<=15){i.value=L.g.toFixed(1);i.title='Подставлено с сенсора ('+ago(L.age)+')'}
-  let h=document.getElementById('iGHint');if(!h){h=document.createElement('div');h.id='iGHint';h.className='muted';h.style.marginTop='4px';i.after(h)}
-  const col=/Up/.test(L?.d||'')?'#d97706':/Down/.test(L?.d||'')?'#dc2626':'inherit';h.innerHTML=L&&L.age<=60?`Сенсор: <b>${L.g.toFixed(1).replace('.',',')} ${L.arrow}</b> <span style="color:${col}">${L.trend||''}</span> · ${ago(L.age)}`:''}
+function fillCalc(){const i=document.getElementById('iG');const L=latest();if(!i)return;if(!i.value&&L&&L.age<=15){i.value=L.g.toFixed(1);i.dataset.auto=i.value;i.title='Подставлено с сенсора ('+ago(L.age)+')'}
+  let h=document.getElementById('iGHint');if(!h){h=document.createElement('div');h.id='iGHint';h.className='muted';h.style.marginTop='4px';i.after(h);i.addEventListener('input',()=>{try{fillCalc()}catch(e){}})}
+  const col=/Up/.test(L?.d||'')?'#d97706':/Down/.test(L?.d||'')?'#dc2626':'inherit';h.innerHTML=L&&L.age<=60?`Сенсор: <b>${L.g.toFixed(1).replace('.',',')} ${L.arrow}</b> <span style="color:${col}">${L.trend||''}</span> · ${ago(L.age)}`+(i.dataset.auto?(i.value===i.dataset.auto?'<br><span class="iGNote">Подставлено с сенсора. Если мерили глюкометром — исправьте значение.</span>':(i.value?'<br><span class="iGNote">Введено вручную (глюкометр).</span>':'')):''):''}
 
 /* Карточка в «Семье» — подключение xDrip+ */
 async function connect(){
