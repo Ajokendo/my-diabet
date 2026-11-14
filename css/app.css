@@ -636,3 +636,6 @@ body.dark .langSw,html.dark .langSw{background:transparent}
 #dashboard .dayPick{align-items:flex-end;margin-left:auto}
 #dashboard .dayPick input[type=date]{text-align:right}
 #dashboard .dayPick input[type=date]::-webkit-date-and-time-value{text-align:right}
+/* v64.71: дата на главной — подпись ДД.ММ.ГГГГ прижата вправо, значок календаря скрыт (календарь открывается касанием поля) */
+#dashboard .dayPick .dmDateOv{right:0;justify-content:flex-end;padding-right:14px!important}
+#dashboard .dayPick input[type=date]::-webkit-calendar-picker-indicator{opacity:0}
