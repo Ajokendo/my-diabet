@@ -632,3 +632,7 @@ body.dark .langSw,html.dark .langSw{background:transparent}
 .modalGHint{font-size:13px;margin-top:5px;line-height:1.3}
 .modalGHint.auto{color:#0f766e}
 .iGNote{color:#0f766e;font-size:13px}
+/* v64.70: дата на главной — по правому краю */
+#dashboard .dayPick{align-items:flex-end;margin-left:auto}
+#dashboard .dayPick input[type=date]{text-align:right}
+#dashboard .dayPick input[type=date]::-webkit-date-and-time-value{text-align:right}
