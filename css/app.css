@@ -650,3 +650,23 @@ body.dark .langSw,html.dark .langSw{background:transparent}
 @media(max-width:950px){.remRow{flex-direction:column;align-items:stretch;gap:8px}.remBtns{justify-content:flex-start}}
 /* v64.82: динамика анализов */
 #labTrend td{vertical-align:top}
+
+/* v64.87: анализы по группам */
+.lgGroup{border:1px solid var(--line,#e2e8f0);border-radius:14px;margin:8px 0;background:#fff;overflow:hidden}
+.lgGroup>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:12px 14px;font-weight:700}
+.lgGroup>summary::-webkit-details-marker{display:none}
+.lgGroup>summary::before{content:'▸';color:#0f766e;transition:transform .15s}
+.lgGroup[open]>summary::before{transform:rotate(90deg)}
+.lgGroup>summary .lgLast{margin-left:auto;font-weight:400;font-size:.85em}
+.lgRow{border-top:1px solid var(--line,#eef2f7)}
+.lgHead{all:unset;box-sizing:border-box;display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;padding:10px 14px;cursor:pointer}
+.lgHead .lgName{grid-column:1;font-weight:600}
+.lgHead .lgVal{grid-column:2;grid-row:1;text-align:right;white-space:nowrap}
+.lgHead .lgSub{grid-column:1/-1;font-size:.88em}
+.lgRow.open{background:#f8fafc}
+.lgHist{padding:0 14px 12px}
+.lgFlag{display:inline-block;font-size:.8em;font-weight:700;padding:1px 8px;border-radius:999px}
+.lgFlag.up{background:#fff1e6;color:#b45309}
+.lgFlag.down{background:#e0f2fe;color:#0369a1}
+.lgDay{border:1px solid var(--line,#e2e8f0);border-radius:12px;margin:6px 0;padding:8px 12px;background:#fff}
+.lgDay>summary{cursor:pointer}
