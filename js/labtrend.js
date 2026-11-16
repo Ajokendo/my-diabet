@@ -69,7 +69,8 @@
       const rowsHtml = desc.map((x, i) => {
         const prev = desc[i + 1]; let d = '';
         if (prev) { const dv = x.v - prev.v, s = +dv.toFixed(sp.dec); d = s === 0 ? '0' : (s > 0 ? '▲ +' : '▼ ') + show1(dv, sp.dec); }
-        return `<tr><td>${fmt(x.date)}${x.note ? `<br><small class="muted">${esc(x.note.length > 26 ? x.note.slice(0, 25) + '…' : x.note)}</small>` : ''}</td><td><b>${show1(x.v, sp.dec)}</b> ${esc(sp.std)}${x.changed ? `<br><small class="muted">исходно ${esc(show1(x.raw, 2))} ${esc(x.unit)}</small>` : ''}</td><td>${d}</td></tr>`;
+        const wt = (cur === 'hba1c' || cur === 'cpep') && window.DMWeight ? DMWeight.at(x.date, 45) : null;
+        return `<tr><td>${fmt(x.date)}${wt ? `<br><small class="muted">вес ${String(wt.kg).replace('.', ',')} кг</small>` : ''}${x.note ? `<br><small class="muted">${esc(x.note.length > 26 ? x.note.slice(0, 25) + '…' : x.note)}</small>` : ''}</td><td><b>${show1(x.v, sp.dec)}</b> ${esc(sp.std)}${x.changed ? `<br><small class="muted">исходно ${esc(show1(x.raw, 2))} ${esc(x.unit)}</small>` : ''}</td><td>${d}</td></tr>`;
       }).join('');
       body = chart(r, sp) + `<div class="tablewrap"><table class="table" style="width:100%"><tr><th align="left">Дата</th><th align="left">Значение</th><th align="left">Изменение</th></tr>${rowsHtml}</table></div>`
         + (r.some(x => x.changed) ? `<p class="muted" style="margin-top:6px">Значения в других единицах пересчитаны в ${esc(sp.std)}, чтобы их можно было сравнивать. Исходные числа не изменены.</p>` : '')
@@ -84,7 +85,7 @@
 
   function copy() {
     const sp = SPEC[cur], r = rows(cur).reverse();
-    const txt = sp.name + ' (' + sp.std + '):\n' + r.map(x => fmt(x.date) + ' — ' + show1(x.v, sp.dec) + (x.changed ? ' (исходно ' + show1(x.raw, 2) + ' ' + x.unit + ')' : '')).join('\n');
+    const txt = sp.name + ' (' + sp.std + '):\n' + r.map(x => fmt(x.date) + ' — ' + show1(x.v, sp.dec) + (x.changed ? ' (исходно ' + show1(x.raw, 2) + ' ' + x.unit + ')' : '') + ((cur === 'hba1c' || cur === 'cpep') && window.DMWeight && DMWeight.at(x.date, 45) ? ', вес ' + String(DMWeight.at(x.date, 45).kg).replace('.', ',') + ' кг' : '')).join('\n');
     const ok = () => alert('Скопировано. Можно вставить в сообщение врачу.');
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, () => prompt('Скопируйте текст:', txt)); else prompt('Скопируйте текст:', txt);
   }
