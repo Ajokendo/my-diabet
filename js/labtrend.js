@@ -15,7 +15,7 @@
     creat: { name: 'Креатинин', std: 'мкмоль/л', dec: 0, conv: u => /мг\s*\/\s*дл/i.test(u) ? 88.4 : 1 },
     tsh: { name: 'ТТГ', std: 'мЕд/л', dec: 2, conv: () => 1 }
   };
-  const ORDER = ['hba1c', 'cpep', 'vitd', 'tsh', 'glu', 'chol', 'ldl', 'tg', 'creat'];
+  const ORDER = ['hba1c', 'cpep', 'vitd', 'tsh', 'creat', 'glu', 'chol', 'ldl', 'tg'];
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = d => { const m = String(d).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '.' + m[2] + '.' + m[1] : d; };
   let cur = 'hba1c';
