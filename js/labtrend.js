@@ -19,6 +19,7 @@
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = d => { const m = String(d).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '.' + m[2] + '.' + m[1] : d; };
   let cur = 'hba1c';
+  const persist = () => { try { save(); } catch (e) {} };
 
   function rows(type) {
     const sp = SPEC[type]; if (!sp || typeof db === 'undefined') return [];
@@ -74,7 +75,11 @@
         + (r.some(x => x.changed) ? `<p class="muted" style="margin-top:6px">Значения в других единицах пересчитаны в ${esc(sp.std)}, чтобы их можно было сравнивать. Исходные числа не изменены.</p>` : '')
         + `<div class="row" style="margin-top:8px"><button class="btn secondary small" onclick="DMLabTrend.copy()">Скопировать для врача</button></div>`;
     }
-    box.innerHTML = `<h3>Динамика анализов</h3><p class="muted">Все результаты одного показателя в одном месте — чтобы быстро ответить врачу, какие были раньше.</p><div class="row" style="flex-wrap:wrap;gap:6px;margin:8px 0">${tabs}</div>${body}`;
+    const bulk = `<details id="labBulk" style="margin-top:14px"><summary style="cursor:pointer;font-weight:600">Добавить анализы списком (из выписки)</summary>
+      <p class="muted" style="margin:8px 0">Удобно, когда нужно перенести много результатов сразу. Одна строка — один результат: дата; показатель; значение; единица; комментарий. Единицу и комментарий можно не писать. Повторы (та же дата, показатель и значение) пропускаются.</p>
+      <textarea id="labBulkText" class="input" rows="7" placeholder="13.01.2026; HbA1c; 14.5; %; выписка&#10;13.01.2026; Креатинин; 33.4; мкмоль/л"></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn small" onclick="DMLabTrend.bulk()">Добавить из списка</button></div><div id="labBulkMsg" class="muted" style="margin-top:6px"></div></details>`;
+    box.innerHTML = `<h3>Динамика анализов</h3><p class="muted">Все результаты одного показателя в одном месте — чтобы быстро ответить врачу, какие были раньше.</p><div class="row" style="flex-wrap:wrap;gap:6px;margin:8px 0">${tabs}</div>${body}${bulk}`;
   }
 
   function copy() {
@@ -84,7 +89,36 @@
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, () => prompt('Скопируйте текст:', txt)); else prompt('Скопируйте текст:', txt);
   }
 
-  window.DMLabTrend = { render, pick: t => { cur = t; render(); }, copy, rows };
+  const TYPE_RE = [['hba1c', /hba1c|гликир|гликоз.*гемоглоб/i], ['cpep', /[cс][\s-]*пептид|c-?peptide/i], ['vitd', /витамин\s*d|25-?oh/i], ['ldl', /лпнп|ldl/i], ['tg', /триглицерид/i], ['creat', /креатинин/i], ['tsh', /^ттг|tsh|тиреотроп/i], ['chol', /^холестерин( общий)?$/i], ['glu', /^глюкоза( натощак)?( \(венозная\))?$/i]];
+  function parseDate(x) {
+    x = String(x || '').trim(); let y, mo, d, m = x.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})$/);
+    if (m) { d = +m[1]; mo = +m[2]; y = +m[3]; } else if ((m = x.match(/^(\d{4})-(\d{2})-(\d{2})$/))) { y = +m[1]; mo = +m[2]; d = +m[3]; } else return '';
+    const t = new Date(y, mo - 1, d); if (t.getFullYear() !== y || t.getMonth() !== mo - 1 || t.getDate() !== d) return '';
+    return y + '-' + pad2(mo) + '-' + pad2(d);
+  }
+  const pad2 = n => String(n).padStart(2, '0');
+  function bulk() {
+    const ta = document.getElementById('labBulkText'), msg = document.getElementById('labBulkMsg'); if (!ta) return;
+    const lines = ta.value.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (!lines.length) { msg.textContent = 'Список пуст.'; return; }
+    db.labs = db.labs || []; let added = 0, skipped = 0; const bad = [];
+    lines.forEach(line => {
+      const p = line.split(/\s*[;\t]\s*/), date = parseDate(p[0]), name = (p[1] || '').trim(), v = parseFloat(String(p[2] || '').replace(',', '.'));
+      if (!date || !name || !isFinite(v)) { bad.push(line); return; }
+      const hit = TYPE_RE.find(t => t[1].test(name)), type = hit ? hit[0] : 'other';
+      const lt = (typeof LAB_TYPES !== 'undefined' ? LAB_TYPES : []).find(x => x[0] === type);
+      const unit = (p[3] || '').trim() || (lt ? lt[2] : ''), label = type === 'other' ? name : (lt ? lt[1] : name);
+      if (db.labs.some(x => x.date === date && x.type === type && +x.value === v && (type !== 'other' || x.name === label))) { skipped++; return; }
+      db.labs.push({ id: 'lab' + Date.now() + '_' + added + Math.floor(Math.random() * 1000), date, type, name: label, value: v, unit, note: (p.slice(4).join('; ') || '').trim() });
+      added++;
+    });
+    if (added) { persist(); try { renderLabs(); } catch (e) {} }
+    render();
+    const m2 = document.getElementById('labBulkMsg'), d2 = document.getElementById('labBulk');
+    if (m2) m2.innerHTML = 'Добавлено: ' + added + (skipped ? ', уже были: ' + skipped : '') + (bad.length ? '.<br>Не удалось прочитать строки (проверьте дату и значение): ' + bad.map(esc).join(' | ') : '');
+    if (d2) d2.open = true;
+  }
+  window.DMLabTrend = { bulk, render, pick: t => { cur = t; render(); }, copy, rows };
   const os = window.show;
   if (typeof os === 'function') window.show = function (id) { const r = os.apply(this, arguments); if (id === 'labs') setTimeout(render, 90); return r; };
   const wrap = n => { const f = window[n]; if (typeof f === 'function' && !f.__lt) { const w = function () { const r = f.apply(this, arguments); try { render(); } catch (e) {} return r; }; w.__lt = true; window[n] = w; } };
