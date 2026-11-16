@@ -5,6 +5,8 @@
   const $ = id => document.getElementById(id);
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const f1 = v => (Math.round(v * 10) / 10).toString().replace('.', ',');
+  // v64.81: стандартный текст (не изменённый семьёй) показывается на языке интерфейса
+  const hypoShown = c => (c.hypo === HYPO_DEFAULT && window.DMI18N) ? DMI18N.t(HYPO_DEFAULT) : c.hypo;
   const HYPO_DEFAULT = 'Признаки: бледность, пот, дрожь, слабость, сильный голод, раздражительность, сонливость, странное поведение.\n' +
     'Что делать: сразу дать 15 г быстрых углеводов — полстакана (150 мл) сока или сладкого напитка (не «лайт»), или 3–4 таблетки глюкозы, или 1 столовую ложку сахара.\n' +
     'Через 15 минут проверить сахар. Если всё ещё ниже 3,9 — повторить.\n' +
@@ -50,7 +52,7 @@ ${contacts.length ? '' : '<p class="sosHint">Добавьте телефоны �
 <h1>Памятка: ученик с сахарным диабетом 1 типа</h1>
 <table>${rows.map(r => `<tr><th>${esc(r[0])}</th><td>${esc(r[1])}</td></tr>`).join('')}</table>
 <h2>Низкий сахар (гипогликемия) — самое важное</h2>
-<p>${esc(c.hypo).replace(/\n/g, '<br>')}</p>
+<p>${esc(hypoShown(c)).replace(/\n/g, '<br>')}</p>
 <h2>Что ещё нужно знать</h2>
 <ul><li>Ребёнку можно есть и пить в любой момент урока, если он чувствует низкий сахар, и выходить в туалет.</li>
 <li>Перед физкультурой и после неё ребёнок может проверить сахар и перекусить.</li>
@@ -162,7 +164,7 @@ ${field('name', 'Имя ребёнка', pname() || 'Айдар')}${field('birth
 <label>Телефоны родителей</label>${contactsHtml()}
 ${field('glucagon', 'Где глюкагон / сладкое', 'в рюкзаке, в переднем кармане')}${field('allergy', 'Аллергии', 'нет')}${field('doctor', 'Лечащий врач (имя, телефон)', '')}
 <label>План при низком сахаре <small class="muted">— сверьте с врачом и при необходимости измените</small></label>
-<textarea class="input" rows="7" onchange="DMCare.set('hypo',this.value)">${esc(c.hypo)}</textarea>
+<textarea class="input" rows="7" onchange="DMCare.set('hypo',this.value)">${esc(hypoShown(c))}</textarea>
 <button class="btn secondary small" onclick="DMCare.resetHypo()">Вернуть стандартный текст</button></div>
 <div class="card s6"><h3>Памятка для школы</h3><p class="muted">Для учителя, медсестры, тренера, бабушки: признаки низкого сахара, что дать, кому звонить. Распечатайте или сохраните в PDF и отдайте классному руководителю.</p>
 ${field('cls', 'Класс', '4 «Б»', 'school')}${field('teacher', 'Классный руководитель', '', 'school')}${field('notes', 'Особые указания', 'перекус на 2-й перемене', 'school')}
