@@ -108,6 +108,7 @@
     [/^через (\d+) дн\.( · (\S+))?$/, (m, n, x, d) => `${n} күндөн кийин${d ? ' · ' + d : ''}`],
     [/^(сегодня|завтра)( · (\S+))?$/, (m, w, x, d) => `${w === 'сегодня' ? 'бүгүн' : 'эртең'}${d ? ' · ' + d : ''}`],
     [/^Добавлено: (\d+)(?:, уже были: (\d+))?$/, (m, n, k) => `Кошулду: ${n}${k ? ', мурда эле бар болчу: ' + k : ''}`],
+    [/^Мнение ИИ от (\d{2}\.\d{2}\.\d{4})$/, (m, d) => `${d} ЖИнин пикири`],
     [/^вес ([\d,]+) кг$/, (m, v) => `салмагы ${v} кг`],
     [/^С (\d{2}\.\d{2}\.\d{4})$/, (m, d) => `${d} баштап`],
     [/^Инсулин по журналу введений: в среднем ([\d,]+) ЕД\/сут \(за (\d+) дн\. с записями\)(?:, это ([\d,]+) ЕД на кг при весе ([\d,]+) кг)?\. Справочно, для разговора с врачом; дозу не подбирает\.$/, (m, t, n, r, w) => `Киргизүү журналы боюнча инсулин: орточо ${t} бир./суткасына (${n} күндө жазуулар менен)${r ? `, бул ${w} кг салмакта 1 кг үчүн ${r} бир` : ''}. Маалымат үчүн, дарыгер менен сүйлөшүү үчүн; дозаны тандабайт.`],
@@ -183,7 +184,7 @@
   function walk(root) {
     if (lang() !== 'ky' || busy) return; busy = true;
     try {
-      const w = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentNode && /^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.nodeName) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+      const w = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentNode && (/^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.nodeName) || (n.parentNode.closest && n.parentNode.closest('.noTr'))) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
       let n; while ((n = w.nextNode())) { const v = tr(n.nodeValue); if (v && v !== n.nodeValue) n.nodeValue = v }
       (root || document.body).querySelectorAll('[placeholder],[title],[aria-label]').forEach(el => ['placeholder', 'title', 'aria-label'].forEach(a => { const v = el.getAttribute(a); const t = v && tr(v); if (t && t !== v) el.setAttribute(a, t) }));
       (root || document.body).querySelectorAll('option').forEach(o => { const t = tr(o.textContent); if (t) { if (!o.hasAttribute('value')) o.setAttribute('value', o.textContent); o.textContent = t } });
