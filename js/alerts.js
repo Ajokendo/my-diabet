@@ -62,9 +62,10 @@
     render();
   }
   async function render() {
-    const host = document.getElementById('sync2'); if (!host || !ready()) return;
+    const host = document.querySelector('#settings .grid'); if (!host) return;
     let box = document.getElementById('alertsCard');
-    if (!box) { box = document.createElement('div'); box.id = 'alertsCard'; box.className = 'card'; box.style.marginTop = '14px'; host.appendChild(box) }
+    if (!ready()) { if (box) box.remove(); return }
+    if (!box) { box = document.createElement('div'); box.id = 'alertsCard'; box.className = 'card s6'; const first = host.firstElementChild; host.insertBefore(box, first ? first.nextSibling : null) }
     if (box.contains(document.activeElement) && document.activeElement.tagName === 'INPUT' && document.activeElement.type !== 'checkbox') return;
     const p = load();
     let on = false; try { on = !!(await currentSub()) && Notification.permission === 'granted' } catch (e) {}
@@ -96,7 +97,7 @@ ${chk('quietOn', 'Ночной режим: без сигналов о высок
   /* при каждом открытии — освежаем подписку на сервере (на случай смены ключей браузером) */
   async function refreshSub() { try { if (ready() && load().on && Notification.permission === 'granted') await send(load()) } catch (e) {} }
   const origShow = window.show;
-  if (typeof origShow === 'function') window.show = function (id) { const r = origShow.apply(this, arguments); if (id === 'account') setTimeout(render, 50); return r };
+  if (typeof origShow === 'function') window.show = function (id) { const r = origShow.apply(this, arguments); if (id === 'account' || id === 'settings') setTimeout(render, 50); return r };
   setTimeout(() => { render(); refreshSub() }, 1500);
   window.DMAlerts = { enable, disable, test, set, render };
 })();
