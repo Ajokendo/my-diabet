@@ -74,8 +74,29 @@
   }
   function copy(id) { const o = list().find(x => x.id === id); if (o) toClip('Мнение ИИ от ' + fmt(o.date) + '\n\n' + o.text, 'Скопировано'); }
 
+  /* сводка по сенсору за 90 дней: общая, по 30-дневным блокам и ночь (00–06) */
+  async function sensor() {
+    if (!(window.DMCgm && DMCgm.ready && DMCgm.ready() && window.DMTrends)) return [];
+    const ld = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const end = new Date(), start = new Date(Date.now() - 90 * 864e5);
+    const r = await DMCgm.period(ld(start), ld(end)); const raw = (r && r.raw) || []; if (raw.length < 100) return [];
+    const f = (v, d) => (+v).toFixed(d == null ? 1 : d).replace('.', ',');
+    const line = (name, T) => T ? '- ' + name + ': средняя ' + f(T.mean) + ' ммоль/л, GMI ' + f(T.gmi) + '%, CV ' + f(T.cv, 0) + '%, в диапазоне 3,9–10: ' + f(T.zones.inr, 0) + '%, ниже 3,9: ' + f(T.zones.low + T.zones.vlow) + '% (ниже 3,0: ' + f(T.zones.vlow) + '%), выше 10: ' + f(T.zones.high + T.zones.vhigh) + '%, работа сенсора ' + f(T.cover, 0) + '%' : '';
+    const out = ['Сенсор (CGM) за последние 90 дней (' + fmt(ld(start)) + ' — ' + fmt(ld(end)) + '):'];
+    const all = DMTrends.compute(raw, 90); out.push(line('весь период', all));
+    for (let i = 0; i < 3; i++) {
+      const a = Date.now() - (i + 1) * 30 * 864e5, b = Date.now() - i * 30 * 864e5;
+      const T = DMTrends.compute(raw.filter(x => x.t >= a && x.t < b), 30); if (T) out.push(line(i === 0 ? 'последние 30 дней' : i === 1 ? '30–60 дней назад' : '60–90 дней назад', T));
+    }
+    const night = raw.filter(x => new Date(x.t).getHours() < 6), Tn = DMTrends.compute(night, 90 / 4);
+    if (Tn) out.push(line('ночь 00:00–06:00 (за 90 дней)', Tn));
+    const morn = raw.filter(x => { const h = new Date(x.t).getHours(); return h >= 6 && h < 8; }), Tm = DMTrends.compute(morn, 90 / 12);
+    if (Tm) out.push(line('утро 06:00–08:00 (за 90 дней)', Tm));
+    return out.filter(Boolean);
+  }
+
   /* данные для ИИ: без имени и дат рождения — только возраст, пол, показатели */
-  function prep() {
+  async function prep() {
     const p = (typeof db !== 'undefined' && db.profile) || {}, L = [];
     let age = '';
     if (p.dob) { const b = new Date(p.dob), n = new Date(); let a = n.getFullYear() - b.getFullYear(); if (n < new Date(n.getFullYear(), b.getMonth(), b.getDate())) a--; if (a >= 0 && a < 120) age = a + ' лет'; }
@@ -92,6 +113,7 @@
       const cp = DMLabTrend.rows('cpep'); if (cp.some(x => x.changed)) L.push('С-пептид в одной единице (пмоль/л): ' + cp.map(x => fmt(x.date) + ' — ' + Math.round(x.v)).join('; '));
     }
     if (window.DMWeight && DMWeight.list().length) { L.push(''); L.push('Вес, кг: ' + DMWeight.list().map(w => fmt(w.date) + ' — ' + w.kg).join('; ')); const ds = DMWeight.dose && DMWeight.dose(); if (ds) L.push('Инсулин по журналу введений: в среднем ' + ds.tdd.toFixed(1) + ' ЕД/сут' + (ds.kg ? ' (' + (ds.tdd / ds.kg).toFixed(2) + ' ЕД/кг)' : '') + ' за ' + ds.n + ' дн. с записями'); }
+    try { const sx = await sensor(); if (sx.length) { L.push(''); sx.forEach(x => L.push(x)); } } catch (e) {}
     const m = db.medical || {}; const med = [m.regimen && m.regimen !== 'Не указано' ? 'режим: ' + m.regimen : '', m.cgm && m.cgm.product ? 'сенсор: ' + m.cgm.product : ''].filter(Boolean);
     if (med.length) { L.push(''); L.push('Лечение: ' + med.join('; ')); }
     L.push(''); L.push('Если у вас есть прежнее заключение, учтите его и отметьте, что изменилось.');
