@@ -1,5 +1,5 @@
 /* v64.96: добавочный инсулин на БЖЕ — ТОЛЬКО по схеме, которую назначил врач.
- * По умолчанию выключено, полей-по-умолчанию нет: приложение само ничего не подбирает.
+ * Включается само, когда заполнены врач, дата и числа схемы; значений по умолчанию нет: приложение само ничего не подбирает.
  *  - «Мой профиль»: переключатель и числа врача (ЕД на 1 БЖЕ, через сколько минут, на сколько частей);
  *  - калькулятор: отдельная строка «Добавочный по БЖЕ» (в основную дозу не входит);
  *  - при записи болюса — таймер-напоминание на главной (+ уведомление, пока приложение открыто). */
@@ -9,6 +9,7 @@
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const num = v => { const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(n) ? n : NaN; };
   const fmtU = n => (Math.round(n * 100) / 100).toString().replace('.', ',');
+  const fmtD = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[3] + '.' + m[2] + '.' + m[1] : ''; };
   const pad = n => String(n).padStart(2, '0');
   const hm = ms => { const d = new Date(ms); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
   const persist = () => { try { save(); } catch (e) { } };
@@ -16,11 +17,12 @@
   const cfg = () => { const p = (typeof db !== 'undefined' && db.profile) || {}; return p.bje || {}; };
   /* настройка считается заполненной, только если включена и все нужные числа введены */
   function active() {
-    const c = cfg(); if (!c.on) return null;
+    const c = cfg();
+    if (!String(c.doc || '').trim() || !/^\d{4}-\d{2}-\d{2}$/.test(String(c.date || ''))) return null; /* без врача и даты схема не работает */
     const per = num(c.per), delay = num(c.delay), parts = Math.max(1, Math.min(4, Math.round(num(c.parts)) || 1)), gap = num(c.gap);
     if (!(per > 0) || !(delay >= 0) || !isFinite(delay)) return null;
     if (parts > 1 && !(gap > 0)) return null;
-    return { per, delay, parts, gap: parts > 1 ? gap : 0 };
+    return { per, delay, parts, gap: parts > 1 ? gap : 0, doc: String(c.doc).trim(), date: c.date, note: String(c.note || '').trim() };
   }
 
   /* ---------- БЖЕ выбранного приёма пищи ---------- */
@@ -69,7 +71,7 @@
     } else {
       const lines = pl.parts.map(p => `<div><b>${fmtU(p.units)}</b> <span>ЕД через</span> <b>${p.min}</b> <span>мин</span></div>`).join('');
       box.innerHTML = `<div class="bjeHead">Добавочный по БЖЕ</div>${lines}
-<div class="muted bjeSub"><span>БЖЕ в приёме пищи:</span> ${fmtU(pl.bje)} · <span>по схеме врача. В основную дозу не входит.</span></div>`;
+<div class="muted bjeSub"><span>БЖЕ в приёме пищи:</span> ${fmtU(pl.bje)} · <span>по схеме:</span> ${esc(pl.cfg.doc)}, ${fmtD(pl.cfg.date)}. <span>В основную дозу не входит.</span>${pl.cfg.note ? '<div>' + esc(pl.cfg.note) + '</div>' : ''}</div>`;
     }
     host.appendChild(box);
   }
@@ -158,29 +160,31 @@
     let box = $('bjeBox');
     if (!box) { box = document.createElement('div'); box.id = 'bjeBox'; box.className = 'card s12'; }
     if (box.parentNode !== sec) sec.appendChild(box);
-    const c = cfg(), on = !!c.on;
+    const c = cfg();
     const v = k => esc(c[k] == null ? '' : c[k]);
-    box.innerHTML = `<h3 style="margin:0 0 6px">Добавочный инсулин на БЖЕ</h3>
-<div class="notice">Для жирной и белковой еды. <b>Включайте только если врач назначил такую схему.</b> Приложение само ничего не подбирает: все числа вводите так, как назначил врач. Выключено по умолчанию.</div>
-<label class="bjeSw"><input type="checkbox" id="bjeOn" ${on ? 'checked' : ''} onchange="DMBje.save()"> <span>Учитывать БЖЕ</span></label>
-<div class="bjeFields${on ? '' : ' off'}">
+    const ok = !!active();
+    box.innerHTML = `<h3 style="margin:0 0 6px">Добавочный инсулин на БЖЕ — схема врача</h3>
+<div class="notice">Для жирной и белковой еды. <b>Заполняйте только если врач назначил такую схему.</b> Приложение само ничего не подбирает: все числа вводите так, как назначил врач. Пока схема не заполнена, расчёта нет.</div>
+<div class="bjeFields">
+<div><label>Кто назначил (врач)</label><input class="input" id="bjeDoc" type="text" value="${v('doc')}" placeholder="ФИО врача"></div>
+<div><label>Дата назначения</label><input class="input" id="bjeDate" type="date" value="${v('date')}"></div>
 <div><label>ЕД инсулина на 1 БЖЕ</label><input class="input" id="bjePer" type="text" inputmode="decimal" value="${v('per')}" placeholder="по назначению врача"></div>
 <div><label>Вводить через, мин после основной дозы</label><input class="input" id="bjeDelay" type="text" inputmode="numeric" value="${v('delay')}" placeholder="по назначению врача"></div>
 <div><label>Делить дозу на частей</label><select class="select" id="bjeParts" onchange="DMBje.save()">${[1, 2, 3, 4].map(n => `<option value="${n}" ${(+c.parts || 1) === n ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
 <div id="bjeGapWrap" style="${(+c.parts || 1) > 1 ? '' : 'display:none'}"><label>Между частями, мин</label><input class="input" id="bjeGap" type="text" inputmode="numeric" value="${v('gap')}" placeholder="по назначению врача"></div>
+<div style="grid-column:1/-1"><label>Примечание врача (необязательно)</label><input class="input" id="bjeNote" type="text" value="${v('note')}" placeholder="например: только если БЖЕ больше … или при жирной еде"></div>
 </div>
-<div class="row" style="margin-top:10px"><button class="btn" onclick="DMBje.save(true)">Сохранить</button><span class="muted" id="bjeState"></span></div>`;
+<div class="row" style="margin-top:10px"><button class="btn" onclick="DMBje.save(true)">Сохранить схему</button><button class="btn secondary" onclick="DMBje.clear()">Очистить</button><span class="muted" id="bjeState">${ok ? 'Схема активна' : 'Схема не заполнена — расчёта нет'}</span></div>`;
   }
-  A.save = function (explicit) {
+  A.save = function () {
     db.profile = db.profile || {};
-    const g = id => ($(id) ? $(id).value : '');
-    const prev = db.profile.bje || {};
-    db.profile.bje = { on: $('bjeOn') ? $('bjeOn').checked : !!prev.on, per: g('bjePer').trim(), delay: g('bjeDelay').trim(), parts: g('bjeParts') || 1, gap: g('bjeGap').trim() };
+    const g = id => ($(id) ? $(id).value.trim() : '');
+    db.profile.bje = { doc: g('bjeDoc'), date: g('bjeDate'), per: g('bjePer'), delay: g('bjeDelay'), parts: g('bjeParts') || 1, gap: g('bjeGap'), note: g('bjeNote') };
     persist();
-    const st = $('bjeState'); const gw = $('bjeGapWrap'); if (gw) gw.style.display = (+db.profile.bje.parts || 1) > 1 ? '' : 'none';
-    const f = document.querySelector('#bjeBox .bjeFields'); if (f) f.classList.toggle('off', !db.profile.bje.on);
-    if (st) st.textContent = db.profile.bje.on ? (active() ? 'Сохранено' : 'Включено, но не все числа заполнены — расчёта не будет') : 'Выключено';
+    const gw = $('bjeGapWrap'); if (gw) gw.style.display = (+db.profile.bje.parts || 1) > 1 ? '' : 'none';
+    const st = $('bjeState'); if (st) st.textContent = active() ? 'Схема активна' : 'Схема не заполнена — расчёта нет';
   };
+  A.clear = function () { if (!confirm('Очистить схему добавочной дозы на БЖЕ?')) return; db.profile = db.profile || {}; delete db.profile.bje; persist(); paintProfile(); };
 
   /* ---------- подключение к существующим функциям ---------- */
   function wrap() {
