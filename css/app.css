@@ -697,3 +697,15 @@ html[lang=ky] #meals .tbl td:nth-child(6)::before{content:'М'}
 /* v64.93: кнопка SOS не перекрывает «24 ч» на широком экране */
 .glucoseHero .cgmHours{padding-right:72px}
 @media(max-width:950px){.glucoseHero .cgmHours{padding-right:0}}
+
+/* v64.96: добавочный инсулин на БЖЕ */
+.bjeCalc{margin-top:12px;padding:12px 14px;border:1px dashed #0f766e;border-radius:12px;background:#f0fdfa}
+.bjeCalc .bjeHead{font-weight:800;color:#0f766e;margin-bottom:4px}
+.bjeCalc b{font-size:1.1em}.bjeSub{margin-top:6px}
+#bjeBox .bjeSw{display:flex;align-items:center;gap:8px;margin:12px 0 8px;font-size:14px}
+#bjeBox .bjeFields{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+#bjeBox .bjeFields.off{opacity:.55}
+@media(max-width:600px){#bjeBox .bjeFields{grid-template-columns:1fr}}
+#bjeSoon{border-color:#0f766e}
+.bjeRow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--line)}
+.bjeRow.late{background:#fff7ed;border-radius:10px;padding:8px 10px}.bjeLate{color:#b91c1c;font-weight:700}
