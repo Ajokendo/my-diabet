@@ -693,3 +693,7 @@ html[lang=ky] #meals .tbl td:nth-child(6)::before{content:'М'}
 #meals .tbl td.mealEmpty{grid-column:1/-1;padding:10px 0}
 #menu .tbl td:first-child .foodmeta b{overflow-wrap:anywhere}
 }
+
+/* v64.93: кнопка SOS не перекрывает «24 ч» на широком экране */
+.glucoseHero .cgmHours{padding-right:72px}
+@media(max-width:950px){.glucoseHero .cgmHours{padding-right:0}}
