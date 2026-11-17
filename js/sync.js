@@ -50,7 +50,7 @@ async function api(path,body,method){
 }
 
 /* ---- Данные пациента → записи ---- */
-const COLLECTIONS={diary:()=>db.diary,activity:()=>db.activity,recipes:()=>db.recipes,labs:()=>db.labs,docs:()=>db.docs,ins:()=>db.medical?.actualInsulinLog,calc:()=>db.medical?.calculationLog};
+const COLLECTIONS={diary:()=>db.diary,activity:()=>db.activity,recipes:()=>db.recipes,labs:()=>db.labs,docs:()=>db.docs,ins:()=>db.medical?.actualInsulinLog,calc:()=>db.medical?.calculationLog,aiOpinions:()=>db.aiOpinions,weights:()=>db.weights,reminders:()=>db.reminders};
 function records(){
   const m={},put=(t,id,v)=>{m[t+'|'+id]=v};
   ['diary','activity'].forEach(k=>(db[k]||[]).forEach(x=>{if(x&&!x.id)x.id=rid()}));
@@ -120,8 +120,8 @@ function refreshUi(){if(typing()){if(!uiWait){uiWait=true;document.activeElement
 function refreshUi0(){try{if(typeof syncCatalog==='function')syncCatalog(db)}catch(e){}try{loadDay()}catch(e){}try{const a=document.querySelector('.section.active')?.id;if(a&&a!=='dashboard'&&a!=='menu'&&a!=='account')show(a)}catch(e){}}
 
 /* ---- Аккаунт, приглашения ---- */
-function wipeLocal(){db.menus={};db.diary=[];db.activity=[];db.labs=[];db.docs=[];db.waterLog={};db.medical=db.medical||{};db.medical.actualInsulinLog=[];db.medical.calculationLog=[];db.foods=(db.foods||[]).filter(f=>!/^u\d/.test(String(f.id)))}
-function hasLocalData(){return Object.values(db.menus||{}).some(a=>Array.isArray(a)?a.length:Object.values(a||{}).some(x=>x?.length))||(db.diary||[]).length||(db.labs||[]).length||((db.medical||{}).actualInsulinLog||[]).length}
+function wipeLocal(){db.menus={};db.diary=[];db.activity=[];db.labs=[];db.docs=[];db.aiOpinions=[];db.weights=[];db.reminders=[];db.waterLog={};db.medical=db.medical||{};db.medical.actualInsulinLog=[];db.medical.calculationLog=[];db.foods=(db.foods||[]).filter(f=>!/^u\d/.test(String(f.id)))}
+function hasLocalData(){return Object.values(db.menus||{}).some(a=>Array.isArray(a)?a.length:Object.values(a||{}).some(x=>x?.length))||(db.diary||[]).length||(db.labs||[]).length||(db.aiOpinions||[]).length||(db.weights||[]).length||(db.reminders||[]).length||((db.medical||{}).actualInsulinLog||[]).length}
 function startSession(j,patient,joining){
   const c=C();c.token=j.token||c.token;c.user=j.user||c.user;c.server=server();
   if(patient){if(c.patientId!==patient.id){c.cursor=0;c.initialized=false}c.patientId=patient.id;c.patientName=patient.displayName;c.role=patient.role}

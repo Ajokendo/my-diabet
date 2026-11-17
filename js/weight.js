@@ -12,7 +12,9 @@
   const days = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
 
   function list() {
-    return ((typeof db !== 'undefined' && db.weights) || []).filter(w => w.date && isFinite(+w.kg) && +w.kg > 0)
+    const byDate = {}; /* одна запись на дату: при слиянии с другим устройством последняя побеждает */
+    ((typeof db !== 'undefined' && db.weights) || []).forEach(w => { if (w.date) byDate[w.date] = w; });
+    return Object.values(byDate).filter(w => isFinite(+w.kg) && +w.kg > 0)
       .map(w => ({ id: w.id, date: w.date, kg: +w.kg, note: w.note || '' })).sort((a, b) => a.date.localeCompare(b.date));
   }
   const latest = () => { const l = list(); return l[l.length - 1] || null; };
@@ -27,8 +29,8 @@
   /* добавление; если запись самая свежая — обновляем профиль */
   function put(date, kg, note) {
     db.weights = db.weights || [];
-    const ex = db.weights.find(w => w.date === date);
-    if (ex) { ex.kg = kg; if (note) ex.note = note; } else db.weights.push({ id: 'w' + Date.now() + Math.floor(Math.random() * 1000), date, kg, note: note || '' });
+    const exs = db.weights.filter(w => w.date === date), ex = exs[0];
+    if (ex) { exs.forEach(e => { e.kg = kg; if (note) e.note = note; }); } else db.weights.push({ id: 'w' + Date.now() + Math.floor(Math.random() * 1000), date, kg, note: note || '' });
     syncProfile();
   }
   function syncProfile() {
@@ -48,7 +50,7 @@
   }
   function del(id) {
     if (!confirm('Удалить запись о весе?')) return;
-    db.weights = (db.weights || []).filter(w => w.id !== id);
+    const dd = (db.weights || []).find(w => w.id === id); db.weights = (db.weights || []).filter(w => w.id !== id && !(dd && w.date === dd.date));
     const l = latest(); if (l) syncProfile();
     persist(); render();
   }
@@ -126,7 +128,7 @@
   /* разовый перенос: вес из профиля, если журнала ещё нет */
   function seed() {
     if (typeof db === 'undefined' || (db.weights && db.weights.length)) return;
-    const w = +((db.profile || {}).weight); if (w > 0) { db.weights = [{ id: 'w' + Date.now(), date: todayIso(), kg: w, note: 'из профиля' }]; persist(); }
+    const w = +((db.profile || {}).weight); if (w > 0) { db.weights = [{ id: 'wseed' + todayIso(), date: todayIso(), kg: w, note: 'из профиля' }]; persist(); }
   }
 
   window.DMWeight = { add, del, copy, render, at, latest, list, note, dose };
