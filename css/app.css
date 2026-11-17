@@ -670,3 +670,26 @@ body.dark .langSw,html.dark .langSw{background:transparent}
 .lgFlag.down{background:#e0f2fe;color:#0369a1}
 .lgDay{border:1px solid var(--line,#e2e8f0);border-radius:12px;margin:6px 0;padding:8px 12px;background:#fff}
 .lgDay>summary{cursor:pointer}
+
+/* v64.91: меню на телефоне — строка еды карточкой, без горизонтальной прокрутки */
+@media(max-width:950px){
+#meals .tablewrap{overflow:visible}
+#meals .tbl,#meals .tbl tbody{display:block;width:100%;max-width:100%}
+#meals .tbl thead{display:none}
+#meals .tbl tr{display:grid;grid-template-columns:repeat(5,1fr);gap:4px 6px;padding:12px 12px 10px;border-bottom:1px solid var(--line)}
+#meals .tbl td{display:block;padding:0;border:0;white-space:normal;min-width:0}
+#meals .tbl td:nth-child(1){grid-column:1/5;grid-row:1}
+#meals .tbl td:nth-child(8){grid-column:5;grid-row:1;justify-self:end}
+#meals .tbl td:nth-child(2){grid-column:1/-1;grid-row:2;margin:4px 0 2px}
+#meals .tbl td:nth-child(n+3):nth-child(-n+7){grid-row:3;text-align:center;background:#f6faf9;border-radius:9px;padding:5px 2px;font-weight:700;font-size:15px}
+#meals .tbl td:nth-child(n+3):nth-child(-n+7)::before{display:block;font-size:11px;font-weight:600;color:var(--muted)}
+#meals .tbl td:nth-child(3)::before{content:'ккал'}
+#meals .tbl td:nth-child(4)::before{content:'У'}
+#meals .tbl td:nth-child(5)::before{content:'Б'}
+#meals .tbl td:nth-child(6)::before{content:'Ж'}
+#meals .tbl td:nth-child(7)::before{content:'ХЕ'}
+html[lang=ky] #meals .tbl td:nth-child(6)::before{content:'М'}
+#meals .tbl td:nth-child(8) .row{flex-wrap:nowrap}
+#meals .tbl td.mealEmpty{grid-column:1/-1;padding:10px 0}
+#menu .tbl td:first-child .foodmeta b{overflow-wrap:anywhere}
+}
