@@ -678,9 +678,9 @@ body.dark .langSw,html.dark .langSw{background:transparent}
 #meals .tbl thead{display:none}
 #meals .tbl tr{display:grid;grid-template-columns:repeat(5,1fr);gap:4px 6px;padding:12px 12px 10px;border-bottom:1px solid var(--line)}
 #meals .tbl td{display:block;padding:0;border:0;white-space:normal;min-width:0}
-#meals .tbl td:nth-child(1){grid-column:1/5;grid-row:1}
-#meals .tbl td:nth-child(8){grid-column:5;grid-row:1;justify-self:end}
-#meals .tbl td:nth-child(2){grid-column:1/-1;grid-row:2;margin:4px 0 2px}
+#meals .tbl td:nth-child(1){grid-column:1/-1;grid-row:1}
+#meals .tbl td:nth-child(8){grid-column:4/-1;grid-row:2;justify-self:end;align-self:center}
+#meals .tbl td:nth-child(2){grid-column:1/4;grid-row:2;margin:4px 0 2px}
 #meals .tbl td:nth-child(n+3):nth-child(-n+7){grid-row:3;text-align:center;background:#f6faf9;border-radius:9px;padding:5px 2px;font-weight:700;font-size:15px}
 #meals .tbl td:nth-child(n+3):nth-child(-n+7)::before{display:block;font-size:11px;font-weight:600;color:var(--muted)}
 #meals .tbl td:nth-child(3)::before{content:'ккал'}
