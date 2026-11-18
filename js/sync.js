@@ -92,6 +92,8 @@ async function syncNow(manual){
   const c=C();if(!c.token||!c.patientId)return;if(staleCheck())return;if(busy){if(manual)setTimeout(()=>syncNow(true),800);return}
   busy=true;lastError='';render(true);
   try{
+    /* v64.103: записи новых типов (мнение ИИ, вес, напоминания), пришедшие, пока устройство было на старой версии, были пропущены, а курсор ушёл вперёд — один раз забираем всё заново */
+    if(!c.initialized)c.schema=2;else if((c.schema||0)<2){c.cursor=0;c.schema=2}
     let shadow=loadShadow(),applied=0;const touched=new Set();
     if(!c.initialized){c.cursor=0;shadow={};applied+=await pullAll(shadow,touched);const cur=records();touched.forEach(k=>{if(k in cur)shadow[k]=hash(cur[k])});c.initialized=true;saveShadow(shadow);storage.save(db)}
     /* сначала забираем чужие изменения: меню дня сливается до отправки, иначе наша версия дня затёрла бы чужую на сервере */
@@ -172,7 +174,7 @@ function logout(){if(!confirm('Выйти из семейного аккаунт
 function v(id){return (document.getElementById(id)?.value||'').trim()}
 
 /* ---- Экран ---- */
-function statusHtml(){const c=C();const n=pending();return `<div class="syncInfo"><div class="mini"><span class="muted">Последняя синхронизация</span><b>${c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</b></div><div class="mini"><span class="muted">Не отправлено на сервер</span><b>${busy?'…':n}</b><span class="muted" style="font-size:12px">${busy?'отправляю…':n?'уйдёт при появлении связи':'всё синхронизировано'}</span></div></div>
+function statusHtml(){const c=C();const n=pending();return `<div class="syncInfo"><div class="mini"><span class="muted">Последняя синхронизация</span><b>${c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}</b></div><div class="mini"><span class="muted">Версия приложения</span><b>${typeof APP_VERSION!=='undefined'?APP_VERSION:'—'}</b></div><div class="mini"><span class="muted">Не отправлено на сервер</span><b>${busy?'…':n}</b><span class="muted" style="font-size:12px">${busy?'отправляю…':n?'уйдёт при появлении связи':'всё синхронизировано'}</span></div></div>
 ${lastError?`<div class="notice" style="margin-top:8px">${esc(lastError)}</div>`:''}
 `}
 
