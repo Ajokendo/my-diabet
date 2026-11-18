@@ -193,7 +193,7 @@
     try {
       const w = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentNode && (/^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.nodeName) || (n.parentNode.closest && n.parentNode.closest('.noTr'))) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
       let n; while ((n = w.nextNode())) { const v = tr(n.nodeValue); if (v && v !== n.nodeValue) n.nodeValue = v }
-      (root || document.body).querySelectorAll('[placeholder],[title],[aria-label]').forEach(el => ['placeholder', 'title', 'aria-label'].forEach(a => { const v = el.getAttribute(a); const t = v && tr(v); if (t && t !== v) el.setAttribute(a, t) }));
+      (root || document.body).querySelectorAll('[placeholder],[title],[aria-label],[alt]').forEach(el => ['placeholder', 'title', 'aria-label', 'alt'].forEach(a => { const v = el.getAttribute(a); const t = v && tr(v); if (t && t !== v) el.setAttribute(a, t) }));
       (root || document.body).querySelectorAll('option').forEach(o => { const t = tr(o.textContent); if (t) { if (!o.hasAttribute('value')) o.setAttribute('value', o.textContent); o.textContent = t } });
     } finally { busy = false }
   }
