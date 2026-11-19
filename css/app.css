@@ -743,3 +743,20 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 
 /* v64.112: календарь меню — месяц по-русски со стрелками */
 .calNav{display:flex;align-items:center;gap:12px;margin:8px 0}.calNav b{min-width:150px;text-align:center;font-size:18px}.calNav .btn{margin:0;width:44px;padding:8px 0;font-size:20px}
+
+/* v64.113: календарь меню помещается на одном экране телефона */
+@media(max-width:600px){
+#calendar .top{margin-bottom:4px}
+#calendar .title h1{font-size:22px;margin:0}
+#calendar .title p{display:none}
+#calendar .calNav{margin:4px 0}
+#calendar .card{padding:8px}
+#calendar .calendar{gap:3px}
+#calendar .calendar>.muted{padding:2px 0!important;text-align:center;font-size:12px}
+#calendar .calcell{height:46px;min-height:0;padding:3px 5px;display:flex;align-items:center;justify-content:space-between;gap:2px;border-radius:10px}
+#calendar .calcell br{display:none}
+#calendar .calcell b{font-size:15px}
+#calendar .calcell .muted{display:none}
+#calendar .calcell .ok::before{font-size:12px}
+}
+@media(max-width:600px){body:has(#calendar.active) .app{min-height:0}body:has(#calendar.active) .main{padding-bottom:66px}}
