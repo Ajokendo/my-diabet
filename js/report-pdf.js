@@ -16,12 +16,14 @@ async function build(){
   try{
     const top=box.getBoundingClientRect().top;
     const cuts=[...box.querySelectorAll('p,li,tr,.reportSection,.mini,.card,svg,img,table,div')].filter(e=>!/^H[1-4]$/.test((e.nextElementSibling||{}).tagName||'')).map(e=>{const r=e.getBoundingClientRect();return Math.round(r.bottom-top)}).filter(y=>y>0).sort((a,b)=>a-b);
+    const brks=[...box.querySelectorAll('.rptBreak')].map(e=>Math.round(e.getBoundingClientRect().top-top)*2).filter(y=>y>0);
     const scale=2,canvas=await html2canvas(box,{scale,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:W+64});
     const {jsPDF}=window.jspdf;const pdf=new jsPDF({unit:'mm',format:'a4',compress:true});
     const pxW=canvas.width,pageH=Math.floor(pxW*297/210),margin=Math.round(10*pxW/210);
     let y=0,first=true;const total=canvas.height;
     while(y<total-4){
       let limit=y+pageH-2*margin;if(limit>=total)limit=total;else{const c=cuts.map(v=>v*scale).filter(v=>v>y+pageH*0.4&&v<=limit);if(c.length)limit=c[c.length-1]}
+      const bk=brks.find(v=>v>y+4&&v<=limit);if(bk)limit=bk;
       const h=limit-y,part=document.createElement('canvas');part.width=pxW;part.height=h;const g=part.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,pxW,h);g.drawImage(canvas,0,y,pxW,h,0,0,pxW,h);
       if(!first)pdf.addPage();first=false;pdf.addImage(part.toDataURL('image/jpeg',0.86),'JPEG',0,10,210,h*210/pxW);y=limit}
     const n=pdf.getNumberOfPages();for(let i=1;i<=n;i++){pdf.setPage(i);pdf.setFontSize(8);pdf.setTextColor(120);pdf.text(`${i} / ${n}`,200,290,{align:'right'})}

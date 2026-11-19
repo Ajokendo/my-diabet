@@ -717,3 +717,19 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 @media(max-width:950px){.syncInfo{grid-template-columns:minmax(0,1fr)}html[lang=ky] .syncInfo .mini .muted{white-space:normal}}
 @media(max-width:340px){html[lang=ky] .subTabs button{font-size:10.5px}}
 @media(max-width:950px){html[lang=ky] .glucoseHero .row .muted:first-child{padding-right:72px}html[lang=ky] #cgmCard .cgmStatus{white-space:normal;border-radius:14px;line-height:1.25}html[lang=ky] #dashboard .homeTitle .brandSlogan{white-space:normal;line-height:1.15}}
+
+/* v64.107: страница-резюме в отчёте врачу */
+.rptSummary{margin:6px 0 0}
+.rptTiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rptTile{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:#fafcfc}
+.rptTile .tl{font-size:11.5px;color:var(--muted)}
+.rptTile .tv{font-size:24px;font-weight:800;line-height:1.15;margin:2px 0}
+.rptTile .tv small{font-size:12px;font-weight:600;color:var(--muted)}
+.rptTile .ts{font-size:11px;color:var(--muted);line-height:1.3}
+.rptBar{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:10px 0 3px;background:#e2e8f0}
+.rptBarLeg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:10.5px;color:var(--muted)}.rptBarLeg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.rptSumRow{display:flex;gap:14px;align-items:flex-start;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.rptSumTxt{flex:1 1 55%;min-width:0;line-height:1.5}
+.rptSumChart{flex:1 1 45%;min-width:0}
+.rptBreak{height:20px;break-after:page;page-break-after:always}
+@media(max-width:560px){.rptTile{padding:6px 7px}.rptTile .tv{font-size:19px}.rptTile .tl,.rptTile .ts{font-size:10px}}

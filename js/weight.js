@@ -116,7 +116,9 @@
   function note() {
     const r = list(); if (r.length < 2) return '';
     const L = r[r.length - 1], F = r[0], dv = L.kg - F.kg;
-    return ' <span class="muted">(на ' + fmt(L.date) + '; с ' + fmt(F.date) + ': ' + (dv > 0 ? '+' : dv < 0 ? '−' : '') + k1(Math.abs(dv)) + ' кг)</span>';
+    if (days(F.date, L.date) < 14) return ' <span class="muted">(на ' + fmt(L.date) + ')</span>'; /* за пару дней сравнивать нечего */
+    if (Math.abs(dv) < 0.05) return ' <span class="muted">(на ' + fmt(L.date) + '; с ' + fmt(F.date) + ': без изменений)</span>';
+    return ' <span class="muted">(на ' + fmt(L.date) + '; с ' + fmt(F.date) + ': ' + (dv > 0 ? '+' : '−') + k1(Math.abs(dv)) + ' кг)</span>';
   }
 
   /* при сохранении профиля с новым весом — точка на сегодня */
