@@ -733,3 +733,10 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 .rptSumChart{flex:1 1 45%;min-width:0}
 .rptBreak{height:20px;break-after:page;page-break-after:always}
 @media(max-width:560px){.rptTile{padding:6px 7px}.rptTile .tv{font-size:19px}.rptTile .tl,.rptTile .ts{font-size:10px}}
+
+/* v64.109: плитки сводки — подписи в одну строку, цифры на одной линии */
+.rptTile{display:flex;flex-direction:column}
+.rptTile .tl{white-space:nowrap;overflow:hidden;text-overflow:clip}
+.rptTile .tv{white-space:nowrap;min-height:1.15em}
+.rptTile .ts{min-height:2.6em}
+@media(max-width:560px){.rptTiles{gap:5px}.rptTile{padding:6px 4px}.rptTile .tl{font-size:8.5px;letter-spacing:-.2px}.rptTile .tv{font-size:18px}.rptTile .tv small{font-size:9px}.rptTile .ts{font-size:9.5px}}

@@ -98,12 +98,12 @@
       if (G && G.n) {
         const cv = G.sd / G.mean * 100;
         h += '<div class="rptTiles">' +
-          tile('Средняя глюкоза', f1(G.mean) + '<small> ммоль/л</small>', 'GMI ' + f1(G.v) + '% (оценка)') +
-          tile('В диапазоне 3,9–10', pc(G.tir), 'цель выше 70%', G.tir >= 70 ? 'ok' : 'warn') +
+          tile('Средняя глюкоза', f1(G.mean), 'ммоль/л · GMI ' + f1(G.v) + '%') +
+          tile('В диапазоне', pc(G.tir), '3,9–10 · цель выше 70%', G.tir >= 70 ? 'ok' : 'warn') +
           tile('Ниже 3,9', pc(G.tbr), 'ниже 3,0: ' + pc(G.tbr54) + ' · цель ниже 4%', G.tbr < 4 ? 'ok' : 'bad') +
-          tile('Выше 10', pc(G.tar), 'выше 13,9: ' + pc(G.tar139) + ' · цель ниже 25%', G.tar < 25 ? 'ok' : 'warn') +
-          tile('Вариабельность (CV)', Math.round(cv) + '%', 'цель до 36%', cv <= 36 ? 'ok' : 'warn') +
           tile('Данные сенсора', nd(G.days), 'полнота ' + pc(G.cover) + (G.days < 14 ? ' · мало для GMI' : '')) +
+          tile('Вариабельность', Math.round(cv) + '%', 'CV · цель до 36%', cv <= 36 ? 'ok' : 'warn') +
+          tile('Выше 10', pc(G.tar), 'выше 13,9: ' + pc(G.tar139) + ' · цель ниже 25%', G.tar < 25 ? 'ok' : 'warn') +
           '</div>';
         const seg = [[G.tbr54, '#991b1b'], [Math.max(0, G.tbr - G.tbr54), '#ef4444'], [G.tir, '#16a34a'], [Math.max(0, G.tar - G.tar139), '#f59e0b'], [G.tar139, '#ea580c']];
         h += '<div class="rptBar">' + seg.filter(s => s[0] > 0.2).map(s => '<div style="width:' + s[0].toFixed(1) + '%;background:' + s[1] + '"></div>').join('') + '</div>' +
