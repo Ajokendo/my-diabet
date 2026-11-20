@@ -760,3 +760,13 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 #calendar .calcell .ok::before{font-size:12px}
 }
 @media(max-width:600px){body:has(#calendar.active) .app{min-height:0}body:has(#calendar.active) .main{padding-bottom:66px}}
+
+/* v64.116: время приёма пищи и «Как еда влияет на сахар» */
+.mealTimeRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}
+.mealTimeRow label{margin:0;font-weight:600}
+.mealTimeRow input{width:auto;max-width:130px}
+.fiBox .fiTbl{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
+.fiBox .fiTbl th,.fiBox .fiTbl td{padding:5px 6px;border-bottom:1px solid #e2e8f0;text-align:left}
+.fiBox .fiTbl td.n,.fiBox .fiTbl th.n{text-align:right;white-space:nowrap}
+.fiBox .fiHi{color:#b45309;font-weight:600}.fiBox .fiOk{color:#0f766e;font-weight:600}
+.fiBox .fiNote{font-size:13px;color:#64748b;margin:6px 0}
