@@ -791,3 +791,5 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 /* v64.126: «Чаще всего» в отчёте — ровные колонки */
 .rptTop{display:grid;grid-template-columns:28px minmax(120px,1.2fr) minmax(60px,1fr) 34px;gap:5px 10px;align-items:center;margin:6px 0 10px;font-size:13.5px}
 .rptTop .rtN{color:#64748b;text-align:right}.rptTop .rtB{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}.rptTop .rtB i{display:block;height:100%;background:#2dd4bf}.rptTop .rtC{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+/* v64.129: «Чаще всего» — компактнее, полоска рядом с названием */
+.rptTop{grid-template-columns:24px minmax(130px,230px) minmax(90px,200px) 28px;width:fit-content;max-width:100%;gap:5px 12px}
