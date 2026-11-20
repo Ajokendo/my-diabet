@@ -793,3 +793,5 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 .rptTop .rtN{color:#64748b;text-align:right}.rptTop .rtB{height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden}.rptTop .rtB i{display:block;height:100%;background:#2dd4bf}.rptTop .rtC{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
 /* v64.129: «Чаще всего» — компактнее, полоска рядом с названием */
 .rptTop{grid-template-columns:24px minmax(130px,230px) minmax(90px,200px) 28px;width:fit-content;max-width:100%;gap:5px 12px}
+/* v64.130: двухколонные таблицы отчёта — вторая колонка на одной линии со значениями блока выше */
+@media(min-width:601px){.rptTbl.rt2 th,.rptTbl.rt2 td{box-sizing:border-box}.rptTbl.rt2 th:first-child,.rptTbl.rt2 td:first-child{width:261px;min-width:261px;padding-left:12px}.rptTbl.rt2 th:last-child,.rptTbl.rt2 td:last-child{padding-left:12px;text-align:left}}
