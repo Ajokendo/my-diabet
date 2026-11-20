@@ -122,6 +122,7 @@ function paintFamily(){
 ${L?`<p>Последнее показание: <b>${L.g.toFixed(1)} ${L.arrow}</b> ммоль/л, ${ago(L.age)}.</p>`:connected?'<p>Ключ создан, ждём первые показания.</p>':''}
 ${canWrite?`<button class="btn ${connected?'secondary':''}" style="width:100%;text-align:center" onclick="DMCgm.connect()">${connected?'Показать адрес заново<br><span style="font-weight:400;font-size:.88em">(создать новый ключ)</span>':'Подключить сенсор (xDrip+)'}</button>`:'<p class="muted">Подключить может только родитель или сам пациент.</p>'}
 <div id="cgmConnect" style="margin-top:10px">${connectHtml}</div>
+${L||connected?`<div style="margin-top:14px"><b>Скачать сахар (CSV)</b><p class="muted" style="margin:4px 0 8px">Файл для Excel и для разбора: время, сахар в ммоль/л, направление.</p><div class="row" style="gap:8px"><select id="csvDays" class="select" style="max-width:180px"><option value="3">3 дня</option><option value="7">7 дней</option><option value="14" selected>14 дней</option><option value="30">30 дней</option></select><button class="btn" onclick="DMCgm.exportCsv()" ${csvBusy?'disabled':''}>${csvBusy?'Загрузка…':'Скачать'}</button></div><div style="margin-top:8px">${csvMsg}</div></div>`:''}
 ${canWrite?`<details style="margin-top:14px"${importOpen?' open':''}><summary><b>Загрузить прошлую историю из Nightscout</b></summary>
 <p class="muted">Если xDrip+ раньше отправлял данные в другой Nightscout (например, на jino), ${ownerImp()?'историю за прошлые месяцы можно перенести сюда — для отчёта врачу и GMI.':'показания за последние 3 дня можно перенести сюда.'} Уже имеющиеся показания не меняются.</p>
 <label>Адрес Nightscout</label><input id="nsUrl" class="input" placeholder="https://имя.nightscout-jino.ru" value="${esc(nsSaved())}">
@@ -129,6 +130,31 @@ ${canWrite?`<details style="margin-top:14px"${importOpen?' open':''}><summary><b
 <div class="row" style="margin-top:8px;gap:8px"><select id="nsDays" class="select" style="max-width:180px"><option value="1">1 день</option><option value="3"${ownerImp()?'':' selected'}>3 дня</option>${ownerImp()?'<option value="7" selected>7 дней</option><option value="30">30 дней</option><option value="90">90 дней</option>':''}</select><button class="btn" onclick="DMCgm.importNs()" ${importBusy?'disabled':''}>${importBusy?'Загрузка…':'Загрузить'}</button></div>
 <div id="nsOut" style="margin-top:8px">${importMsg}</div></details>`:''}`;
 }
+
+/* v64.114: выгрузка сахара с сенсора в CSV (время местное, ммоль/л) — для разбора, отчётов и переноса */
+let csvBusy=false,csvMsg='';
+async function exportCsv(){
+  if(csvBusy||!ready())return;
+  const days=+(document.getElementById('csvDays')?.value||14);
+  csvBusy=true;csvMsg='Загружаю…';paintFamily();
+  try{
+    let since=Date.now()-days*864e5,all=[];
+    for(let i=0;i<40;i++){const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${since}`);const r=j.readings||[];all=all.concat(r);if(r.length<5000)break;since=r[r.length-1].t}
+    if(!all.length){csvMsg='За этот период показаний нет.';return}
+    const pad=n=>String(n).padStart(2,'0');
+    const rows=all.map(x=>{const d=new Date(x.t);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())+';'+String(x.g).replace('.',',')+';'+(x.d||'')});
+    const text='\ufeffвремя;ммоль/л;направление\n'+rows.join('\n')+'\n';
+    const d0=new Date(),name='sahar-'+d0.getFullYear()+'-'+pad(d0.getMonth()+1)+'-'+pad(d0.getDate())+'.csv';
+    const file=new File([text],name,{type:'text/csv'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:'Мой диабет — сахар с сенсора'})}
+      catch(e){if(e&&e.name==='AbortError'){csvMsg='';return}dl(text,name)}
+    }else dl(text,name);
+    csvMsg='Готово: '+all.length.toLocaleString('ru-RU')+' показаний.';
+  }catch(e){csvMsg='<span class="srcErr">'+esc(e.message||String(e))+'</span>'}
+  finally{csvBusy=false;paintFamily()}
+}
+function dl(text,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 
 /* Предупреждение «сенсор/xDrip+ молчит» — плашка вверху любого раздела + системное уведомление (пока приложение открыто) */
 const STALE_MIN=20;
@@ -186,6 +212,6 @@ async function importNs(){if(importBusy)return;const url=(document.getElementByI
     Object.keys(periodCache).forEach(k=>delete periodCache[k]);gmiAt=0;
   }catch(e){importMsg=`<div class="notice">${esc(e.message)}${total?` (до ошибки перенесено ${total.toLocaleString('ru-RU')})`:''}</div>`}
   importBusy=false;paintFamily();try{loadGmi()}catch(e){}}
-window.DMCgm={readings:()=>readings,importNs,gmi:()=>gmi,device:()=>device,isConnected:()=>connected,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
+window.DMCgm={readings:()=>readings,exportCsv,importNs,gmi:()=>gmi,device:()=>device,isConnected:()=>connected,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));else setTimeout(start,300);
 })();
