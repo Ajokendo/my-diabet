@@ -36,6 +36,30 @@
   }
   function periodDays(rg) { return Math.max(1, dayN(rg.start, rg.end) + 1); }
 
+
+  /* v64.123: инсулин по дням — столбики (базальный + болюсный) и описание вместо таблицы */
+  function insChart(rows, per, a, note) {
+    const n = rows.length, W = 640, H = 230, pl = 30, pr = 8, pt = 18, pb = 26, mx = Math.max(10, Math.ceil(Math.max(...rows.map(r => r.total)) / 5) * 5);
+    const bw = Math.min(34, (W - pl - pr) / n * 0.7), X = i => pl + (i + .5) / n * (W - pl - pr), Y = v => pt + (1 - v / mx) * (H - pt - pb);
+    let g = ''; for (let v = 0; v <= mx; v += mx / 5) g += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="#e2e8f0"/><text x="' + (pl - 4) + '" y="' + (Y(v) + 4) + '" font-size="11" text-anchor="end" fill="#64748b">' + Math.round(v) + '</text>';
+    const step = n > 20 ? 3 : n > 12 ? 2 : 1;
+    const bars = rows.map((r, i) => '<rect x="' + (X(i) - bw / 2).toFixed(1) + '" y="' + Y(r.basal).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (Y(0) - Y(r.basal)).toFixed(1) + '" fill="#6366f1"/>' +
+      '<rect x="' + (X(i) - bw / 2).toFixed(1) + '" y="' + Y(r.basal + r.bolus + r.other).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (Y(r.basal) - Y(r.basal + r.bolus + r.other)).toFixed(1) + '" fill="#14b8a6"/>' +
+      '<text x="' + X(i).toFixed(1) + '" y="' + (Y(r.total) - 4).toFixed(1) + '" font-size="10" font-weight="700" text-anchor="middle" fill="#0f172a">' + f1(r.total, r.total % 1 ? 1 : 0) + '</text>' +
+      (i % step === 0 ? '<text x="' + X(i).toFixed(1) + '" y="' + (H - 8) + '" font-size="10" text-anchor="middle" fill="#64748b">' + fs(r.date) + '</text>' : '')).join('');
+    const svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;max-width:720px">' + g + bars + '</svg>';
+    const leg = '<p class="muted" style="font-size:12px;margin:2px 0 8px"><b style="color:#6366f1">■</b> базальный · <b style="color:#14b8a6">■</b> болюсный (над столбиком — сумма за день, ЕД)</p>';
+    const done = rows.filter(r => r.date !== todayIso()), src = done.length ? done : rows;
+    const hi = src.reduce((b, r) => r.total > b.total ? r : b, src[0]), lo = src.reduce((b, r) => r.total < b.total ? r : b, src[0]);
+    const onlyBasal = rows.filter(r => r.bolus === 0 && r.basal > 0 && r.date !== todayIso()), bs = rows.map(r => r.basal).filter(v => v > 0);
+    let t = 'Записи о введённом инсулине есть за ' + nd(n) + (n < per * 0.8 ? ' из ' + nd(per) + ' периода' : '') + '. ';
+    if (a) t += 'В среднем в день ' + f1(a.total) + ' ЕД: базальный ' + f1(a.basal) + ', болюсный ' + f1(a.bolus) + ', в среднем ' + f1(a.nb, 1) + ' болюса в день. ';
+    if (src.length > 2) t += 'Больше всего — ' + fs(hi.date) + ' (' + f1(hi.total) + ' ЕД), меньше всего — ' + fs(lo.date) + ' (' + f1(lo.total) + ' ЕД). ';
+    if (bs.length > 1 && Math.max(...bs) - Math.min(...bs) > 0.01) t += 'Суточная доза базального менялась от ' + f1(Math.min(...bs)) + ' до ' + f1(Math.max(...bs)) + ' ЕД. ';
+    if (onlyBasal.length) t += 'В дни ' + onlyBasal.map(r => fs(r.date)).join(', ') + ' записан только базальный инсулин — возможно, болюсы в эти дни не вносились. ';
+    return svg + leg + '<p class="rptTxt">' + t + '</p><p class="muted" style="font-size:12px;margin:4px 0">Суммы — по записям семьи, без пересчёта. Описание не является рекомендацией по дозам.</p>';
+  }
+
   function insulinTable(actual, rg) {
     const rows = perDay(actual);
     if (!rows.length) return '';
@@ -43,6 +67,7 @@
     const first = rows[0].date, last = rows[rows.length - 1].date;
     const note = '<p class="muted" style="margin:6px 0">Записи о введённом инсулине есть за ' + nd(rows.length) + ' (' + fs(first) + ' — ' + fs(last) + ')' +
       (rows.length < per * 0.8 ? ' из ' + nd(per) + ' периода' : '') + '. Суммы — по записям семьи, без пересчёта.</p>';
+    if (rows.length <= 31) return insChart(rows, per, a, note);
     let head, body;
     if (rows.length <= 31) {
       head = ['Дата', 'Базальный, ЕД', 'Болюс, ЕД', 'Всего, ЕД', 'Болюсов'];

@@ -784,3 +784,6 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 .trEps{margin-top:8px}.trEps summary{cursor:pointer;font-weight:700;font-size:13.5px}
 .trEp{display:grid;grid-template-columns:1fr 70px 50px;gap:8px;padding:5px 2px;border-bottom:1px solid var(--line);font-size:13.5px}
 .trEp b,.trEp span:last-child{text-align:right}.trEpH{font-size:12px;color:var(--muted);font-weight:600}
+
+/* v64.123: описательный текст под графиками отчёта */
+.rptTxt{margin:6px 0 10px;font-size:13.5px;line-height:1.5}

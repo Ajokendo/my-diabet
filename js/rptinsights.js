@@ -62,22 +62,47 @@
   }
 
   /* ---------- 2. ночь и сахар натощак ---------- */
+  const PT = t => `<p class="rptTxt">${t}</p>`;
+  const sgn = v => (v >= 0 ? '+' : '−') + f1(Math.abs(v));
   function night(G, rg) {
     const { raw } = prep(G, rg); if (raw.length < 50) return '';
     const byDay = {}; raw.forEach(x => { const d = dk(x.t); (byDay[d] = byDay[d] || []).push(x) });
     const rows = []; Object.keys(byDay).sort().forEach(d => {
       const n = byDay[d].filter(x => new Date(x.t).getHours() < 6); if (n.length < 20) return;
-      const g = n.map(x => x.g), first = avg(g.slice(0, Math.max(3, Math.round(g.length / 6)))), last = avg(g.slice(-Math.max(3, Math.round(g.length / 6))));
+      const g = n.map(x => x.g), k = Math.max(3, Math.round(g.length / 6)), first = avg(g.slice(0, k)), last = avg(g.slice(-k));
       let fast = null; const menu = (db.menus || {})[d]; const bt = menu && Object.entries(menu).filter(([, a]) => Array.isArray(a) && a.length).map(([m]) => { try { return ts(d, mealTime(d, m).min) } catch (e) { return null } }).filter(Boolean).sort((a, b) => a - b)[0];
       const refT = bt || ts(d, 7 * 60), before = byDay[d].filter(x => x.t <= refT && refT - x.t <= 40 * 60e3).pop();
       if (before) fast = before.g;
-      rows.push({ d, min: Math.min(...g), mean: avg(g), max: Math.max(...g), delta: last - first, fast, low: g.some(v => v < 3.9) });
+      const lo = n.reduce((b, x) => x.g < b.g ? x : b, n[0]);
+      rows.push({ d, pts: n, min: lo.g, minT: lo.t, mean: avg(g), max: Math.max(...g), delta: last - first, fast, low: lo.g < 3.9, hi: Math.max(...g) > 10 });
     });
     if (rows.length < 2) return NOTE('Для разбора ночей нужны данные сенсора минимум за две ночи.');
-    const lows = rows.filter(r => r.low).length, fs = rows.map(r => r.fast).filter(Number.isFinite);
-    let h = KV([['Ночей разобрано', rows.length], ['Средняя ночная глюкоза (00–06)', `<b>${f1(avg(rows.map(r => r.mean)))} ммоль/л</b>`], ['Ночей с показаниями ниже 3,9', lows ? `<b>${lows}</b>` : 'не было'], ['Изменение за ночь (конец минус начало)', `${avg(rows.map(r => r.delta)) >= 0 ? '+' : ''}${f1(avg(rows.map(r => r.delta)))} ммоль/л в среднем`], fs.length ? ['Сахар перед первой едой / в 7 утра', `<b>${f1(avg(fs))}</b> в среднем (${f1(Math.min(...fs))}–${f1(Math.max(...fs))})`] : null]);
-    h += TBL(['Ночь', 'Мин.', 'Средняя', 'Макс.', 'К утру', 'Перед завтраком'], rows.map(r => [dmy(r.d), r.min < 3.9 ? `<b>${f1(r.min)}</b>` : f1(r.min), f1(r.mean), f1(r.max), (r.delta >= 0 ? '+' : '') + f1(r.delta), r.fast != null ? f1(r.fast) : '—']));
-    return h + NOTE('Ночь — показания с 00:00 до 06:00 суток, указанных в строке. «К утру» — среднее последней шестой части ночи минус первой. Для оценки базального инсулина решение принимает врач.');
+    /* график: каждая ночь линией, медиана по 15 минутам */
+    const W = 640, H = 240, pl = 30, pr = 8, pt = 10, pb = 24, ymin = 2, ymax = Math.max(12, Math.ceil(Math.max(...rows.map(r => r.max)) + 1));
+    const X = m => pl + m / 360 * (W - pl - pr), Y = g => pt + (1 - (g - ymin) / (ymax - ymin)) * (H - pt - pb), mOf = t => { const d = new Date(t); return d.getHours() * 60 + d.getMinutes() };
+    let g = ''; for (let v = 4; v <= ymax; v += 2) g += `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e2e8f0"/><text x="${pl - 4}" y="${Y(v) + 4}" font-size="11" text-anchor="end" fill="#64748b">${v}</text>`;
+    for (let h = 0; h <= 6; h++) g += `<line x1="${X(h * 60)}" x2="${X(h * 60)}" y1="${pt}" y2="${H - pb}" stroke="#eef2f7"/><text x="${X(h * 60)}" y="${H - 8}" font-size="11" text-anchor="${h === 0 ? 'start' : h === 6 ? 'end' : 'middle'}" fill="#64748b">${pad(h)}:00</text>`;
+    const path = r => 'M' + r.pts.map(x => X(mOf(x.t)).toFixed(1) + ',' + Y(Math.max(ymin, x.g)).toFixed(1)).join('L');
+    let lines = rows.filter(r => !r.low && !r.hi).map(r => `<path d="${path(r)}" fill="none" stroke="#93c5fd" stroke-width="1.2" opacity=".8"/>`).join('') +
+      rows.filter(r => !r.low && r.hi).map(r => `<path d="${path(r)}" fill="none" stroke="#f59e0b" stroke-width="1.6"/>`).join('') +
+      rows.filter(r => r.low).map(r => `<path d="${path(r)}" fill="none" stroke="#dc2626" stroke-width="1.8"/><circle cx="${X(mOf(r.minT)).toFixed(1)}" cy="${Y(r.min).toFixed(1)}" r="3.5" fill="#dc2626"/><text x="${Math.min(W - 30, X(mOf(r.minT)) + 5).toFixed(1)}" y="${(Y(r.min) + 14).toFixed(1)}" font-size="10" fill="#991b1b">${dmy(r.d).slice(0, 5)}</text>`).join('');
+    const med = []; for (let m = 0; m < 360; m += 15) { const v = rows.flatMap(r => r.pts.filter(x => mOf(x.t) >= m && mOf(x.t) < m + 15).map(x => x.g)); if (v.length >= 3) med.push(X(m + 7.5).toFixed(1) + ',' + Y(quant(v, .5)).toFixed(1)) }
+    const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;max-width:720px"><rect x="${pl}" y="${Y(10)}" width="${W - pl - pr}" height="${Y(3.9) - Y(10)}" fill="#dcfce7" opacity=".7"/>${g}${lines}${med.length > 1 ? `<path d="M${med.join('L')}" fill="none" stroke="#1d4ed8" stroke-width="3"/>` : ''}<line x1="${pl}" x2="${W - pr}" y1="${Y(3.9)}" y2="${Y(3.9)}" stroke="#ef4444" stroke-dasharray="4 4"/></svg>`;
+    const leg = `<p class="muted" style="font-size:12px;margin:2px 0 8px"><b style="color:#1d4ed8">━</b> медиана по ночам · <b style="color:#93c5fd">━</b> обычная ночь · <b style="color:#dc2626">━</b> ночь с показаниями ниже 3,9 · <b style="color:#f59e0b">━</b> ночь с показаниями выше 10 · зелёная зона 3,9–10</p>`;
+    /* описание */
+    const lows = rows.filter(r => r.low), highs = rows.filter(r => r.hi), mean = avg(rows.map(r => r.mean)), dl = avg(rows.map(r => r.delta));
+    const stable = rows.filter(r => !r.low && !r.hi).length;
+    const trend = Math.abs(dl) < 0.7 ? 'к утру сахар в среднем держится на одном уровне' : dl > 0 ? `к утру сахар в среднем растёт (${sgn(dl)} ммоль/л от начала к концу ночи)` : `к утру сахар в среднем снижается (${sgn(dl)} ммоль/л от начала к концу ночи)`;
+    const fs = rows.map(r => r.fast).filter(Number.isFinite), fin = fs.filter(v => v >= 3.9 && v <= 10).length;
+    let t1 = `Разобрано ночей: ${rows.length} (показания с 00:00 до 06:00). Средняя ночная глюкоза — ${f1(mean)} ммоль/л; ${trend}. ` +
+      (stable === rows.length ? 'Во все ночи сахар оставался в диапазоне 3,9–10.' : `В диапазоне 3,9–10 весь период ночи прошли ${stable} из ${rows.length} ночей.`);
+    if (fs.length >= 3) t1 += ` Перед первым приёмом пищи (или в 07:00, если приёмов нет) сахар составлял в среднем ${f1(avg(fs))} (от ${f1(Math.min(...fs))} до ${f1(Math.max(...fs))}); в диапазоне — в ${fin} из ${fs.length} дней.`;
+    const an = [];
+    lows.forEach(r => an.push(`${dmy(r.d)} — снижение до ${f1(r.min)} около ${hm(r.minT)}`));
+    highs.forEach(r => an.push(`${dmy(r.d)} — подъём до ${f1(r.max)}`));
+    rows.filter(r => !r.low && !r.hi && Math.abs(r.delta) >= 3).forEach(r => an.push(`${dmy(r.d)} — сахар к утру изменился на ${sgn(r.delta)}`));
+    const t2 = an.length ? `Ночи, на которые стоит обратить внимание: ${an.join('; ')}.` : 'Заметных отклонений (ниже 3,9, выше 10 или резкого дрейфа к утру) не было.';
+    return `<div style="margin:6px 0">${svg}</div>` + leg + PT(t1) + PT(t2) + NOTE('Описание составлено приложением по данным сенсора и не является оценкой дозы базального инсулина — это решение врача.');
   }
 
   /* ---------- 3. профиль по часам суток (AGP) ---------- */
@@ -95,7 +120,9 @@
     const worst = P.map((p, h) => ({ h, v: p.p50 })).sort((a, b) => b.v - a.v)[0], best = P.map((p, h) => ({ h, v: p.p50 })).sort((a, b) => a.v - b.v)[0];
     const lowH = P.map((p, h) => ({ h, v: p.p10 })).filter(x => x.v < 3.9).map(x => pad(x.h) + ':00');
     return `<div style="margin:6px 0">${svg}</div>` + NOTE(`Линия — медиана, тёмная полоса — 25–75% показаний, светлая — 10–90%, зелёная зона — 3,9–10. За ${dd} дн. данных.`) +
-      KV([['Самый высокий час (медиана)', `${pad(worst.h)}:00 — ${f1(worst.v)} ммоль/л`], ['Самый низкий час (медиана)', `${pad(best.h)}:00 — ${f1(best.v)} ммоль/л`], lowH.length ? ['Часы, где 10% показаний ниже 3,9', lowH.join(', ')] : null]);
+      PT(`В среднем за ${dd} дн. самый высокий сахар приходится на ${pad(worst.h)}:00 (медиана ${f1(worst.v)} ммоль/л), самый низкий — на ${pad(best.h)}:00 (${f1(best.v)}). ` +
+        (lowH.length ? `В часы ${lowH.join(', ')} не менее 10% показаний были ниже 3,9 — это повторяющееся время риска. ` : 'Ни в один час суток 10% показаний не опускались ниже 3,9. ') +
+        (P.filter(p => p.p90 > 13.9).length ? `Выше 13,9 в 10% случаев сахар бывает в часы: ${P.map((p, h) => p.p90 > 13.9 ? pad(h) + ':00' : null).filter(Boolean).join(', ')}.` : 'Сахар выше 13,9 был редким во все часы.'));
   }
 
   /* ---------- 4. нагрузка и сахар ---------- */
@@ -119,6 +146,8 @@
     const days = []; for (let t = from; t < to; t += 864e5) days.push(dk(t + 3600e3));
     const A = days.filter(d => actDays.has(d)).map(nightMin).filter(v => v != null), B = days.filter(d => !actDays.has(d)).map(nightMin).filter(v => v != null);
     if (A.length >= 2 && B.length >= 2) h += KV([['Ночной минимум после дней с нагрузкой', `${f1(avg(A))} ммоль/л в среднем (${A.length} дн.)`], ['Ночной минимум после дней без нагрузки', `${f1(avg(B))} ммоль/л в среднем (${B.length} дн.)`]]);
+    const low6 = acts.filter(a => a.time && +a.minutes > 0).filter(a => { const e = ts(a.date, mins(a.time)) + (+a.minutes) * 60e3, v = inR(raw, e, e + 6 * 3600e3); return v.length && Math.min(...v.map(x => x.g)) < 3.9 }).length, nodata = acts.filter(a => a.time && +a.minutes > 0).filter(a => !inR(raw, ts(a.date, mins(a.time)), ts(a.date, mins(a.time)) + (+a.minutes) * 60e3).length).length;
+    h += PT(`Записей о нагрузке за период: ${acts.length}. ` + (low6 ? `После ${low6} из них в первые 6 часов сахар опускался ниже 3,9. ` : 'После нагрузок в первые 6 часов сахар не опускался ниже 3,9. ') + (nodata ? `Нагрузок без данных сенсора во время занятия: ${nodata} — как менялся сахар в эти моменты, неизвестно. ` : '') + (A.length >= 2 && B.length >= 2 ? `Ночной минимум после дней с нагрузкой в среднем ${f1(avg(A))}, после дней без нагрузки — ${f1(avg(B))}.` : ''));
     return h + NOTE('«Во время» — минимум и максимум показаний сенсора за время нагрузки, «после» — самое низкое значение. Если данных сенсора во время нагрузки нет, возможно, телефон был вне зоны Bluetooth сенсора.');
   }
 
