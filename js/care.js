@@ -130,7 +130,7 @@ ${last.length ? `<div class="siteLast"><b>Последние уколы</b>${las
   function backupHtml() {
     const t = lastBackup(), days = t ? Math.floor((Date.now() - t) / 864e5) : null;
     return `<h3>Резервная копия</h3>
-<p class="muted">${hasFamily() ? 'Записи хранятся и на телефоне, и в общем дневнике семьи. Копия — дополнительная страховка.' : 'Без сервера записи хранятся только на этом телефоне. Если телефон потеряется или сломается, они пропадут. Раз в неделю сохраняйте копию — себе в Telegram, WhatsApp «Избранное», Google Диск или на почту.'}</p>
+<p class="muted">${hasFamily() ? 'Записи хранятся и на телефоне, и в общем дневнике семьи. Копия — дополнительная страховка.' : 'Без сервера записи хранятся только на этом телефоне. Если телефон потеряется или сломается, они пропадут. Раз в сутки сохраняйте копию — себе в Telegram, WhatsApp «Избранное», Google Диск или на почту.'}</p>
 <div class="siteSug backupInfo">${t ? `Последняя копия: <b>${days === 0 ? 'сегодня' : days + ' дн. назад'}</b>` : '<b>Копий ещё не было.</b>'}</div>
 <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn" onclick="DMCare.backup()">Сохранить копию</button><button class="btn secondary" onclick="document.getElementById('careRestore').click()">Восстановить из файла</button></div>
 <input type="file" id="careRestore" accept=".json,application/json" hidden onchange="importData(event)">
@@ -138,13 +138,12 @@ ${last.length ? `<div class="siteLast"><b>Последние уколы</b>${las
   }
   function banner() {
     const id = 'bkBanner', old = $(id); if (old) old.remove();
-    if (hasFamily()) return;
     const t = lastBackup(); let snooze = 0; try { snooze = +localStorage.getItem('dm-backup-snooze') || 0 } catch (e) {}
     const hasData = Object.keys(db.menus || {}).length > 2;
-    if (!hasData || Date.now() - t < 7 * 864e5 || Date.now() < snooze) return;
+    if (!hasData || Date.now() - t < 20 * 3600e3 || Date.now() < snooze) return;
     const host = document.querySelector('#dashboard .grid'); if (!host) return;
     const d = document.createElement('div'); d.id = id; d.className = 'card s12 bkBanner';
-    d.innerHTML = `<div><b>💾 Пора сохранить резервную копию</b><div class="muted">${t ? 'Последняя — ' + Math.floor((Date.now() - t) / 864e5) + ' дн. назад.' : 'Записи хранятся только на этом телефоне.'}</div></div><div class="row" style="gap:6px"><button class="btn small" onclick="DMCare.backup()">Сохранить</button><button class="btn secondary small" onclick="DMCare.snooze()">Позже</button></div>`;
+    d.innerHTML = `<div><b>💾 Пора сохранить резервную копию</b><div class="muted">${t ? 'Последняя — ' + (Date.now() - t < 864e5 ? Math.floor((Date.now() - t) / 3600e3) + ' ч' : Math.floor((Date.now() - t) / 864e5) + ' дн.') + ' назад. Нажмите «Сохранить» и выберите Google Диск.' : 'Записи хранятся только на этом телефоне.'}</div></div><div class="row" style="gap:6px"><button class="btn small" onclick="DMCare.backup()">Сохранить</button><button class="btn secondary small" onclick="DMCare.snooze()">Позже</button></div>`;
     host.prepend(d);
   }
 
@@ -173,6 +172,7 @@ ${field('cls', 'Класс', '4 «Б»', 'school')}${field('teacher', 'Клас�
 <p class="muted" style="font-size:13px;margin-top:10px">Учителю можно дать и доступ к сахару в реальном времени — приглашение с ролью «Только просмотр» в «Семье» (нужен сервер семьи).</p></div>
 <div class="card s12" id="careSites">${sitesHtml()}</div>
 <div class="card s12" id="careBackup">${backupHtml()}</div>`;
+    try { window.DMAutoBackup && DMAutoBackup.paint() } catch (e) {}
   }
   function render() { paint() }
   function addSosChip() {
@@ -198,7 +198,7 @@ ${field('cls', 'Класс', '4 «Б»', 'school')}${field('teacher', 'Клас�
     resetHypo() { if (confirm('Вернуть стандартный текст плана при низком сахаре?')) { C().hypo = HYPO_DEFAULT; saveCare(); paint() } },
     site, kind(k) { pickKind = k; const s = $('careSites'); if (s) s.innerHTML = sitesHtml() },
     undoSite() { if (confirm('Удалить последнюю отметку укола?')) { C().sites.pop(); saveCare(); paint() } },
-    snooze() { try { localStorage.setItem('dm-backup-snooze', String(Date.now() + 2 * 864e5)) } catch (e) {} banner() },
+    snooze() { try { localStorage.setItem('dm-backup-snooze', String(Date.now() + 6 * 3600e3)) } catch (e) {} banner() },
     suggest, zname
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(init, 400)); else setTimeout(init, 400);
