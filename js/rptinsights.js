@@ -73,7 +73,8 @@
       const refT = bt || ts(d, 7 * 60), before = byDay[d].filter(x => x.t <= refT && refT - x.t <= 40 * 60e3).pop();
       if (before) fast = before.g;
       const lo = n.reduce((b, x) => x.g < b.g ? x : b, n[0]);
-      rows.push({ d, pts: n, min: lo.g, minT: lo.t, mean: avg(g), max: Math.max(...g), delta: last - first, fast, low: lo.g < 3.9, hi: Math.max(...g) > 10 });
+      const hp = n.reduce((b, x) => x.g > b.g ? x : b, n[0]);
+      rows.push({ d, pts: n, min: lo.g, minT: lo.t, maxT: hp.t, mean: avg(g), max: Math.max(...g), delta: last - first, fast, low: lo.g < 3.9, hi: Math.max(...g) > 10 });
     });
     return rows;
   }
@@ -81,18 +82,6 @@
     const { raw } = prep(G, rg); if (raw.length < 50) return '';
     const rows = nightRows(raw);
     if (rows.length < 2) return NOTE('Для разбора ночей нужны данные сенсора минимум за две ночи.');
-    /* график: каждая ночь линией, медиана по 15 минутам */
-    const W = 640, H = 240, pl = 30, pr = 8, pt = 10, pb = 24, ymin = 2, ymax = Math.max(12, Math.ceil(Math.max(...rows.map(r => r.max)) + 1));
-    const X = m => pl + m / 360 * (W - pl - pr), Y = g => pt + (1 - (g - ymin) / (ymax - ymin)) * (H - pt - pb), mOf = t => { const d = new Date(t); return d.getHours() * 60 + d.getMinutes() };
-    let g = ''; for (let v = 4; v <= ymax; v += 2) g += `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e2e8f0"/><text x="${pl - 4}" y="${Y(v) + 4}" font-size="11" text-anchor="end" fill="#64748b">${v}</text>`;
-    for (let h = 0; h <= 6; h++) g += `<line x1="${X(h * 60)}" x2="${X(h * 60)}" y1="${pt}" y2="${H - pb}" stroke="#eef2f7"/><text x="${X(h * 60)}" y="${H - 8}" font-size="11" text-anchor="${h === 0 ? 'start' : h === 6 ? 'end' : 'middle'}" fill="#64748b">${pad(h)}:00</text>`;
-    const path = r => 'M' + r.pts.map(x => X(mOf(x.t)).toFixed(1) + ',' + Y(Math.max(ymin, x.g)).toFixed(1)).join('L');
-    let lines = rows.filter(r => !r.low && !r.hi).map(r => `<path d="${path(r)}" fill="none" stroke="#93c5fd" stroke-width="1.2" opacity=".8"/>`).join('') +
-      rows.filter(r => !r.low && r.hi).map(r => `<path d="${path(r)}" fill="none" stroke="#f59e0b" stroke-width="1.6"/>`).join('') +
-      rows.filter(r => r.low).map(r => `<path d="${path(r)}" fill="none" stroke="#dc2626" stroke-width="1.8"/><circle cx="${X(mOf(r.minT)).toFixed(1)}" cy="${Y(r.min).toFixed(1)}" r="3.5" fill="#dc2626"/><text x="${Math.min(W - 30, X(mOf(r.minT)) + 5).toFixed(1)}" y="${(Y(r.min) + 14).toFixed(1)}" font-size="10" fill="#991b1b">${dmy(r.d).slice(0, 5)}</text>`).join('');
-    const med = []; for (let m = 0; m < 360; m += 15) { const v = rows.flatMap(r => r.pts.filter(x => mOf(x.t) >= m && mOf(x.t) < m + 15).map(x => x.g)); if (v.length >= 3) med.push(X(m + 7.5).toFixed(1) + ',' + Y(quant(v, .5)).toFixed(1)) }
-    const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;max-width:720px"><rect x="${pl}" y="${Y(10)}" width="${W - pl - pr}" height="${Y(3.9) - Y(10)}" fill="#dcfce7" opacity=".7"/>${g}${lines}${med.length > 1 ? `<path d="M${med.join('L')}" fill="none" stroke="#1d4ed8" stroke-width="3"/>` : ''}<line x1="${pl}" x2="${W - pr}" y1="${Y(3.9)}" y2="${Y(3.9)}" stroke="#ef4444" stroke-dasharray="4 4"/></svg>`;
-    const leg = `<p class="muted" style="font-size:12px;margin:2px 0 8px"><b style="color:#1d4ed8">━</b> медиана по ночам · <b style="color:#93c5fd">━</b> обычная ночь · <b style="color:#dc2626">━</b> ночь с показаниями ниже 3,9 · <b style="color:#f59e0b">━</b> ночь с показаниями выше 10 · зелёная зона 3,9–10</p>`;
     /* описание */
     const lows = rows.filter(r => r.low), highs = rows.filter(r => r.hi), mean = avg(rows.map(r => r.mean)), dl = avg(rows.map(r => r.delta));
     const stable = rows.filter(r => !r.low && !r.hi).length;
@@ -101,12 +90,20 @@
     let t1 = `Разобрано ночей: ${rows.length} (показания с 00:00 до 06:00). Средняя ночная глюкоза — ${f1(mean)} ммоль/л; ${trend}. ` +
       (stable === rows.length ? 'Во все ночи сахар оставался в диапазоне 3,9–10.' : `В диапазоне 3,9–10 весь период ночи прошли ${stable} из ${rows.length} ночей.`);
     if (fs.length >= 3) t1 += ` Перед первым приёмом пищи (или в 07:00, если приёмов нет) сахар составлял в среднем ${f1(avg(fs))} (от ${f1(Math.min(...fs))} до ${f1(Math.max(...fs))}); в диапазоне — в ${fin} из ${fs.length} дней.`;
+    const N = rows.length, pc = v => Math.round(v / N * 100) + '%', hrs = (arr, f) => { if (arr.length < 3) return ''; const b = [0, 0, 0]; arr.forEach(r => b[Math.min(2, Math.floor(new Date(f(r)).getHours() / 2))]++); const L = ['00:00–02:00', '02:00–04:00', '04:00–06:00'], k = b.indexOf(Math.max(...b)); return b[k] >= Math.ceil(arr.length / 2) ? `; чаще всего в промежутке ${L[k]} (${b[k]} из ${arr.length})` : '; в разное время ночи' };
     const an = [];
-    lows.forEach(r => an.push(`${dmy(r.d)} — снижение до ${f1(r.min)} около ${hm(r.minT)}`));
-    highs.forEach(r => an.push(`${dmy(r.d)} — подъём до ${f1(r.max)}`));
-    rows.filter(r => !r.low && !r.hi && Math.abs(r.delta) >= 3).forEach(r => an.push(`${dmy(r.d)} — сахар к утру изменился на ${sgn(r.delta)}`));
-    const t2 = an.length ? `Ночи, на которые стоит обратить внимание: ${an.join('; ')}.` : 'Заметных отклонений (ниже 3,9, выше 10 или резкого дрейфа к утру) не было.';
-    return `<div style="margin:6px 0">${svg}</div>` + leg + PT(t1) + PT(t2) + NOTE('Описание составлено приложением по данным сенсора и не является оценкой дозы базального инсулина — это решение врача.');
+    if (lows.length) {
+      const vlow = lows.filter(r => r.min < 3.0).length;
+      an.push(`Снижение ниже 3,9 было в ${lows.length} из ${N} ночей (${pc(lows.length)}), самое низкое значение — ${f1(Math.min(...lows.map(r => r.min)))}${vlow ? `, ниже 3,0 — в ${vlow}` : ''}${hrs(lows, r => r.minT)}`);
+    }
+    if (highs.length) {
+      const h139 = highs.filter(r => r.max > 13.9).length;
+      an.push(`Подъём выше 10 был в ${highs.length} из ${N} ночей (${pc(highs.length)}), максимум — ${f1(Math.max(...highs.map(r => r.max)))}${h139 ? `, выше 13,9 — в ${h139}` : ''}${hrs(highs, r => r.maxT)}`);
+    }
+    const up = rows.filter(r => r.delta >= 3).length, dn = rows.filter(r => r.delta <= -3).length;
+    if (up || dn) an.push(`Заметный дрейф к утру (на 3 и более): ${[up ? 'вверх — в ' + up + ' ночах' : '', dn ? 'вниз — в ' + dn + ' ночах' : ''].filter(Boolean).join(', ')}`);
+    const t2 = an.length ? an.join('. ') + '.' : 'Заметных отклонений (ниже 3,9, выше 10 или резкого дрейфа к утру) не было.';
+    return PT(t1) + PT(t2) + NOTE('Описание составлено приложением по данным сенсора и не является оценкой дозы базального инсулина — это решение врача. Время — час, когда в эту ночь был самый низкий (или самый высокий) сахар.');
   }
 
 
