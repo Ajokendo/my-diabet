@@ -99,6 +99,10 @@
   }
   window.DMFoodImpact = { analyze, html, paint, reportHtml, dashCard };
   const wrap = () => { const o = window.renderScenarioRecommendations; if (typeof o === 'function' && !o._fi) { window.renderScenarioRecommendations = function () { const r = o.apply(this, arguments); try { paint() } catch (e) {} return r }; window.renderScenarioRecommendations._fi = true } };
-  const startAll = () => { wrap(); setTimeout(() => { try { dashCard() } catch (e) {} }, 6000); setInterval(() => { try { dashCard() } catch (e) {} }, 10 * 60e3); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') try { dashCard() } catch (e) {} }) };
+  /* живое обновление: при каждой записи в дневнике (save) и каждые 2 минуты (приходит новый сахар с сенсора) */
+  let tm;
+  const refreshSoon = () => { clearTimeout(tm); tm = setTimeout(() => { try { const pf = document.getElementById('myprofile'); if (pf && pf.offsetParent !== null) paint(); dashCard() } catch (e) {} }, 1200) };
+  const hookSave = () => { const o = window.save; if (typeof o === 'function' && !o._fi) { window.save = function () { const r = o.apply(this, arguments); refreshSoon(); return r }; window.save._fi = true } };
+  const startAll = () => { wrap(); hookSave(); setInterval(refreshSoon, 2 * 60e3); setTimeout(() => { try { dashCard() } catch (e) {} }, 6000); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') try { dashCard() } catch (e) {} }) };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(startAll, 300)); else setTimeout(startAll, 300);
 })();
