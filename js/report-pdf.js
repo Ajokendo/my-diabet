@@ -30,13 +30,24 @@ async function build(){
     return new File([pdf.output('blob')],fileName(),{type:'application/pdf'});
   }finally{box.remove();body.style.zoom=zoom}
 }
+function save(f){const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}
+/* v64.131: PDF строится долго, и браузер «забывает» о нажатии кнопки — прямое меню «Поделиться» не открывается.
+   Поэтому после сборки показываем окно с новой кнопкой: нажатие на неё открывает «Поделиться» (WhatsApp и др.) без сохранения в «Загрузки». */
+function ready(f){
+  const old=document.getElementById('rptPdfReady');if(old)old.remove();
+  const mb=(f.size/1048576).toFixed(1).replace('.',','),can=!!(navigator.canShare&&navigator.canShare({files:[f]}));
+  const w=document.createElement('div');w.id='rptPdfReady';w.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px';
+  w.innerHTML=`<div style="background:#fff;border-radius:18px;padding:20px;max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3)"><h3 style="margin:0 0 6px">PDF готов</h3><div class="muted" style="margin-bottom:14px">${mb} МБ · ${f.name}</div>${can?'<button class="btn" id="rptPdfShare" style="width:100%;margin-bottom:8px">Отправить (WhatsApp и др.)</button>':''}<button class="btn secondary" id="rptPdfSave" style="width:100%;margin-bottom:8px">Сохранить в «Загрузки»</button><button class="btn secondary" id="rptPdfClose" style="width:100%">Закрыть</button><p class="muted" style="font-size:12px;margin:10px 0 0">${can?'«Отправить» открывает выбор приложения прямо отсюда — файл не нужно искать и открывать.':'Здесь нельзя отправить файл напрямую. Сохраните PDF и приложите его в WhatsApp: скрепка → Документ.'} Если при открытии сохранённого файла показывается реклама — это стороннее приложение для PDF; откройте файл через «Файлы» или Google Диск.</p></div>`;
+  document.body.appendChild(w);
+  const close=()=>w.remove();
+  w.querySelector('#rptPdfClose').onclick=close;
+  w.querySelector('#rptPdfSave').onclick=()=>{save(f);close();alert('PDF сохранён в «Загрузки».')};
+  const sh=w.querySelector('#rptPdfShare');if(sh)sh.onclick=async()=>{try{await navigator.share({files:[f],title:'Отчёт врачу',text:'Отчёт из приложения «Мой диабет»'});close()}catch(e){if(!e||e.name!=='AbortError'){save(f);close();alert('Не удалось открыть «Поделиться». PDF сохранён в «Загрузки».')}}};
+  w.addEventListener('click',e=>{if(e.target===w)close()});
+}
 async function share(btn){
   const t=btn&&btn.innerHTML;if(btn){btn.disabled=true;btn.textContent='Готовлю PDF…'}
-  try{const f=await build();
-    if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Отчёт врачу',text:'Отчёт из приложения «Мой диабет»'});return}catch(e){if(e&&e.name==='AbortError')return}}
-    const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
-    alert('PDF сохранён в «Загрузки». Отправьте его врачу из WhatsApp: скрепка → Документ → выберите файл.');
-  }catch(e){alert('Не получилось сделать PDF: '+(e.message||e))}
+  try{const f=await build();ready(f)}catch(e){alert('Не получилось сделать PDF: '+(e.message||e))}
   finally{if(btn){btn.disabled=false;btn.innerHTML=t}}
 }
 window.DMReportPdf={share,build};
