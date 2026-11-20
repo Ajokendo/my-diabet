@@ -8,7 +8,7 @@
   const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   const peakOf = r => Math.max(...[r.a1, r.a2, r.a3].filter(Number.isFinite));
   const dmy = d => d.split('-').reverse().slice(0, 2).join('.');
-  const MIN_MEALS = 6, MIN_PROD = 3, HIGH = 10, ROOKIE_DAYS = 2, LOW_B = 6, HIGH_B = 8;
+  const MIN_MEALS = 6, MIN_PROD = 3, HIGH = 10, ROOKIE_DAYS = 2, LOW_B = 6, HIGH_B = 8, HALF = 60, SPREAD = 2.0;
 
   function analyze(days, end) {
     const recs = findScenarioRecords(days, end).filter(r => [r.a1, r.a2, r.a3].some(Number.isFinite)).map(r => ({ ...r, peak: peakOf(r) })).map(r => ({ ...r, rise: r.peak - r.before }));
@@ -21,12 +21,17 @@
     Object.entries(db.menus || {}).forEach(([d, menu]) => Object.values(menu || {}).forEach(arr => Array.isArray(arr) && arr.forEach(it => { const f = db.foods.find(x => x.id === it.foodId); if (f) (seen[f.name] = seen[f.name] || new Set()).add(d) })));
     out.rookies = Object.entries(by).filter(([n]) => seen[n] && seen[n].size <= ROOKIE_DAYS).map(([name, rs]) => ({ name, meals: rs.slice().sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time)) })).sort((a, b) => (b.meals[0].date + b.meals[0].time).localeCompare(a.meals[0].date + a.meals[0].time));
     if (recs.length < MIN_MEALS) return out;
+    const nowT = Date.now(), wOf = r => Math.pow(0.5, Math.max(0, nowT - new Date(r.date + 'T12:00:00').getTime()) / 864e5 / HALF);
+    const wavg = (rs, f) => { const w = rs.map(wOf), sw = w.reduce((x, y) => x + y, 0) || 1; return rs.reduce((x, r, i) => x + f(r) * w[i], 0) / sw };
+    const sd = a => { if (a.length < 2) return 0; const m = avg(a); return Math.sqrt(a.reduce((x, y) => x + (y - m) ** 2, 0) / (a.length - 1)) };
     out.products = Object.entries(by).filter(([, rs]) => rs.length >= MIN_PROD).map(([name, rs]) => {
-      const rise = avg(rs.map(r => r.rise)), hi = rs.filter(r => r.peak > HIGH).length, a2 = avg(rs.map(r => r.a2).filter(Number.isFinite));
-      const cls = (hi / rs.length >= 0.5 || (rise >= out.rise + 0.8 && hi / rs.length >= 0.34)) ? 'hi' : (hi === 0 && rise <= out.rise) ? 'ok' : 'mid';
+      const rise = wavg(rs, r => r.rise), hi = rs.filter(r => r.peak > HIGH).length, hiW = wavg(rs, r => r.peak > HIGH ? 1 : 0), a2 = avg(rs.map(r => r.a2).filter(Number.isFinite));
+      const spread = sd(rs.map(r => r.rise)), n = rs.length;
+      const conf = n < 5 ? 'low' : spread > SPREAD ? 'noisy' : n >= 10 ? 'good' : 'mid';
+      const cls = (hiW >= 0.5 || (rise >= out.rise + 0.8 && hiW >= 0.34)) ? 'hi' : (hi === 0 && rise <= out.rise) ? 'ok' : 'mid';
       const bin = f => { const x = rs.filter(f); return x.length ? { n: x.length, rise: avg(x.map(r => r.rise)) } : null };
       const bins = { low: bin(r => r.before < LOW_B), mid: bin(r => r.before >= LOW_B && r.before <= HIGH_B), high: bin(r => r.before > HIGH_B) };
-      return { name, n: rs.length, rise, hi, peak: avg(rs.map(r => r.peak)), a2, cls, bins };
+      return { name, n, rise, hi, peak: avg(rs.map(r => r.peak)), a2, cls, bins, conf, spread };
     }).sort((a, b) => b.rise - a.rise);
     const withDose = recs.filter(r => r.dose > 0 && r.carbs >= 10), per10 = r => r.dose / r.carbs * 10;
     const gh = withDose.filter(r => r.peak > HIGH), go = withDose.filter(r => r.peak <= HIGH);
@@ -35,6 +40,7 @@
     return out;
   }
   const binsText = p => [['ниже ' + LOW_B, p.bins.low], [LOW_B + '–' + HIGH_B, p.bins.mid], ['выше ' + HIGH_B, p.bins.high]].filter(x => x[1]).map(([l, b]) => `${l}: +${f1(b.rise)} (${b.n})`).join(' · ') || '—';
+  const confTag = p => ({ low: '<span class="muted">мало данных</span>', noisy: '<span class="fiHi">большой разброс</span>', mid: 'ориентир', good: '<span class="fiOk">надёжно</span>' })[p.conf] + `<div class="fiNote" style="margin:0">±${f1(p.spread)}</div>`;
   const scroll = (t, opt) => opt && opt.report ? t : `<div class="fiScroll">${t}</div>`;
   function rookieVerdict(r, base) {
     const d = r.rise - base;
@@ -56,9 +62,10 @@
     const tag = c => c === 'hi' ? '<span class="fiHi">чаще высокий</span>' : c === 'ok' ? '<span class="fiOk">спокойный</span>' : 'обычный';
     let h = `<div class="fiBox"><p>Разобрано приёмов пищи: <b>${a.n}</b> за ${a.days} дн. Средний подъём сахара после еды <b>+${f1(a.rise)}</b> ммоль/л, выше ${HIGH} уходил в <b>${a.high}</b> из ${a.n}. Время приёма указано в ${a.exact} из ${a.n}, в остальных оно типовое или по записи укола.</p>`;
     if (a.products && a.products.length) {
-      h += `<div class="rptSub" style="margin-top:8px"><b>По продуктам</b> (в ${MIN_PROD}+ приёмах)</div>${opt.report ? '' : '<div class="fiNote">Таблицу можно листать вбок и вверх: заголовок и первый столбец закреплены.</div>'}<table class="fiTbl rptTbl"><thead><tr><th>Продукт</th><th class="n">Приёмов</th><th class="n">Подъём</th><th class="n">Через 2 ч</th><th class="n">Выше ${HIGH}</th><th>Оценка</th><th>По сахару до еды (приёмов)</th></tr></thead><tbody>` +
-        a.products.map(p => `<tr><td>${esc(p.name)}</td><td class="n">${p.n}</td><td class="n">+${f1(p.rise)}</td><td class="n">${Number.isFinite(p.a2) && p.a2 ? f1(p.a2) : '—'}</td><td class="n">${p.hi} из ${p.n}</td><td>${tag(p.cls)}</td><td>${binsText(p)}</td></tr>`).join('') + '</tbody></table>';
+      h += `<div class="rptSub" style="margin-top:8px"><b>По продуктам</b> (в ${MIN_PROD}+ приёмах)</div>${opt.report ? '' : '<div class="fiNote">Таблицу можно листать вбок и вверх: заголовок и первый столбец закреплены.</div>'}<table class="fiTbl rptTbl"><thead><tr><th>Продукт</th><th class="n">Приёмов</th><th class="n">Подъём</th><th class="n">Через 2 ч</th><th class="n">Выше ${HIGH}</th><th>Оценка</th><th>Надёжность</th><th>По сахару до еды (приёмов)</th></tr></thead><tbody>` +
+        a.products.map(p => `<tr><td>${esc(p.name)}</td><td class="n">${p.n}</td><td class="n">+${f1(p.rise)}</td><td class="n">${Number.isFinite(p.a2) && p.a2 ? f1(p.a2) : '—'}</td><td class="n">${p.hi} из ${p.n}</td><td>${tag(p.cls)}</td><td>${confTag(p)}</td><td>${binsText(p)}</td></tr>`).join('') + '</tbody></table>';
     } else h += `<p class="muted">Продуктов, которые встретились хотя бы в ${MIN_PROD} приёмах, пока нет.</p>`;
+    h += `<p class="fiNote">Надёжность: «мало данных» — 3–4 приёма; «ориентир» — 5–9; «надёжно» — 10 и больше при небольшом разбросе (до ±${f1(SPREAD)} ммоль/л). «±» — на сколько обычно отличается подъём от приёма к приёму. Свежие записи весят больше: вес записи падает вдвое за ${HALF} дней, потому что с ростом ребёнка чувствительность к инсулину меняется.</p>`;
     h += rookiesHtml(a);
     if (a.top && a.top.length) {
       h += `<div class="rptSub" style="margin-top:8px"><b>Самые высокие пики</b></div><table class="fiTbl rptTbl"><thead><tr><th>Когда</th><th>Еда</th><th class="n">У, г</th><th class="n">Доза</th><th class="n">До</th><th class="n">Пик</th><th class="n">2 ч</th></tr></thead><tbody>` +
