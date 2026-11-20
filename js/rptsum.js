@@ -99,15 +99,20 @@
 
   function miniChart(r, unit, dec) {
     if (r.length < 2) return '';
-    const W = 360, H = 110, pl = 16, pr = 16, pt = 22, pb = 24;
+    const W = 360, H = 124, pl = 22, pr = 22, pt = 22, pb = 38;
     const t = x => new Date(x.date + 'T12:00:00').getTime(), t0 = t(r[0]), t1 = t(r[r.length - 1]);
     const lo = Math.min(...r.map(x => x.v)), hi = Math.max(...r.map(x => x.v)), pad = (hi - lo) * 0.2 || 1;
     const X = x => pl + (t1 === t0 ? (W - pl - pr) / 2 : (t(x) - t0) / (t1 - t0) * (W - pl - pr));
     const Y = v => pt + (1 - (v - (lo - pad)) / ((hi + pad) - (lo - pad))) * (H - pt - pb);
     const line = r.map(x => X(x).toFixed(1) + ',' + Y(x.v).toFixed(1)).join(' ');
-    const pts = r.map(x => '<circle cx="' + X(x).toFixed(1) + '" cy="' + Y(x.v).toFixed(1) + '" r="3.5" fill="#0d9488"/>' +
-      '<text x="' + X(x).toFixed(1) + '" y="' + (Y(x.v) - 7).toFixed(1) + '" font-size="11" font-weight="700" text-anchor="middle" fill="#0f172a">' + f1(x.v, dec) + '</text>' +
-      '<text x="' + X(x).toFixed(1) + '" y="' + (H - 8) + '" font-size="9.5" text-anchor="middle" fill="#64748b">' + fs(x.date) + '.' + String(x.date).slice(2, 4) + '</text>').join('');
+    let lastX = -1e9, row = 0;
+    const pts = r.map(x => {
+      const cx = X(x), near = cx - lastX < 52; row = near ? 1 - row : 0; lastX = cx;
+      const anc = cx < 34 ? 'start' : cx > W - 34 ? 'end' : 'middle', lx = anc === 'start' ? cx - 8 : anc === 'end' ? cx + 8 : cx;
+      return '<circle cx="' + cx.toFixed(1) + '" cy="' + Y(x.v).toFixed(1) + '" r="3.5" fill="#0d9488"/>' +
+        '<text x="' + cx.toFixed(1) + '" y="' + (Y(x.v) - 7).toFixed(1) + '" font-size="11" font-weight="700" text-anchor="middle" fill="#0f172a">' + f1(x.v, dec) + '</text>' +
+        '<text x="' + lx.toFixed(1) + '" y="' + (H - 22 + row * 14) + '" font-size="9.5" text-anchor="' + anc + '" fill="#64748b">' + fs(x.date) + '.' + String(x.date).slice(2, 4) + '</text>';
+    }).join('');
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block"><polyline points="' + line + '" fill="none" stroke="#0d9488" stroke-width="2"/>' + pts + '</svg>';
   }
 
