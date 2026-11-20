@@ -787,3 +787,4 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 
 /* v64.123: описательный текст под графиками отчёта */
 .rptTxt{margin:6px 0 10px;font-size:13.5px;line-height:1.5}
+.rptDigest{margin:6px 0 8px;padding-left:18px}.rptDigest li{margin:5px 0;font-size:13.5px;line-height:1.5}

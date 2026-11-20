@@ -64,8 +64,7 @@
   /* ---------- 2. ночь и сахар натощак ---------- */
   const PT = t => `<p class="rptTxt">${t}</p>`;
   const sgn = v => (v >= 0 ? '+' : '−') + f1(Math.abs(v));
-  function night(G, rg) {
-    const { raw } = prep(G, rg); if (raw.length < 50) return '';
+  function nightRows(raw) {
     const byDay = {}; raw.forEach(x => { const d = dk(x.t); (byDay[d] = byDay[d] || []).push(x) });
     const rows = []; Object.keys(byDay).sort().forEach(d => {
       const n = byDay[d].filter(x => new Date(x.t).getHours() < 6); if (n.length < 20) return;
@@ -76,6 +75,11 @@
       const lo = n.reduce((b, x) => x.g < b.g ? x : b, n[0]);
       rows.push({ d, pts: n, min: lo.g, minT: lo.t, mean: avg(g), max: Math.max(...g), delta: last - first, fast, low: lo.g < 3.9, hi: Math.max(...g) > 10 });
     });
+    return rows;
+  }
+  function night(G, rg) {
+    const { raw } = prep(G, rg); if (raw.length < 50) return '';
+    const rows = nightRows(raw);
     if (rows.length < 2) return NOTE('Для разбора ночей нужны данные сенсора минимум за две ночи.');
     /* график: каждая ночь линией, медиана по 15 минутам */
     const W = 640, H = 240, pl = 30, pr = 8, pt = 10, pb = 24, ymin = 2, ymax = Math.max(12, Math.ceil(Math.max(...rows.map(r => r.max)) + 1));
@@ -103,6 +107,70 @@
     rows.filter(r => !r.low && !r.hi && Math.abs(r.delta) >= 3).forEach(r => an.push(`${dmy(r.d)} — сахар к утру изменился на ${sgn(r.delta)}`));
     const t2 = an.length ? `Ночи, на которые стоит обратить внимание: ${an.join('; ')}.` : 'Заметных отклонений (ниже 3,9, выше 10 или резкого дрейфа к утру) не было.';
     return `<div style="margin:6px 0">${svg}</div>` + leg + PT(t1) + PT(t2) + NOTE('Описание составлено приложением по данным сенсора и не является оценкой дозы базального инсулина — это решение врача.');
+  }
+
+
+  /* ---------- резюме «Главное за период» ---------- */
+  const strip = h => String(h).replace(/<[^>]+>/g, '');
+  function digest(G, rg) {
+    try {
+      const { raw, days } = prep(G, rg), it = [], talk = []; if (raw.length < 100) return '';
+      const add = (t, x) => it.push(`<li><b>${t}</b> — ${x}</li>`);
+      /* 1. в целом */
+      if (G && G.n) {
+        const cv = G.sd / G.mean * 100, pc = v => Math.round(v) + '%';
+        add('Сахар в целом', `средняя глюкоза ${f1(G.mean)} ммоль/л, в диапазоне 3,9–10 — ${pc(G.tir)} времени (цель — выше 70%), ниже 3,9 — ${pc(G.tbr)} (цель — ниже 4%), выше 10 — ${pc(G.tar)}. Вариабельность ${Math.round(cv)}% ${cv <= 36 ? '— в пределах цели (до 36%)' : '— выше цели (до 36%)'}.`);
+      }
+      /* 2. гипогликемии */
+      const ep = episodes(raw), ins = (db.medical?.actualInsulinLog || []).filter(x => x.date && x.time && x.type !== 'Базальный').map(x => ts(x.date, mins(x.time)));
+      if (ep.length) {
+        const low = ep.reduce((b, e) => e.min < b.min ? e : b, ep[0]), lng = ep.reduce((b, e) => e.dur > b.dur ? e : b, ep[0]), nt = ep.filter(e => new Date(e.first).getHours() < 6).length;
+        const wb = ep.filter(e => ins.some(t => t <= e.first && e.first - t <= 3 * 3600e3)).length;
+        add('Низкий сахар', `за ${days} дн. было ${ep.length} ${ep.length % 10 === 1 && ep.length % 100 !== 11 ? 'эпизод' : 'эпизодов'} ниже 3,9${nt ? ` (ночью — ${nt})` : ''}. Самый низкий — ${f1(low.min)} (${dmy(dk(low.first))} в ${hm(low.first)}), самый длинный — ${lng.dur} мин (${dmy(dk(lng.first))}). Перед ${wb} из ${ep.length} эпизодов в предыдущие 3 часа был записан болюс.`);
+        talk.push(ep.length >= 3 ? 'повторяющиеся эпизоды низкого сахара и их связь с болюсами' : 'эпизоды низкого сахара');
+      } else add('Низкий сахар', 'показаний ниже 3,9 за период не было.');
+      /* 3. ночь */
+      const nr = nightRows(raw);
+      if (nr.length >= 2) {
+        const nl = nr.filter(r => r.low).length, nh = nr.filter(r => r.hi).length, fs = nr.map(r => r.fast).filter(Number.isFinite);
+        add('Ночи', `${nr.length} ночей: средний сахар ${f1(avg(nr.map(r => r.mean)))}; ниже 3,9 — ${nl ? nl + ' ' + (nl === 1 ? 'ночь' : 'ночи') : 'ни одной ночи'}, выше 10 — ${nh ? nh : 'ни одной'}.${fs.length >= 3 ? ` Перед первым приёмом пищи в среднем ${f1(avg(fs))} (от ${f1(Math.min(...fs))} до ${f1(Math.max(...fs))}).` : ''}`);
+        if (nl) talk.push('ночное снижение сахара');
+      }
+      /* 4. часы суток */
+      const hours = Array.from({ length: 24 }, () => []); raw.forEach(x => hours[new Date(x.t).getHours()].push(x.g));
+      const med = hours.map((a, h) => ({ h, v: quant(a, .5), hi: quant(a, .9) })).filter(x => Number.isFinite(x.v));
+      if (med.length > 12 && new Set(raw.map(x => dk(x.t))).size >= 3) {
+        const w = med.reduce((b, x) => x.v > b.v ? x : b, med[0]), top = med.filter(x => x.hi > 13.9).map(x => pad(x.h) + ':00');
+        add('Время суток', `выше всего сахар в среднем около ${pad(w.h)}:00 (медиана ${f1(w.v)})${top.length ? `; случаи выше 13,9 чаще всего приходятся на ${top.slice(0, 4).join(', ')}` : ''}.`);
+      }
+      /* 5. еда */
+      let fi = null; try { fi = window.DMFoodImpact && DMFoodImpact.analyze(Math.max(1, days), rg.end) } catch (e) { }
+      if (fi && fi.n >= 6) {
+        const pr = (fi.products || []), hi = pr.filter(p => p.cls === 'hi' && p.conf !== 'low').slice(0, 3), calm = pr.filter(p => p.cls === 'ok' && p.n >= 4).slice(-3).reverse();
+        let t = `разобрано ${fi.n} приёмов пищи с сахаром до и после; в среднем сахар поднимается на ${f1(fi.rise)}.`;
+        if (hi.length) t += ` Заметнее всего поднимают сахар: ${hi.map(p => `${esc(p.name)} (+${f1(p.rise)}, ${p.n} приёмов)`).join(', ')}.`;
+        if (calm.length) t += ` Спокойнее всего: ${calm.map(p => `${esc(p.name)} (+${f1(p.rise)})`).join(', ')}.`;
+        const rk = (fi.rookies || []).slice(0, 3); if (rk.length) { const base = fi.rise; t += ` Новые продукты: ` + rk.map(r => { const m = r.meals[0], d = m.rise - base; return `${esc(r.name)} (${m.peak > 10 ? 'сахар ушёл выше 10' : d >= 1 ? 'поднял заметнее обычного' : d <= -0.5 ? 'вёл себя спокойно' : 'в пределах обычного'})` }).join(', ') + '.' }
+        t += ` Это наблюдения за ${days} дн.: чем меньше повторов продукта, тем осторожнее выводы.`;
+        add('Еда', t);
+        if (hi.length) talk.push('реакция сахара на ' + hi.map(p => esc(p.name).toLowerCase()).join(', ') + ' и подходит ли для этих приёмов текущий углеводный коэффициент');
+      }
+      /* 6. нагрузка */
+      const acts = (db.activity || []).filter(x => x.date >= rg.start && x.date <= rg.end && x.time && +x.minutes > 0);
+      if (acts.length) {
+        const lowA = acts.filter(a => { const e = ts(a.date, mins(a.time)) + (+a.minutes) * 60e3, v = inR(raw, e, e + 6 * 3600e3); return v.length && Math.min(...v.map(x => x.g)) < 3.9 }).length;
+        const nod = acts.filter(a => !inR(raw, ts(a.date, mins(a.time)), ts(a.date, mins(a.time)) + (+a.minutes) * 60e3).length).length;
+        add('Нагрузка', `записей о занятиях: ${acts.length}; после ${lowA ? lowA + ' из них' : 'них'} ${lowA ? 'в первые 6 часов сахар опускался ниже 3,9' : 'сахар в первые 6 часов не опускался ниже 3,9'}${nod ? `; во время ${nod === 1 ? 'одного занятия' : nod + ' занятий'} данных сенсора нет` : ''}.`);
+        if (lowA) talk.push('как менять подход в дни спорта');
+      }
+      /* 7. данные */
+      let gaps = 0; for (let i = 1; i < raw.length; i++) if (raw[i].t - raw[i - 1].t > 20 * 60e3) gaps++;
+      const cov = G && G.cover != null ? Math.round(G.cover) : null;
+      add('Надёжность данных', `${cov != null ? 'полнота данных сенсора ' + cov + '%, ' : ''}пропусков дольше 20 минут: ${gaps || 'нет'}${days < 14 ? '; период короче 14 дней — расчётный HbA1c и средние ориентировочные' : ''}.`);
+      let h = '<h3 class="rptH"><span>✦</span>Главное за период</h3><ul class="rptDigest">' + it.join('') + '</ul>';
+      if (talk.length) h += `<p class="rptTxt"><b>Что стоит обсудить с врачом:</b> ${talk.join('; ')}.</p>`;
+      return h + NOTE('Резюме составлено приложением автоматически по записям семьи и данным сенсора. Это наблюдения, а не диагноз и не рекомендация по дозам: решения принимает врач.') + '<div class="rptBreak"></div>';
+    } catch (e) { return '' }
   }
 
   /* ---------- 3. профиль по часам суток (AGP) ---------- */
@@ -170,5 +238,5 @@
     add('Сахар ночью и натощак', night); add('Профиль сахара по часам суток (AGP)', agp); add('Качество данных сенсора', quality);
     return out;
   }
-  window.DMRptIns = { sections, exercise, hypo, night, agp, quality, episodes };
+  window.DMRptIns = { digest, sections, exercise, hypo, night, agp, quality, episodes };
 })();
