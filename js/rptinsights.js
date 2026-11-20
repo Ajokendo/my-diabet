@@ -138,7 +138,7 @@
 
   function sections(G, rg) {
     const out = [], add = (title, fn) => { try { const h = fn(G, rg); if (h) out.push([title, h]) } catch (e) {} };
-    add('Эпизоды гипогликемии', hypo); add('Сахар ночью и натощак', night); add('Профиль сахара по часам суток (AGP)', agp); add('Качество данных сенсора', quality);
+    add('Сахар ночью и натощак', night); add('Профиль сахара по часам суток (AGP)', agp); add('Качество данных сенсора', quality);
     return out;
   }
   window.DMRptIns = { sections, exercise, hypo, night, agp, quality, episodes };

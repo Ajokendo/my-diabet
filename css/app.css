@@ -779,3 +779,8 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 .fiScroll .fiTbl th:first-child,.fiScroll .fiTbl td:first-child{position:sticky;left:0;z-index:1;background:#fff;min-width:104px;max-width:140px;white-space:normal;box-shadow:2px 0 0 #e2e8f0}
 .fiScroll .fiTbl th:first-child{z-index:3;background:#f1f5f9}
 .fiScroll .fiTbl td.wrapc{white-space:normal;min-width:170px;max-width:240px}
+
+/* v64.122: эпизоды гипогликемии во вкладке «Тенденции» */
+.trEps{margin-top:8px}.trEps summary{cursor:pointer;font-weight:700;font-size:13.5px}
+.trEp{display:grid;grid-template-columns:1fr 70px 50px;gap:8px;padding:5px 2px;border-bottom:1px solid var(--line);font-size:13.5px}
+.trEp b,.trEp span:last-child{text-align:right}.trEpH{font-size:12px;color:var(--muted);font-weight:600}

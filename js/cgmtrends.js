@@ -72,6 +72,31 @@
     return `<div class="trDays">${keys.map(k => `<label class="trDay"><input type="checkbox" ${sel.has(k) ? 'checked' : ''} onchange="DMTrends.toggleDay('${k}',this.checked)"><i style="background:${COLORS[all.indexOf(k) % COLORS.length]}"></i>${dm(k)}</label>`).join('')}</div><div class="trDayBtns"><button class="btn small secondary" onclick="DMTrends.days('all')">Выбрать все</button><button class="btn small secondary" onclick="DMTrends.days('none')">Снять все</button></div>`;
   }
 
+
+  /* v64.122: эпизоды гипогликемии (<3,9) — каждый эпизод отрезком: по горизонтали время суток и длительность, по вертикали самое низкое значение */
+  function hypoSvg(T, eps, W, H, dark) {
+    const pl = 26, pr = 6, pt = 8, pb = 22, ymin = Math.max(0, Math.floor(Math.min(...eps.map(e => e.min), 3.0) - 0.5)), ymax = 4.5;
+    const X = m => pl + m / 1440 * (W - pl - pr), Y = g => pt + (1 - (g - ymin) / (ymax - ymin)) * (H - pt - pb);
+    const grid = dark ? '#243341' : '#e2e8f0', lbl = dark ? '#94a3b8' : '#64748b', all = Object.keys(T.byDay).sort();
+    let s = `<rect x="${pl}" y="${Y(3.9)}" width="${W - pl - pr}" height="${Y(ymin) - Y(3.9)}" fill="${dark ? '#7f1d1d' : '#fee2e2'}" opacity="${dark ? .35 : .55}"/>`;
+    for (let g = Math.ceil(ymin); g <= 4; g++) s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(g)}" y2="${Y(g)}" stroke="${grid}"/><text x="${pl - 4}" y="${Y(g) + 4}" font-size="11" text-anchor="end" fill="${lbl}">${g}</text>`;
+    for (let h = 0; h <= 24; h += 3) { const x = X(h * 60); s += `<line x1="${x}" x2="${x}" y1="${pt}" y2="${H - pb}" stroke="${grid}"/>`; if (W < 600 && h % 6) continue; s += `<text x="${x}" y="${H - 6}" font-size="11" text-anchor="${h === 0 ? 'start' : h === 24 ? 'end' : 'middle'}" fill="${lbl}">${p2(h % 24)}:00</text>` }
+    s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(3.9)}" y2="${Y(3.9)}" stroke="#ef4444" stroke-dasharray="4 4"/>`;
+    if (ymin < 3) s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(3.0)}" y2="${Y(3.0)}" stroke="#991b1b" stroke-dasharray="2 4"/>`;
+    eps.forEach(e => { const d = new Date(e.first), m = d.getHours() * 60 + d.getMinutes(), x = X(m), w = Math.max(6, e.dur / 1440 * (W - pl - pr)), c = COLORS[all.indexOf(dkey(e.first)) % COLORS.length];
+      s += `<g><title>${dm(dkey(e.first))} ${p2(d.getHours())}:${p2(d.getMinutes())} · ${e.dur} мин · мин. ${f1(e.min)}</title><rect x="${x.toFixed(1)}" y="${(Y(e.min) - 4).toFixed(1)}" width="${w.toFixed(1)}" height="8" rx="4" fill="${c}" stroke="${dark ? '#0b1220' : '#fff'}" stroke-width="1"/></g>` });
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${s}</svg>`;
+  }
+  function hypoHtml(T, W, H, dark) {
+    const raw = Object.values(T.byDay).flat().sort((a, b) => a.t - b.t), eps = window.DMRptIns ? DMRptIns.episodes(raw) : [];
+    if (!eps.length) return `<h4 class="trH">Эпизоды гипогликемии</h4><div class="muted trNote">За период показаний ниже 3,9 не было.</div>`;
+    const long = eps.filter(e => e.dur >= 15).length, low = eps.filter(e => e.min < 3.0).length, night = eps.filter(e => new Date(e.first).getHours() < 6).length;
+    const list = eps.slice().sort((a, b) => b.first - a.first).map(e => { const d = new Date(e.first); return `<div class="trEp"><span>${dm(dkey(e.first))} ${p2(d.getHours())}:${p2(d.getMinutes())}${d.getHours() < 6 ? ' 🌙' : ''}</span><span>${e.dur} мин</span><b style="color:${e.min < 3 ? '#dc2626' : ''}">${f1(e.min)}</b></div>` }).join('');
+    return `<h4 class="trH">Эпизоды гипогликемии</h4><div class="muted trNote">Каждый эпизод — отрезок: слева направо время суток и длительность, высота — самое низкое значение. Цвет — день, как в «Днях поверх друг друга».</div>${hypoSvg(T, eps, W, Math.min(H, 200), dark)}
+<div class="trNote" style="margin-top:6px"><b>${eps.length}</b> эпизодов ниже 3,9 · от 15 минут: <b>${long}</b> · ниже 3,0: <b>${low || 'нет'}</b> · ночью (до 6:00): <b>${night}</b></div>
+<details class="trEps"><summary>Список эпизодов</summary><div class="trEp trEpH"><span>Когда</span><span>Длит.</span><b>Мин.</b></div>${list}</details>`;
+  }
+
   function summaryHtml(T) {
     const cvOk = T.cv <= 36, [lr, lc] = riskL(T.lbgi), [hr, hc] = riskH(T.hbgi);
     const S = (l, v, sub, c) => `<div class="trS"><span>${l}</span><b${c ? ` style="color:${c}"` : ''}>${v}</b><small>${sub}</small></div>`;
@@ -98,10 +123,11 @@
 <h4 class="trH">Время в диапазонах</h4>${tirHtml(T, dk)}
 <h4 class="trH">Профиль по времени суток (AGP)</h4><div class="muted trNote">Все дни периода сложены в одни сутки: видно, в какие часы сахар обычно выше или ниже.</div>${agpSvg(T, W, H, dk)}
 <h4 class="trH">Дни поверх друг друга</h4>${overlaySvg(T, sel, W, H, dk)}${overlayLegend(T, sel)}
+${hypoHtml(T, W, H, dk)}
 <div class="muted trNote" style="margin-top:10px">Нормы — международный консенсус по сенсорам (2019). Показатели справочные, решения — с врачом.</div>`;
   }
   window.DMTrends = {
-    compute, tirHtml, agpSvg, summaryHtml, load, render,
+    compute, tirHtml, agpSvg, hypoHtml, summaryHtml, load, render,
     period(d) { days = d; load() },
     toggleDay(k, on) { if (on) sel.add(k); else sel.delete(k); render() },
     days(m) { if (!T) return; sel = m === 'all' ? new Set(Object.keys(T.byDay)) : new Set(); render() }
