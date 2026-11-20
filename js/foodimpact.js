@@ -34,7 +34,8 @@
     out.top = recs.slice().sort((a, b) => b.peak - a.peak).filter(r => r.peak > HIGH).slice(0, 5);
     return out;
   }
-  const binsLine = p => { const t = [['ниже ' + LOW_B, p.bins.low], [LOW_B + '–' + HIGH_B, p.bins.mid], ['выше ' + HIGH_B, p.bins.high]].filter(x => x[1]).map(([l, b]) => `${l}: +${f1(b.rise)} (${b.n})`); return t.length > 1 ? `<div class="fiNote" style="margin:2px 0 0">по сахару до еды — ${t.join(' · ')}</div>` : '' };
+  const binsText = p => [['ниже ' + LOW_B, p.bins.low], [LOW_B + '–' + HIGH_B, p.bins.mid], ['выше ' + HIGH_B, p.bins.high]].filter(x => x[1]).map(([l, b]) => `${l}: +${f1(b.rise)} (${b.n})`).join(' · ') || '—';
+  const scroll = (t, opt) => opt && opt.report ? t : `<div class="fiScroll">${t}</div>`;
   function rookieVerdict(r, base) {
     const d = r.rise - base;
     return r.peak > HIGH ? '<span class="fiHi">сахар ушёл выше ' + HIGH + '</span>' : d >= 1 ? '<span class="fiHi">поднял сахар заметнее обычного</span>' : d <= -0.5 ? '<span class="fiOk">вёл себя спокойно</span>' : 'в пределах обычного';
@@ -55,16 +56,17 @@
     const tag = c => c === 'hi' ? '<span class="fiHi">чаще высокий</span>' : c === 'ok' ? '<span class="fiOk">спокойный</span>' : 'обычный';
     let h = `<div class="fiBox"><p>Разобрано приёмов пищи: <b>${a.n}</b> за ${a.days} дн. Средний подъём сахара после еды <b>+${f1(a.rise)}</b> ммоль/л, выше ${HIGH} уходил в <b>${a.high}</b> из ${a.n}. Время приёма указано в ${a.exact} из ${a.n}, в остальных оно типовое или по записи укола.</p>`;
     if (a.products && a.products.length) {
-      h += `<div class="rptSub" style="margin-top:8px"><b>По продуктам</b> (в ${MIN_PROD}+ приёмах)</div><table class="fiTbl rptTbl"><thead><tr><th>Продукт</th><th class="n">Приёмов</th><th class="n">Подъём</th><th class="n">Через 2 ч</th><th class="n">Выше ${HIGH}</th><th></th></tr></thead><tbody>` +
-        a.products.map(p => `<tr><td>${esc(p.name)}${binsLine(p)}</td><td class="n">${p.n}</td><td class="n">+${f1(p.rise)}</td><td class="n">${Number.isFinite(p.a2) && p.a2 ? f1(p.a2) : '—'}</td><td class="n">${p.hi} из ${p.n}</td><td>${tag(p.cls)}</td></tr>`).join('') + '</tbody></table>';
+      h += `<div class="rptSub" style="margin-top:8px"><b>По продуктам</b> (в ${MIN_PROD}+ приёмах)</div>${opt.report ? '' : '<div class="fiNote">Таблицу можно листать вбок и вверх: заголовок и первый столбец закреплены.</div>'}<table class="fiTbl rptTbl"><thead><tr><th>Продукт</th><th class="n">Приёмов</th><th class="n">Подъём</th><th class="n">Через 2 ч</th><th class="n">Выше ${HIGH}</th><th>Оценка</th><th>По сахару до еды (приёмов)</th></tr></thead><tbody>` +
+        a.products.map(p => `<tr><td>${esc(p.name)}</td><td class="n">${p.n}</td><td class="n">+${f1(p.rise)}</td><td class="n">${Number.isFinite(p.a2) && p.a2 ? f1(p.a2) : '—'}</td><td class="n">${p.hi} из ${p.n}</td><td>${tag(p.cls)}</td><td>${binsText(p)}</td></tr>`).join('') + '</tbody></table>';
     } else h += `<p class="muted">Продуктов, которые встретились хотя бы в ${MIN_PROD} приёмах, пока нет.</p>`;
     h += rookiesHtml(a);
     if (a.top && a.top.length) {
       h += `<div class="rptSub" style="margin-top:8px"><b>Самые высокие пики</b></div><table class="fiTbl rptTbl"><thead><tr><th>Когда</th><th>Еда</th><th class="n">У, г</th><th class="n">Доза</th><th class="n">До</th><th class="n">Пик</th><th class="n">2 ч</th></tr></thead><tbody>` +
-        a.top.map(r => `<tr><td>${dmy(r.date)} ${esc(r.meal.toLowerCase())}</td><td>${esc(r.items.slice(0, 3).map(i => i.name).join(', '))}${r.items.length > 3 ? '…' : ''}</td><td class="n">${Math.round(r.carbs)}</td><td class="n">${r.dose > 0 ? f1(r.dose) + ' ЕД' : '—'}</td><td class="n">${f1(r.before)}</td><td class="n fiHi">${f1(r.peak)}</td><td class="n">${Number.isFinite(r.a2) ? f1(r.a2) : '—'}</td></tr>`).join('') + '</tbody></table>';
+        a.top.map(r => `<tr><td>${dmy(r.date)} ${esc(r.meal.toLowerCase())}</td><td class="wrapc">${esc(r.items.slice(0, 3).map(i => i.name).join(', '))}${r.items.length > 3 ? '…' : ''}</td><td class="n">${Math.round(r.carbs)}</td><td class="n">${r.dose > 0 ? f1(r.dose) + ' ЕД' : '—'}</td><td class="n">${f1(r.before)}</td><td class="n fiHi">${f1(r.peak)}</td><td class="n">${Number.isFinite(r.a2) ? f1(r.a2) : '—'}</td></tr>`).join('') + '</tbody></table>';
     }
     const d = a.dose;
     if (d && d.nHigh && d.nOk) h += `<p>Записанная доза на 10 г углеводов: в приёмах с пиком выше ${HIGH} в среднем <b>${f1(d.high)} ЕД</b> (${d.nHigh} приёмов), в остальных <b>${f1(d.ok)} ЕД</b> (${d.nOk}). Это описание записей.</p>`;
+    if (!opt.report) h = h.replace(/<table class="fiTbl rptTbl">[\s\S]*?<\/table>/g, m => scroll(m, opt));
     h += `<p class="fiNote">Это наблюдения по записям, а не назначение. В приёме обычно несколько продуктов, а на сахар влияют укол, его время, активность и сенсор, поэтому одна строка не доказывает причину. Приложение не советует менять дозу инсулина: решения принимает врач.</p></div>`;
     return h;
   }
@@ -72,7 +74,7 @@
     const el = document.getElementById('mpRecommendations'); if (!el) return;
     const days = Math.max(10, +document.getElementById('profileWindow')?.value || 30);
     let a; try { a = analyze(days) } catch (e) { return }
-    const box = document.createElement('div'); box.id = 'fiHost'; box.className = 'card'; box.style.marginBottom = '12px';
+    const box = document.createElement('div'); box.id = 'fiHost'; box.style.cssText = 'margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid #e2e8f0';
     box.innerHTML = '<h3 style="margin-top:0">Как еда влияет на сахар</h3>' + html(a);
     const old = document.getElementById('fiHost'); if (old) old.remove();
     el.parentNode.insertBefore(box, el);
