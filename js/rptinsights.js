@@ -107,6 +107,34 @@
   }
 
 
+
+  /* ---------- питание: «Чаще всего» и «По дням» ---------- */
+  function topList(top) {
+    if (!top || !top.length) return '';
+    const mx = Math.max(...top.map(x => x[1]));
+    return '<div class="rptTop">' + top.map(([n, c], i) => `<div class="rtN">${i + 1}</div><div class="rtT">${esc(n)}</div><div class="rtB"><i style="width:${Math.max(4, c / mx * 100)}%"></i></div><div class="rtC">${c}</div>`).join('') + '</div>';
+  }
+  function foodDays(rows) {
+    if (!rows || !rows.length) return '';
+    let list = rows.map(([d, x]) => ({ d, c: x.c, k: x.kcal, n: x.count })), weekly = list.length > 31;
+    if (weekly) {
+      const wk = {}; list.forEach(r => { const t = new Date(r.d + 'T12:00:00'), dow = (t.getDay() + 6) % 7; t.setDate(t.getDate() - dow); (wk[dk(t.getTime())] = wk[dk(t.getTime())] || []).push(r) });
+      list = Object.keys(wk).sort().map(k => ({ d: k, c: avg(wk[k].map(r => r.c)), k: avg(wk[k].map(r => r.k)), n: avg(wk[k].map(r => r.n)) }));
+    }
+    const n = list.length, W = 640, H = 240, pl = 34, pr = 40, pt = 22, pb = 26;
+    const mc = Math.max(40, Math.ceil(Math.max(...list.map(r => r.c)) / 40) * 40), mk = Math.max(400, Math.ceil(Math.max(...list.map(r => r.k)) / 400) * 400);
+    const bw = Math.min(34, (W - pl - pr) / n * 0.65), X = i => pl + (i + .5) / n * (W - pl - pr), Yc = v => pt + (1 - v / mc) * (H - pt - pb), Yk = v => pt + (1 - v / mk) * (H - pt - pb);
+    let g = ''; for (let i = 0; i <= 4; i++) { const y = pt + i / 4 * (H - pt - pb); g += `<line x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}" stroke="#e2e8f0"/><text x="${pl - 4}" y="${y + 4}" font-size="11" text-anchor="end" fill="#0d9488">${Math.round(mc * (1 - i / 4))}</text><text x="${W - pr + 4}" y="${y + 4}" font-size="11" fill="#b45309">${Math.round(mk * (1 - i / 4))}</text>` }
+    const step = n > 20 ? 3 : n > 12 ? 2 : 1;
+    const bars = list.map((r, i) => `<rect x="${(X(i) - bw / 2).toFixed(1)}" y="${Yc(r.c).toFixed(1)}" width="${bw.toFixed(1)}" height="${(Yc(0) - Yc(r.c)).toFixed(1)}" fill="#2dd4bf"/>` + (n <= 16 ? `<text x="${X(i).toFixed(1)}" y="${(Yc(r.c) - 4).toFixed(1)}" font-size="10" font-weight="700" text-anchor="middle" fill="#0f172a">${Math.round(r.c)}</text>` : '') + (i % step === 0 ? `<text x="${X(i).toFixed(1)}" y="${H - 8}" font-size="10" text-anchor="middle" fill="#64748b">${dmy(r.d)}</text>` : '')).join('');
+    const line = 'M' + list.map((r, i) => X(i).toFixed(1) + ',' + Yk(r.k).toFixed(1)).join('L'), dots = list.map((r, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Yk(r.k).toFixed(1)}" r="3" fill="#d97706"/>`).join('');
+    const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;max-width:720px">${g}${bars}<path d="${line}" fill="none" stroke="#d97706" stroke-width="2"/>${dots}<text x="${pl - 4}" y="12" font-size="10" text-anchor="end" fill="#0d9488">г</text><text x="${W - pr + 4}" y="12" font-size="10" fill="#b45309">ккал</text></svg>`;
+    const leg = `<p class="muted" style="font-size:12px;margin:2px 0 8px"><b style="color:#2dd4bf">■</b> углеводы, г (шкала слева) · <b style="color:#d97706">●</b> энергия, ккал (шкала справа)${weekly ? ' · среднее в день по неделям' : ''}</p>`;
+    const cs = list.map(r => r.c), ks = list.map(r => r.k), hiC = list.reduce((b, r) => r.c > b.c ? r : b, list[0]), loC = list.reduce((b, r) => r.c < b.c ? r : b, list[0]);
+    const txt = `${weekly ? 'В среднем в день' : 'В среднем за день'} записано ${Math.round(avg(ks))} ккал и ${Math.round(avg(cs))} г углеводов. ` + (n > 2 ? `Больше всего углеводов — ${weekly ? 'неделя с ' : ''}${dmy(hiC.d)} (${Math.round(hiC.c)} г), меньше всего — ${weekly ? 'неделя с ' : ''}${dmy(loC.d)} (${Math.round(loC.c)} г). ` : '') + (Math.max(...cs) > 1.6 * Math.min(...cs) ? 'Дни заметно отличаются по количеству углеводов.' : 'Количество углеводов по дням довольно ровное.') + ' Неполные дни (когда не всё внесено в дневник) занижают значения.';
+    return svg + leg + PT(txt);
+  }
+
   /* ---------- резюме «Главное за период» ---------- */
   const strip = h => String(h).replace(/<[^>]+>/g, '');
   function digest(G, rg) {
@@ -235,5 +263,5 @@
     add('Сахар ночью и натощак', night); add('Профиль сахара по часам суток (AGP)', agp); add('Качество данных сенсора', quality);
     return out;
   }
-  window.DMRptIns = { digest, sections, exercise, hypo, night, agp, quality, episodes };
+  window.DMRptIns = { topList, foodDays, digest, sections, exercise, hypo, night, agp, quality, episodes };
 })();
