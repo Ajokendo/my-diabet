@@ -3,7 +3,7 @@
    (кнопками и свайпом), значение и время под пальцем, сводка за видимый период. */
 (function () {
   const RANGES = [[3, '3 ч'], [6, '6 ч'], [12, '12 ч'], [24, '24 ч'], [72, '3 дн'], [168, '7 дн'], [336, '14 дн'], [720, '30 дн']];
-  let hours = 24, end = null, pts = [], loading = false, token = 0, cursorX = null;
+  let pinT = null, hours = 24, end = null, pts = [], loading = false, token = 0, cursorX = null;
   let dark = (() => { try { return localStorage.getItem('dm-cgm-dark') === '1' } catch (e) { return false } })();
   let all = [], ovFrom = 0, ovTo = 0;
   const ovSpan = () => Math.min(120 * 24, Math.max(48, hours * 4)) * 3600e3;
@@ -24,6 +24,7 @@
 <div class="cgmBigHead"><div class="cgmTabs"><button class="on" data-m="chart" onclick="DMCgmBig.mode('chart')">График</button><button data-m="trends" onclick="DMCgmBig.mode('trends')">Тенденции</button></div><span id="cgmBigWhen" class="muted"></span><button class="navClose" aria-label="Закрыть" onclick="DMCgmBig.close()">✕</button></div>
 <div class="cgmBigTrends" id="cgmBigTrends"></div><div class="cgmBigRanges" id="cgmBigRanges"></div>
 <div class="cgmBigNav"><button class="btn secondary small" onclick="DMCgmBig.shift(-1)">‹ Раньше</button><button class="btn secondary small" id="cgmBigNow" onclick="DMCgmBig.now()">Сейчас</button><button class="btn secondary small" id="cgmBigNext" onclick="DMCgmBig.shift(1)">Позже ›</button></div>
+<div class="cgmBigFind"><label>Дата <input type="date" id="cgmFindD" onchange="DMCgmBig.find()"></label><label>Время <input type="time" id="cgmFindT" step="60" onchange="DMCgmBig.find()" oninput="DMCgmBig.find()"></label><b id="cgmFindRes" class="cgmFindRes"></b></div>
 <div id="cgmBigPred"></div><div class="cgmBigTip" id="cgmBigTip"></div>
 <div class="cgmBigChart" id="cgmBigChart"></div>
 <div class="cgmBigOv" id="cgmBigOv" title="Обзор: проведите пальцем, чтобы перейти"></div>
@@ -168,15 +169,28 @@
   }
   function paintTip() {
     const tip = $('cgmBigTip'), g = document.getElementById('cgmBigCur'); if (!tip) return;
-    if (!geo || cursorX == null || !pts.length) { tip.innerHTML = '&nbsp;'; if (g) g.innerHTML = ''; return }
-    const t = geo.from + cursorX / (($('cgmBigChart').clientWidth) || 1) * (geo.to - geo.from);
+    const rs = $('cgmFindRes'); if (rs) rs.textContent = '';
+    if (!geo || (cursorX == null && pinT == null) || !pts.length) { tip.innerHTML = '&nbsp;'; if (g) g.innerHTML = ''; return }
+    const t = cursorX != null ? geo.from + cursorX / (($('cgmBigChart').clientWidth) || 1) * (geo.to - geo.from) : pinT;
+    if (cursorX == null && (t < geo.from || t > geo.to)) { tip.innerHTML = '&nbsp;'; if (g) g.innerHTML = ''; return }
     let best = pts[0]; for (const p of pts) if (Math.abs(p.t - t) < Math.abs(best.t - t)) best = p;
-    if (Math.abs(best.t - t) > Math.max(20 * 60e3, (geo.to - geo.from) / 200)) { tip.innerHTML = `${dm(t)} ${hm(t)} — нет данных`; if (g) g.innerHTML = ''; return }
+    if (Math.abs(best.t - t) > Math.max(20 * 60e3, (geo.to - geo.from) / 200)) { tip.innerHTML = `${dm(t)} ${hm(t)} — нет данных`; if (g) g.innerHTML = ''; if (rs && cursorX == null) rs.textContent = 'нет данных'; return }
     const x = geo.X(best.t), y = geo.Y(best.g), col = best.g < 3.9 ? '#dc2626' : best.g > 10 ? '#d97706' : '#0f766e';
     if (g) g.innerHTML = `<line x1="${x}" x2="${x}" y1="0" y2="2000" stroke="${dark ? '#cbd5e1' : '#334155'}" stroke-width="1" opacity=".5"/><circle cx="${x}" cy="${y}" r="5" fill="${dark ? '#0f172a' : '#fff'}" stroke="${col}" stroke-width="3"/>`;
     tip.innerHTML = `<b style="color:${col}">${f1(best.g)} ммоль/л</b> · ${dm(best.t)} в ${hm(best.t)}`;
+    if (rs && cursorX == null) { rs.style.color = col; rs.textContent = f1(best.g) + ' ммоль/л' + (Math.abs(best.t - t) > 150e3 ? ' (в ' + hm(best.t) + ')' : '') }
   }
-  function open(h) { box().classList.add('open'); if (mode !== 'chart') setMode('chart'); document.body.classList.add('sheetOpen'); if (h) hours = h; end = null; load() }
+  function find() {
+    const d = $('cgmFindD'), tm = $('cgmFindT'); if (!d || !tm) return;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d.value || ''), q = /^(\d{1,2}):(\d{2})$/.exec(tm.value || '');
+    if (!m || !q) { pinT = null; paintTip(); return }
+    pinT = new Date(+m[1], +m[2] - 1, +m[3], +q[1], +q[2]).getTime(); cursorX = null;
+    if (pinT > Date.now()) { pinT = null; const rs = $('cgmFindRes'); paintTip(); if (rs) { rs.style.color = ''; rs.textContent = 'это время ещё не наступило' } return }
+    const { from, to } = range();
+    if (pinT < from || pinT > to) { const ne = pinT + hours * 1800e3; end = ne >= Date.now() - 60e3 ? null : ne; load() } else paintTip();
+  }
+  function open(h) {
+    box(); const fd = $('cgmFindD'), ft = $('cgmFindT'); pinT = null; if (fd) fd.value = dkey(Date.now()); if (ft) ft.value = ''; box().classList.add('open'); if (mode !== 'chart') setMode('chart'); document.body.classList.add('sheetOpen'); if (h) hours = h; end = null; load() }
   function close() { const el = $('cgmBig'); if (el) el.classList.remove('open'); document.body.classList.remove('sheetOpen') }
   function shift(dir) {
     const ne = range().now + dir * hours * 3600e3 * 0.5;
@@ -187,5 +201,5 @@
   function setMode(m) { mode = m; const el = box(), bx = el.querySelector('.cgmBigBox'); bx.classList.toggle('trendsMode', m === 'trends');
     el.querySelectorAll('.cgmTabs button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
     if (m === 'trends') { const w = $('cgmBigWhen'); if (w) w.textContent = ''; window.DMTrends && DMTrends.load($('cgmBigTrends')) } else paint() }
-  window.DMCgmBig = { mode: setMode, dark(on) { dark = !!on; try { localStorage.setItem('dm-cgm-dark', on ? '1' : '0') } catch (e) {} paint(); if (mode === 'trends' && window.DMTrends) DMTrends.render() }, median(on) { medOn = !!on; try { localStorage.setItem('dm-cgm-median', on ? '1' : '0') } catch (e) {} paint() }, open, close, shift, range(h) { hours = h; cursorX = null; load() }, now() { end = null; load() } };
+  window.DMCgmBig = { find, mode: setMode, dark(on) { dark = !!on; try { localStorage.setItem('dm-cgm-dark', on ? '1' : '0') } catch (e) {} paint(); if (mode === 'trends' && window.DMTrends) DMTrends.render() }, median(on) { medOn = !!on; try { localStorage.setItem('dm-cgm-median', on ? '1' : '0') } catch (e) {} paint() }, open, close, shift, range(h) { hours = h; cursorX = null; load() }, now() { end = null; load() } };
 })();

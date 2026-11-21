@@ -807,3 +807,12 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 #doctorReport table.fiTbl td[data-l]::before{content:attr(data-l) ': ';color:var(--muted);font-weight:400}
 #doctorReport table.fiTbl td.n{display:inline-block;margin-right:14px}
 }
+
+/* v64.139: поиск сахара по дате и времени в большом графике */
+.cgmBigFind{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 2px;font-size:14px}
+.cgmBigFind label{display:flex;align-items:center;gap:6px;font-weight:600}
+.cgmBigFind input{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:#fff;color:inherit;min-width:0;max-width:150px}
+.cgmFindRes{font-size:17px;margin-left:auto}
+.cgmBigBox.dark .cgmBigFind input{background:#1e293b;border-color:#334155;color:#e2e8f0;color-scheme:dark}
+@media(max-width:480px){.cgmBigFind{gap:6px}.cgmBigFind input{max-width:128px;padding:5px 6px}.cgmFindRes{flex-basis:100%;margin:0;text-align:center}}
+.cgmBigBox.trendsMode .cgmBigFind{display:none}
