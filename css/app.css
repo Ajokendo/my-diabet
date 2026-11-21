@@ -795,3 +795,15 @@ html[lang=ky] .subTabs button{white-space:normal!important;overflow:hidden;text-
 .rptTop{grid-template-columns:24px minmax(130px,230px) minmax(90px,200px) 28px;width:fit-content;max-width:100%;gap:5px 12px}
 /* v64.130: двухколонные таблицы отчёта — вторая колонка на одной линии со значениями блока выше */
 @media(min-width:601px){.rptTbl.rt2 th,.rptTbl.rt2 td{box-sizing:border-box}.rptTbl.rt2 th:first-child,.rptTbl.rt2 td:first-child{width:261px;min-width:261px;padding-left:12px}.rptTbl.rt2 th:last-child,.rptTbl.rt2 td:last-child{padding-left:12px;text-align:left}}
+
+/* v64.135: таблицы «Влияние еды» в отчёте на телефоне — карточками, без бокового листания (на экране; PDF рисуется отдельно) */
+@media(max-width:600px){
+#doctorReport table.fiTbl,#doctorReport table.fiTbl tbody,#doctorReport table.fiTbl tr,#doctorReport table.fiTbl td{display:block;width:auto;min-width:0;max-width:none}
+#doctorReport table.fiTbl thead{display:none}
+#doctorReport table.fiTbl tr{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:8px 0;background:#fff}
+#doctorReport table.fiTbl td{border:0!important;padding:2px 0!important;text-align:left!important;white-space:normal!important;position:static!important;box-shadow:none!important}
+#doctorReport table.fiTbl td:first-child{font-weight:700;font-size:15px;padding-bottom:4px!important}
+#doctorReport table.fiTbl td.wrapc{font-weight:600}
+#doctorReport table.fiTbl td[data-l]::before{content:attr(data-l) ': ';color:var(--muted);font-weight:400}
+#doctorReport table.fiTbl td.n{display:inline-block;margin-right:14px}
+}
