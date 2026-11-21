@@ -4,6 +4,7 @@
 (function () {
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const f1 = v => (Math.round(v * 10) / 10).toFixed(1).replace('.', ',');
+  const sg = v => (v < 0 ? '−' : '+') + f1(Math.abs(v));
   const pad = n => String(n).padStart(2, '0');
   const dk = t => { const d = new Date(t); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) };
   const hm = t => { const d = new Date(t); return pad(d.getHours()) + ':' + pad(d.getMinutes()) };
@@ -251,8 +252,8 @@
       if (fi && fi.n >= 6) {
         const pr = (fi.products || []), hi = pr.filter(p => p.cls === 'hi' && p.conf !== 'low').slice(0, 3), calm = pr.filter(p => p.cls === 'ok' && p.n >= 4).slice(-3).reverse();
         let t = `разобрано ${fi.n} приёмов пищи с сахаром до и после; в среднем сахар поднимается на ${f1(fi.rise)}.`;
-        if (hi.length) t += ` Заметнее всего поднимают сахар: ${hi.map(p => `${esc(p.name)} (+${f1(p.rise)}, ${p.n} приёмов)`).join(', ')}.`;
-        if (calm.length) t += ` Спокойнее всего: ${calm.map(p => `${esc(p.name)} (+${f1(p.rise)})`).join(', ')}.`;
+        if (hi.length) t += ` Заметнее всего поднимают сахар: ${hi.map(p => `${esc(p.name)} (${sg(p.rise)}, ${p.n} приёмов)`).join(', ')}.`;
+        if (calm.length) t += ` Спокойнее всего: ${calm.map(p => `${esc(p.name)} (${sg(p.rise)})`).join(', ')}.`;
         const rk = (fi.rookies || []).slice(0, 3); if (rk.length) { const base = fi.rise; t += ` Новые продукты: ` + rk.map(r => { const m = r.meals[0], d = m.rise - base; return `${esc(r.name)} (${m.peak > 10 ? 'сахар ушёл выше 10' : d >= 1 ? 'поднял заметнее обычного' : d <= -0.5 ? 'вёл себя спокойно' : 'в пределах обычного'})` }).join(', ') + '.' }
         t += ` Это наблюдения за ${days} дн.: чем меньше повторов продукта, тем осторожнее выводы.`;
         add('Еда', t);

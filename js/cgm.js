@@ -75,7 +75,7 @@ let hoursSel=6,gmi=null,gmiAt=0;
 async function loadGmi(){if(!ready()||Date.now()-gmiAt<(gmi?30*60e3:20e3))return;gmiAt=Date.now();
   try{let since=Date.now()-14*864e5,r=[];for(let i=0;i<12;i++){const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${since}`);const p=j.readings||[];r=r.concat(p);if(p.length<5000)break;since=p[p.length-1].t}
     if(!r.length){gmi=null;return}
-    const mean=r.reduce((a,x)=>a+x.g,0)/r.length,days=(Date.now()-r[0].t)/864e5,cover=Math.min(100,r.length/(Math.max(days,1/24)*288)*100);
+    const mean=r.reduce((a,x)=>a+x.g,0)/r.length,days=(Date.now()-r[0].t)/864e5,cover=Math.min(100,new Set(r.map(x=>Math.floor(x.t/3e5))).size/(Math.max(days,1/24)*288)*100);
     gmi={v:3.31+0.02392*mean*18.016,mean,days,cover,n:r.length,tbr:r.filter(x=>x.g<3.9).length/r.length*100,tbr54:r.filter(x=>x.g<3).length/r.length*100,tir:r.filter(x=>x.g>=3.9&&x.g<=10).length/r.length*100,tar:r.filter(x=>x.g>10).length/r.length*100,tar139:r.filter(x=>x.g>13.9).length/r.length*100,sd:Math.sqrt(r.reduce((a,x)=>a+(x.g-mean)**2,0)/r.length)};paintGlucose();try{window.renderDashKpi&&renderDashKpi()}catch(e){}try{window.medicalAuto&&medicalAuto()}catch(e){}}catch(e){}}
 function gmiHtml(){if(!gmi)return '';const ok=gmi.days>=13.5&&gmi.cover>=70;
   return `<div class="notice" style="margin-top:10px;background:#f0fdfa;border-color:#99f6e4"><b>Расчётный HbA1c (GMI): ${gmi.v.toFixed(1)}%</b> · средняя глюкоза ${gmi.mean.toFixed(1)} ммоль/л за ${gmi.days<1?'менее суток':Math.floor(gmi.days)+' дн.'} (данных ${Math.round(gmi.cover)}%).<br><span class="muted">${ok?'Посчитано по данным сенсора за 14 дней. ':'Пока мало данных — показатель станет надёжным после 14 дней работы сенсора. '}Это оценка, а не лабораторный анализ: настоящий HbA1c сдают в лаборатории и записывают в «Анализы».</span></div>`}
@@ -195,7 +195,7 @@ async function period(start,end){const key=start+'_'+end;const c=periodCached(st
     const r=all.filter(x=>x.t>=from&&x.t<=to);if(!r.length){periodCache[key]={n:0,raw:[],at:Date.now()};return periodCache[key]}
     const n=r.length,mean=r.reduce((a,x)=>a+x.g,0)/n,sd=Math.sqrt(r.reduce((a,x)=>a+(x.g-mean)**2,0)/n),q=f=>r.filter(f).length/n*100;
     const byDay={};r.forEach(x=>{(byDay[dayKey(x.t)]??=[]).push(x.g)});const daily=Object.keys(byDay).sort().map(d=>({date:d,v:byDay[d].reduce((a,b)=>a+b,0)/byDay[d].length}));
-    const spanDays=(to-Math.max(from,r[0].t))/864e5,cover=Math.min(100,n/(Math.max(spanDays,1/24)*288)*100);
+    const spanDays=(to-Math.max(from,r[0].t))/864e5,cover=Math.min(100,new Set(r.map(x=>Math.floor(x.t/3e5))).size/(Math.max(spanDays,1/24)*288)*100);
     periodCache[key]={n,mean,sd,v:3.31+0.02392*mean*18.016,tir:q(x=>x.g>=3.9&&x.g<=10),tbr:q(x=>x.g<3.9),tbr54:q(x=>x.g<3),tar:q(x=>x.g>10),tar139:q(x=>x.g>13.9),min:Math.min(...r.map(x=>x.g)),max:Math.max(...r.map(x=>x.g)),days:daily.length,cover,daily,first:r[0].t,last:r[n-1].t,raw:r,at:Date.now()};return periodCache[key]})();
   inflight[key]=periodPending;try{return await periodPending}catch(e){periodCache[key]={error:e.message||String(e),at:Date.now()};return periodCache[key]}finally{periodPending=null;delete inflight[key]}}
 function periodCached(start,end){const c=periodCache[start+'_'+end];if(!c)return null;if(Date.now()-(c.at||0)>10*60e3){delete periodCache[start+'_'+end];return null}return c}

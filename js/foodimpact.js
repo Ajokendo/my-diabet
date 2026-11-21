@@ -5,6 +5,7 @@
 (function () {
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const f1 = v => (Math.round(v * 10) / 10).toFixed(1).replace('.', ',');
+  const sg = v => (v < 0 ? '−' : '+') + f1(Math.abs(v));
   const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   const peakOf = r => Math.max(...[r.a1, r.a2, r.a3].filter(Number.isFinite));
   const dmy = d => d.split('-').reverse().slice(0, 2).join('.');
@@ -39,7 +40,7 @@
     out.top = recs.slice().sort((a, b) => b.peak - a.peak).filter(r => r.peak > HIGH).slice(0, 5);
     return out;
   }
-  const binsText = p => [['ниже ' + LOW_B, p.bins.low], [LOW_B + '–' + HIGH_B, p.bins.mid], ['выше ' + HIGH_B, p.bins.high]].filter(x => x[1]).map(([l, b]) => `${l}: +${f1(b.rise)} (${b.n})`).join(' · ') || '—';
+  const binsText = p => [['ниже ' + LOW_B, p.bins.low], [LOW_B + '–' + HIGH_B, p.bins.mid], ['выше ' + HIGH_B, p.bins.high]].filter(x => x[1]).map(([l, b]) => `${l}: ${sg(b.rise)} (${b.n})`).join(' · ') || '—';
   const confTag = p => ({ low: '<span class="muted">мало данных</span>', noisy: '<span class="fiHi">большой разброс</span>', mid: 'ориентир', good: '<span class="fiOk">надёжно</span>' })[p.conf] + `<div class="fiNote" style="margin:0">±${f1(p.spread)}</div>`;
   const scroll = (t, opt) => opt && opt.report ? t : `<div class="fiScroll">${t}</div>`;
   function rookieVerdict(r, base) {
@@ -52,7 +53,7 @@
     return `<div class="rptSub" style="margin-top:8px"><b>Новые продукты</b> (встречались в ${ROOKIE_DAYS} днях или реже)</div>` + a.rookies.slice(0, 8).map(rk => `<div style="margin:6px 0"><b>🆕 ${esc(rk.name)}</b>` + rk.meals.slice(0, 3).map(r => {
       const it = r.items.find(i => i.name === rk.name), share = r.carbs > 0 && it ? it.c / r.carbs : 0, others = r.items.filter(i => i.name !== rk.name).map(i => i.name);
       const who = !others.length ? 'один в приёме' : share >= 0.5 ? 'основной источник углеводов в приёме' : 'в приёме ещё: ' + esc(others.slice(0, 3).join(', ')) + (others.length > 3 ? '…' : '') + ', вклад неясен';
-      return `<div class="fiNote" style="color:inherit;margin:2px 0">${dmy(r.date)} ${esc(r.meal.toLowerCase())}: ${it ? Math.round(it.g) + ' г, ' : ''}сахар до ${f1(r.before)} → пик ${f1(r.peak)}${Number.isFinite(r.a2) ? ', через 2 ч ' + f1(r.a2) : ''} (+${f1(r.rise)}); ${rookieVerdict(r, base)}. <span class="muted">${who}.</span></div>`;
+      return `<div class="fiNote" style="color:inherit;margin:2px 0">${dmy(r.date)} ${esc(r.meal.toLowerCase())}: ${it ? Math.round(it.g) + ' г, ' : ''}сахар до ${f1(r.before)} → пик ${f1(r.peak)}${Number.isFinite(r.a2) ? ', через 2 ч ' + f1(r.a2) : ''} (${sg(r.rise)}); ${rookieVerdict(r, base)}. <span class="muted">${who}.</span></div>`;
     }).join('') + '</div>').join('');
   }
   function html(a, opt) {
@@ -60,10 +61,10 @@
     if ((!a.n || a.n < MIN_MEALS) && (!a.rookies || !a.rookies.length)) return `<p class="muted">Пока мало данных: нужно хотя бы ${MIN_MEALS} приёмов с сахаром до еды и через 1–3 часа, сейчас ${a.n}. Записывайте еду и время приёма, а сенсор или глюкометр дадут сахар.</p>`;
     if (a.n < MIN_MEALS) return `<div class="fiBox"><p class="muted">Общий разбор пока недоступен: нужно хотя бы ${MIN_MEALS} приёмов с сахаром до еды и через 1–3 часа, сейчас ${a.n}.</p>${rookiesHtml(a)}<p class="fiNote">Это наблюдения по записям, а не назначение. Решения о дозе принимает врач.</p></div>`;
     const tag = c => c === 'hi' ? '<span class="fiHi">чаще высокий</span>' : c === 'ok' ? '<span class="fiOk">спокойный</span>' : 'обычный';
-    let h = `<div class="fiBox"><p>Разобрано приёмов пищи: <b>${a.n}</b> за ${a.days} дн. Средний подъём сахара после еды <b>+${f1(a.rise)}</b> ммоль/л, выше ${HIGH} уходил в <b>${a.high}</b> из ${a.n}. Время приёма указано в ${a.exact} из ${a.n}, в остальных оно типовое или по записи укола.</p>`;
+    let h = `<div class="fiBox"><p>Разобрано приёмов пищи: <b>${a.n}</b> за ${a.days} дн. Средний подъём сахара после еды <b>${sg(a.rise)}</b> ммоль/л, выше ${HIGH} уходил в <b>${a.high}</b> из ${a.n}. Время приёма указано в ${a.exact} из ${a.n}, в остальных оно типовое или по записи укола.</p>`;
     if (a.products && a.products.length) {
       h += `<div class="rptSub" style="margin-top:8px"><b>По продуктам</b> (в ${MIN_PROD}+ приёмах)</div>${opt.report ? '' : '<div class="fiNote">Таблицу можно листать вбок и вверх: заголовок и первый столбец закреплены.</div>'}<table class="fiTbl rptTbl"><thead><tr><th>Продукт</th><th class="n">Приёмов</th><th class="n">Подъём</th><th class="n">Через 2 ч</th><th class="n">Выше ${HIGH}</th><th>Оценка</th><th>Надёжность</th><th>По сахару до еды (приёмов)</th></tr></thead><tbody>` +
-        a.products.map(p => `<tr><td>${esc(p.name)}</td><td class="n" data-l="Приёмов">${p.n}</td><td class="n" data-l="Подъём">+${f1(p.rise)}</td><td class="n" data-l="Через 2 ч">${Number.isFinite(p.a2) && p.a2 ? f1(p.a2) : '—'}</td><td class="n" data-l="Выше ${HIGH}">${p.hi} из ${p.n}</td><td data-l="Оценка">${tag(p.cls)}</td><td data-l="Надёжность">${confTag(p)}</td><td data-l="По сахару до еды" class="fiBins">${binsText(p)}</td></tr>`).join('') + '</tbody></table>';
+        a.products.map(p => `<tr><td>${esc(p.name)}</td><td class="n" data-l="Приёмов">${p.n}</td><td class="n" data-l="Подъём">${sg(p.rise)}</td><td class="n" data-l="Через 2 ч">${Number.isFinite(p.a2) && p.a2 ? f1(p.a2) : '—'}</td><td class="n" data-l="Выше ${HIGH}">${p.hi} из ${p.n}</td><td data-l="Оценка">${tag(p.cls)}</td><td data-l="Надёжность">${confTag(p)}</td><td data-l="По сахару до еды" class="fiBins">${binsText(p)}</td></tr>`).join('') + '</tbody></table>';
     } else h += `<p class="muted">Продуктов, которые встретились хотя бы в ${MIN_PROD} приёмах, пока нет.</p>`;
     h += `<p class="fiNote">Надёжность: «мало данных» — 3–4 приёма; «ориентир» — 5–9; «надёжно» — 10 и больше при небольшом разбросе (до ±${f1(SPREAD)} ммоль/л). «±» — на сколько обычно отличается подъём от приёма к приёму. Свежие записи весят больше: вес записи падает вдвое за ${HALF} дней, потому что с ростом ребёнка чувствительность к инсулину меняется.</p>`;
     h += rookiesHtml(a);
@@ -103,7 +104,7 @@
     if (!pick) return;
     const { rk, r, key } = pick, base = a.rise || 0;
     const d = document.createElement('div'); d.id = 'fiRookie'; d.className = 'card s12'; d.style.cssText = 'border-left:4px solid #0d9488';
-    d.innerHTML = `<div class="fiBox"><b>🆕 Новый продукт: ${esc(rk.name)}</b><div style="margin-top:4px">${dmy(r.date)} ${esc(r.meal.toLowerCase())}: сахар до еды ${f1(r.before)} → пик ${f1(r.peak)}${Number.isFinite(r.a2) ? ', через 2 ч ' + f1(r.a2) : ''} (+${f1(r.rise)}) — ${rookieVerdict(r, base)}.</div><div class="fiNote">${r.items.length > 1 ? 'В приёме были и другие продукты, вклад неясен. ' : ''}Это наблюдение, а не назначение. Подробнее — «Мои показатели».</div><div class="row" style="gap:6px;margin-top:6px"><button class="btn small" onclick="show('myprofile')">Подробнее</button><button class="btn secondary small" onclick="try{localStorage.setItem('${esc(key)}','1')}catch(e){};document.getElementById('fiRookie').remove()">Понятно</button></div></div>`;
+    d.innerHTML = `<div class="fiBox"><b>🆕 Новый продукт: ${esc(rk.name)}</b><div style="margin-top:4px">${dmy(r.date)} ${esc(r.meal.toLowerCase())}: сахар до еды ${f1(r.before)} → пик ${f1(r.peak)}${Number.isFinite(r.a2) ? ', через 2 ч ' + f1(r.a2) : ''} (${sg(r.rise)}) — ${rookieVerdict(r, base)}.</div><div class="fiNote">${r.items.length > 1 ? 'В приёме были и другие продукты, вклад неясен. ' : ''}Это наблюдение, а не назначение. Подробнее — «Мои показатели».</div><div class="row" style="gap:6px;margin-top:6px"><button class="btn small" onclick="show('myprofile')">Подробнее</button><button class="btn secondary small" onclick="try{localStorage.setItem('${esc(key)}','1')}catch(e){};document.getElementById('fiRookie').remove()">Понятно</button></div></div>`;
     host.prepend(d);
   }
   window.DMFoodImpact = { analyze, html, paint, reportHtml, dashCard };
