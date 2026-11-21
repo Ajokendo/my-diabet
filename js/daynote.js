@@ -12,6 +12,7 @@
   const SENSOR_DAYS = [[/libre 3 plus|libre 2 plus|linx|aidex|ican|sibionics|gs3/i, 15], [/libre/i, 14], [/g7|stelo/i, 10], [/g6|one/i, 10], [/simplera|guardian/i, 7], [/eversense 365/i, 365], [/eversense/i, 180]];
   function sensorDays() {
     const c = (db.medical && db.medical.cgm) || {};
+    if (+c.curDays) return +c.curDays;
     if (+c.days) return +c.days;
     const s = [c.product, c.model].join(' ');
     for (const [re, d] of SENSOR_DAYS) if (re.test(s)) return d;
@@ -44,17 +45,22 @@
     if (S) {
       const cls = S.left <= 0 ? 'bad' : S.left <= 1 ? 'warn' : '';
       const txt = S.left < 0 ? `срок вышел ${ru(S.end)}` : S.left === 0 ? 'заменить сегодня' : S.left === 1 ? 'заменить завтра' : `осталось ${S.left} дн. (до ${ru(S.end)})`;
-      sensor = `<div class="sensorLeft ${cls}">Сенсор: ${txt}</div>`;
+      sensor = `<div class="sensorLeft ${cls}" id="sensorTermBtn" title="Изменить срок сенсора">Сенсор ${S.days} дн.: ${txt}</div>`;
     }
     box.innerHTML = `<div class="row" style="justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">Заметка к дню</h3>${sensor}</div>
 <div class="dnTags">${TAGS.map(t => `<button type="button" class="dnTag${(n.tags || []).includes(t) ? ' on' : ''}" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
-${earlyHtml()}<textarea id="dayNoteText" class="textarea" rows="2" placeholder="Что было особенного: болел, гости, тренировка, поздно поел…">${esc(n.text || '')}</textarea>
+${termHtml()}${earlyHtml()}<textarea id="dayNoteText" class="textarea" rows="2" placeholder="Что было особенного: болел, гости, тренировка, поздно поел…">${esc(n.text || '')}</textarea>
 <div class="muted dnHint">Заметку видят все в семье, она попадает в «Анализ дня» и отчёт врачу.</div>`;
     box.querySelectorAll('.dnTag').forEach(b => b.onclick = () => {
       const cur = (notes()[d] || {}).tags || [], t = b.dataset.t, on = !cur.includes(t);
       save(d, { tags: on ? cur.concat(t) : cur.filter(x => x !== t) });
       if (t === 'Новый сенсор' && on) setSensorInstalled(d);
       render();
+    });
+    const tb = document.getElementById('sensorTermBtn'); if (tb) tb.onclick = () => { askTerm = true; render() };
+    box.querySelectorAll('[data-term]').forEach(b => b.onclick = () => {
+      const c = (db.medical = db.medical || {}).cgm = (db.medical.cgm || {}); c.curDays = +b.dataset.term || 0; askTerm = false;
+      try { window.save && window.save() } catch (e) {} render();
     });
     box.querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
       const h = db.medical.cgm.history[askEarly.idx]; if (h) h.reason = b.dataset.r; askEarly = null;
@@ -67,7 +73,7 @@ ${earlyHtml()}<textarea id="dayNoteText" class="textarea" rows="2" placeholder="
 
   /* смена сенсора: прошлый уходит в историю; если раньше срока — спрашиваем причину */
   const REASONS = ['Задел, отклеился', 'После воды, душа', 'Неточные показания', 'Ошибка, не подключается', 'Другое'];
-  let askEarly = null;
+  let askEarly = null, askTerm = false;
   function setSensorInstalled(d) {
     db.medical = db.medical || {}; const c = db.medical.cgm = db.medical.cgm || {};
     if (c.installed === d) return;
@@ -76,9 +82,14 @@ ${earlyHtml()}<textarea id="dayNoteText" class="textarea" rows="2" placeholder="
       c.history = (c.history || []).concat({ installed: c.installed, removed: d, days: used, term, early: used < term - 0.5, reason: '' });
       if (used < term - 0.5) askEarly = { idx: c.history.length - 1, used, term };
     }
-    c.installed = d;
+    c.installed = d; c.curDays = 0; askTerm = true;
     try { window.save && window.save() } catch (e) {}
     const el = document.getElementById('cgmInstalled'); if (el) el.value = d;
+  }
+  function termHtml() {
+    if (!askTerm) return '';
+    const cur = sensorDays();
+    return `<div class="dnEarly" style="background:#f0fdfa;border-color:#99f6e4"><b>На сколько дней этот сенсор?</b><div class="dnTags" style="margin:8px 0 0">${[10, 14, 15].map(n => `<button type="button" class="dnTag${n === cur ? ' on' : ''}" data-term="${n}">${n} дн.</button>`).join('')}</div></div>`;
   }
   function earlyHtml() {
     if (!askEarly) return '';
