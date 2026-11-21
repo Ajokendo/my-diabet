@@ -8,24 +8,36 @@ async function build(){
   const src=document.getElementById('doctorReport');if(!src)throw new Error('Нет отчёта.');
   if(src.style.display==='none'||!src.innerHTML.trim())window.generateDoctorReport();
   if(window.DMCgm&&DMCgm.pending&&DMCgm.pending()){try{await DMCgm.pending()}catch(e){}window.generateDoctorReport()}
+  /* v64.134: в PDF не должно остаться «Загружаю данные сенсора…» — ждём, пока отчёт перерисуется с данными (до 25 с) */
+  for(let i=0;i<50&&/Загружаю данные сенсора/.test(src.textContent);i++){await new Promise(r=>setTimeout(r,500));if(window.DMCgm&&DMCgm.pending&&!DMCgm.pending()&&i%4===3)window.generateDoctorReport()}
   await libs();
   const W=794,body=document.body,zoom=body.style.zoom;body.style.zoom='';
   const box=document.createElement('div');box.style.cssText=`position:fixed;left:-10000px;top:0;width:${W}px;background:#fff;color:#000;padding:28px 32px;font-size:13px;line-height:1.45`;
   box.innerHTML=src.innerHTML;box.querySelectorAll('.no-print,button,details>summary').forEach(e=>{if(e.tagName==='SUMMARY')return;e.remove()});box.querySelectorAll('details').forEach(d=>d.open=true);
   document.documentElement.appendChild(box);
   try{
-    const top=box.getBoundingClientRect().top;
-    const cuts=[...box.querySelectorAll('p,li,tr,.reportSection,.mini,.card,svg,img,table,div')].filter(e=>!/^H[1-4]$/.test((e.nextElementSibling||{}).tagName||'')).map(e=>{const r=e.getBoundingClientRect();return Math.round(r.bottom-top)}).filter(y=>y>0).sort((a,b)=>a-b);
-    const brks=[...box.querySelectorAll('.rptBreak')].map(e=>Math.round(e.getBoundingClientRect().top-top)*2).filter(y=>y>0);
-    const scale=2,canvas=await html2canvas(box,{scale,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:W+64});
     const {jsPDF}=window.jspdf;const pdf=new jsPDF({unit:'mm',format:'a4',compress:true});
-    const pxW=canvas.width,pageH=Math.floor(pxW*297/210),margin=Math.round(10*pxW/210);
-    let y=0,first=true;const total=canvas.height;
-    while(y<total-4){
-      let limit=y+pageH-2*margin;if(limit>=total)limit=total;else{const c=cuts.map(v=>v*scale).filter(v=>v>y+pageH*0.4&&v<=limit);if(c.length)limit=c[c.length-1]}
-      const bk=brks.find(v=>v>y+4&&v<=limit);if(bk)limit=bk;
-      const h=limit-y,part=document.createElement('canvas');part.width=pxW;part.height=h;const g=part.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,pxW,h);g.drawImage(canvas,0,y,pxW,h,0,0,pxW,h);
-      if(!first)pdf.addPage();first=false;pdf.addImage(part.toDataURL('image/jpeg',0.86),'JPEG',0,10,210,h*210/pxW);y=limit}
+    /* v64.134: часть до метки .rptBreak (сводка) и всё остальное рисуются отдельно — разрыв страницы точно между ними */
+    const brk=box.querySelector('.rptBreak');
+    const parts=[];
+    if(brk){const mk=(set)=>{const r=document.createRange();set(r);const b=box.cloneNode(false);b.appendChild(r.cloneContents());return b};
+      const A=mk(r=>{r.setStart(box,0);r.setEndBefore(brk)}),B=mk(r=>{r.setStartAfter(brk);r.setEnd(box,box.childNodes.length)});box.innerHTML='';parts.push(A,B)}else parts.push(box);
+    let first=true;
+    for(const part of parts){
+      if(part!==box){part.style.left='-10000px';document.documentElement.appendChild(part)}
+      try{
+        /* разрезы считаем по раскладке КОПИИ, которую рисует html2canvas, — иначе строка может оказаться разрезанной пополам */
+        let cuts=[];const measure=(root)=>{const t=root.getBoundingClientRect().top;return [...root.querySelectorAll('p,li,tr,.reportSection,.mini,.card,svg,img,table,div')].filter(e=>!/^H[1-4]$/.test((e.nextElementSibling||{}).tagName||'')).map(e=>Math.round(e.getBoundingClientRect().bottom-t)).filter(y=>y>0).sort((a,b)=>a-b)};
+        cuts=measure(part);
+        const scale=2,canvas=await html2canvas(part,{scale,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:W+64,onclone:(doc,el)=>{try{const c=measure(el);if(c.length)cuts=c}catch(e){}}});
+        const pxW=canvas.width,pageH=Math.floor(pxW*297/210),margin=Math.round(10*pxW/210);
+        let y=0;const total=canvas.height;
+        while(y<total-4){
+          let limit=y+pageH-2*margin;if(limit>=total)limit=total;else{const c=cuts.map(v=>v*scale).filter(v=>v>y+pageH*0.4&&v<=limit);if(c.length)limit=c[c.length-1]}
+          const h=limit-y,pc=document.createElement('canvas');pc.width=pxW;pc.height=h;const g=pc.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,pxW,h);g.drawImage(canvas,0,y,pxW,h,0,0,pxW,h);
+          if(!first)pdf.addPage();first=false;pdf.addImage(pc.toDataURL('image/jpeg',0.86),'JPEG',0,10,210,h*210/pxW);y=limit}
+      }finally{if(part!==box)part.remove()}
+    }
     const n=pdf.getNumberOfPages();for(let i=1;i<=n;i++){pdf.setPage(i);pdf.setFontSize(8);pdf.setTextColor(120);pdf.text(`${i} / ${n}`,200,290,{align:'right'})}
     return new File([pdf.output('blob')],fileName(),{type:'application/pdf'});
   }finally{box.remove();body.style.zoom=zoom}
