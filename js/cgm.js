@@ -16,6 +16,21 @@ function loadCache(){try{const x=JSON.parse(localStorage.getItem(cacheKey())||'n
 function saveCache(){try{const from=Date.now()-36*3600e3;localStorage.setItem(cacheKey(),JSON.stringify({r:readings.filter(x=>x.t>from),c:connected}))}catch(e){}}
 function ready(){const c=C();return !!(c.token&&c.patientId)}
 
+/* v64.137: показания за прошлые дни хранятся на телефоне (IndexedDB); с сервера докачивается только новое — экономит лимит D1 */
+const RAW_DB='dm-cgm-raw';
+function rawOpen(){return new Promise((ok,no)=>{try{const q=indexedDB.open(RAW_DB,1);q.onupgradeneeded=()=>q.result.createObjectStore('raw');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)}catch(e){no(e)}})}
+async function rawGet(k){try{const d=await rawOpen();return await new Promise(ok=>{const q=d.transaction('raw').objectStore('raw').get(k);q.onsuccess=()=>ok(q.result||null);q.onerror=()=>ok(null)})}catch(e){return null}}
+async function rawPut(k,v){try{const d=await rawOpen();await new Promise(ok=>{const t=d.transaction('raw','readwrite');t.objectStore('raw').put(v,k);t.oncomplete=ok;t.onerror=ok;t.onabort=ok})}catch(e){}}
+async function rawClear(){try{const d=await rawOpen();await new Promise(ok=>{const t=d.transaction('raw','readwrite');t.objectStore('raw').clear();t.oncomplete=ok;t.onerror=ok;t.onabort=ok})}catch(e){}}
+async function fetchAll(since){let all=[];for(let i=0;i<40;i++){const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${since}`);const r=j.readings||[];all=all.concat(r);if(r.length<5000)break;since=r[r.length-1].t}return all}
+async function readSince(from){
+  const k='p:'+(C().patientId||''),rec=await rawGet(k);
+  let rows,base;
+  if(!rec||!rec.rows||!rec.rows.length||from-1<rec.base){rows=await fetchAll(from-1);base=from-1}
+  else{const last=rec.rows[rec.rows.length-1].t,add=await fetchAll(Math.max(rec.base,last-6*3600e3)),m=new Map(rec.rows.map(x=>[x.t,x]));add.forEach(x=>m.set(x.t,x));rows=[...m.values()].sort((a,b)=>a.t-b.t);base=rec.base}
+  const lim=Date.now()-200*864e5;if(rows.length&&rows[0].t<lim)rows=rows.filter(x=>x.t>=lim);
+  await rawPut(k,{base,rows,at:Date.now()});
+  return rows.filter(x=>x.t>=from)}
 async function api(path,method){
   const r=await fetch(server()+path,{method:method||'GET',headers:{'Authorization':'Bearer '+C().token,'Content-Type':'application/json'},body:method==='POST'?'{}':undefined});
   let j={};try{j=await r.json()}catch(e){}
@@ -73,7 +88,7 @@ function stats(hours){const from=Date.now()-hours*3600e3,p=readings.filter(x=>x.
 let hoursSel=6,gmi=null,gmiAt=0;
 /* Расчётный HbA1c (GMI, Bergenstal 2018): GMI % = 3,31 + 0,02392 × средняя глюкоза в мг/дл. Надёжен при 14+ днях данных и покрытии ≥70%. */
 async function loadGmi(){if(!ready()||Date.now()-gmiAt<(gmi?30*60e3:20e3))return;gmiAt=Date.now();
-  try{let since=Date.now()-14*864e5,r=[];for(let i=0;i<12;i++){const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${since}`);const p=j.readings||[];r=r.concat(p);if(p.length<5000)break;since=p[p.length-1].t}
+  try{let r=await readSince(Date.now()-14*864e5);
     if(!r.length){gmi=null;return}
     const mean=r.reduce((a,x)=>a+x.g,0)/r.length,days=(Date.now()-r[0].t)/864e5,cover=Math.min(100,new Set(r.map(x=>Math.floor(x.t/3e5))).size/(Math.max(days,1/24)*288)*100);
     gmi={v:3.31+0.02392*mean*18.016,mean,days,cover,n:r.length,tbr:r.filter(x=>x.g<3.9).length/r.length*100,tbr54:r.filter(x=>x.g<3).length/r.length*100,tir:r.filter(x=>x.g>=3.9&&x.g<=10).length/r.length*100,tar:r.filter(x=>x.g>10).length/r.length*100,tar139:r.filter(x=>x.g>13.9).length/r.length*100,sd:Math.sqrt(r.reduce((a,x)=>a+(x.g-mean)**2,0)/r.length)};paintGlucose();try{window.renderDashKpi&&renderDashKpi()}catch(e){}try{window.medicalAuto&&medicalAuto()}catch(e){}}catch(e){}}
@@ -138,8 +153,7 @@ async function exportCsv(){
   const days=+(document.getElementById('csvDays')?.value||14);
   csvBusy=true;csvMsg='Загружаю…';paintFamily();
   try{
-    let since=Date.now()-days*864e5,all=[];
-    for(let i=0;i<40;i++){const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${since}`);const r=j.readings||[];all=all.concat(r);if(r.length<5000)break;since=r[r.length-1].t}
+    const all=await readSince(Date.now()-days*864e5);
     if(!all.length){csvMsg='За этот период показаний нет.';return}
     const pad=n=>String(n).padStart(2,'0');
     const rows=all.map(x=>{const d=new Date(x.t);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())+';'+String(x.g).replace('.',',')+';'+(x.d||'')});
@@ -191,7 +205,7 @@ function dayKey(t){const d=new Date(t);return d.getFullYear()+'-'+String(d.getMo
 const inflight={};
 async function period(start,end){const key=start+'_'+end;const c=periodCached(start,end);if(c)return c;if(!ready())return null;if(inflight[key])return inflight[key];
   const from=new Date(start+'T00:00:00').getTime(),to=new Date(end+'T23:59:59').getTime();
-  periodPending=(async()=>{let since=from-1,all=[];for(let i=0;i<40;i++){const j=await api(`/v1/patients/${encodeURIComponent(C().patientId)}/cgm?since=${since}`);const r=j.readings||[];all=all.concat(r);if(r.length<5000)break;since=r[r.length-1].t}
+  periodPending=(async()=>{const all=await readSince(from);
     const r=all.filter(x=>x.t>=from&&x.t<=to);if(!r.length){periodCache[key]={n:0,raw:[],at:Date.now()};return periodCache[key]}
     const n=r.length,mean=r.reduce((a,x)=>a+x.g,0)/n,sd=Math.sqrt(r.reduce((a,x)=>a+(x.g-mean)**2,0)/n),q=f=>r.filter(f).length/n*100;
     const byDay={};r.forEach(x=>{(byDay[dayKey(x.t)]??=[]).push(x.g)});const daily=Object.keys(byDay).sort().map(d=>({date:d,v:byDay[d].reduce((a,b)=>a+b,0)/byDay[d].length}));
@@ -209,7 +223,7 @@ async function importNs(){if(importBusy)return;const url=(document.getElementByI
       const j=await fetch(server()+`/v1/patients/${encodeURIComponent(C().patientId)}/cgm-import`,{method:'POST',headers:{'Authorization':'Bearer '+C().token,'Content-Type':'application/json'},body:JSON.stringify({url,secret,from,to})}).then(async r=>{const x=await r.json().catch(()=>({}));if(!r.ok)throw new Error(x.error||('Ошибка '+r.status));return x});
       total+=j.found||0;if(j.first)oldest=Math.min(oldest||j.first,j.first)}
     importMsg=total?`<div class="notice" style="background:#f0fdfa;border-color:#99f6e4">Готово: перенесено показаний — <b>${total.toLocaleString('ru-RU')}</b>, самые ранние от ${new Date(oldest).toLocaleDateString('ru-RU')}. Они уже учитываются в отчёте врачу и аналитике.</div>`:'<div class="notice">В этом Nightscout за выбранный период показаний не нашлось. Проверьте адрес и ключ.</div>';
-    Object.keys(periodCache).forEach(k=>delete periodCache[k]);gmiAt=0;
+    Object.keys(periodCache).forEach(k=>delete periodCache[k]);gmiAt=0;await rawClear();
   }catch(e){importMsg=`<div class="notice">${esc(e.message)}${total?` (до ошибки перенесено ${total.toLocaleString('ru-RU')})`:''}</div>`}
   importBusy=false;paintFamily();try{loadGmi()}catch(e){}}
 window.DMCgm={readings:()=>readings,exportCsv,importNs,gmi:()=>gmi,device:()=>device,isConnected:()=>connected,period,periodCached,ready,pending:()=>periodPending,staleOk,askNotify,reportHtml,refresh,connect,copy,paint,paintFamily,latest,hours(h){hoursSel=h;paintGlucose()},readings:()=>readings};
