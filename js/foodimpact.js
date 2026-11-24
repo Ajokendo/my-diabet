@@ -9,6 +9,8 @@
   const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   const peakOf = r => Math.max(...[r.a1, r.a2, r.a3].filter(Number.isFinite));
   const dmy = d => d.split('-').reverse().slice(0, 2).join('.');
+  const XE = () => +(db.settings && db.settings.xe) || 12, SOLO_C = 5, BIG_RISE = 3, FEW_XE = 2;
+  const xeS = g => f1(g / XE());
   const MIN_MEALS = 6, MIN_PROD = 3, HIGH = 10, ROOKIE_DAYS = 2, LOW_B = 6, HIGH_B = 8, HALF = 60, SPREAD = 2.0;
 
   function analyze(days, end) {
@@ -32,11 +34,17 @@
       const cls = (hiW >= 0.5 || (rise >= out.rise + 0.8 && hiW >= 0.34)) ? 'hi' : (hi === 0 && rise <= out.rise) ? 'ok' : 'mid';
       const bin = f => { const x = rs.filter(f); return x.length ? { n: x.length, rise: avg(x.map(r => r.rise)) } : null };
       const bins = { low: bin(r => r.before < LOW_B), mid: bin(r => r.before >= LOW_B && r.before <= HIGH_B), high: bin(r => r.before > HIGH_B) };
-      return { name, n, rise, hi, peak: avg(rs.map(r => r.peak)), a2, cls, bins, conf, spread };
+      const othC = r => r.items.filter(i => i.name !== name).reduce((x, i) => x + i.c, 0), ownC = r => r.items.filter(i => i.name === name).reduce((x, i) => x + i.c, 0);
+      const so = rs.filter(r => othC(r) <= SOLO_C), cm = {};
+      rs.forEach(r => new Set(r.items.map(i => i.name).filter(x => x !== name)).forEach(x => cm[x] = (cm[x] || 0) + 1));
+      const comp = Object.entries(cm).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ru')).slice(0, 3);
+      return { name, n, rise, hi, peak: avg(rs.map(r => r.peak)), a2, cls, bins, conf, spread, solo: { n: so.length, rise: so.length ? avg(so.map(r => r.rise)) : null }, ownC: avg(rs.map(ownC)), restC: avg(rs.map(othC)), comp };
     }).sort((a, b) => b.rise - a.rise);
     const withDose = recs.filter(r => r.dose > 0 && r.carbs >= 10), per10 = r => r.dose / r.carbs * 10;
     const gh = withDose.filter(r => r.peak > HIGH), go = withDose.filter(r => r.peak <= HIGH);
     out.dose = { nHigh: gh.length, nOk: go.length, high: gh.length ? avg(gh.map(per10)) : null, ok: go.length ? avg(go.map(per10)) : null };
+    out.worst = recs.slice().sort((a, b) => b.rise - a.rise).slice(0, 8);
+    out.hidden = recs.filter(r => r.rise >= BIG_RISE && r.carbs / XE() <= FEW_XE);
     out.top = recs.slice().sort((a, b) => b.peak - a.peak).filter(r => r.peak > HIGH).slice(0, 5);
     return out;
   }
@@ -63,14 +71,23 @@
     const tag = c => c === 'hi' ? '<span class="fiHi">чаще высокий</span>' : c === 'ok' ? '<span class="fiOk">спокойный</span>' : 'обычный';
     let h = `<div class="fiBox"><p>Разобрано приёмов пищи: <b>${a.n}</b> за ${a.days} дн. Средний подъём сахара после еды <b>${sg(a.rise)}</b> ммоль/л, выше ${HIGH} уходил в <b>${a.high}</b> из ${a.n}. Время приёма указано в ${a.exact} из ${a.n}, в остальных оно типовое или по записи укола.</p>`;
     if (a.products && a.products.length) {
-      h += `<div class="rptSub" style="margin-top:8px"><b>По продуктам</b> (в ${MIN_PROD}+ приёмах)</div>${opt.report ? '' : '<div class="fiNote">Таблицу можно листать вбок и вверх: заголовок и первый столбец закреплены.</div>'}<table class="fiTbl rptTbl"><thead><tr><th>Продукт</th><th class="n">Приёмов</th><th class="n">Подъём</th><th class="n">Через 2 ч</th><th class="n">Выше ${HIGH}</th><th>Оценка</th><th>Надёжность</th><th>По сахару до еды (приёмов)</th></tr></thead><tbody>` +
-        a.products.map(p => `<tr><td>${esc(p.name)}</td><td class="n" data-l="Приёмов">${p.n}</td><td class="n" data-l="Подъём">${sg(p.rise)}</td><td class="n" data-l="Через 2 ч">${Number.isFinite(p.a2) && p.a2 ? f1(p.a2) : '—'}</td><td class="n" data-l="Выше ${HIGH}">${p.hi} из ${p.n}</td><td data-l="Оценка">${tag(p.cls)}</td><td data-l="Надёжность">${confTag(p)}</td><td data-l="По сахару до еды" class="fiBins">${binsText(p)}</td></tr>`).join('') + '</tbody></table>';
+      h += `<div class="rptSub" style="margin-top:8px"><b>По продуктам</b> (в ${MIN_PROD}+ приёмах)</div>${opt.report ? '' : '<div class="fiNote">Таблицу можно листать вбок и вверх: заголовок и первый столбец закреплены.</div>'}<table class="fiTbl rptTbl"><thead><tr><th>Продукт</th><th class="n">Приёмов</th><th class="n">Подъём</th><th class="n">Выше ${HIGH}</th><th class="n">В одиночку</th><th>С чем ели</th><th>Оценка</th></tr></thead><tbody>` +
+        a.products.map(p => {
+          const fewOwn = p.ownC / XE() < 0.4 && p.restC / XE() >= 1;
+          const comp = p.comp.length ? p.comp.map(([n, k]) => `${esc(n)} (${k} из ${p.n})`).join(', ') : '<span class="muted">всегда один</span>';
+          return `<tr><td>${esc(p.name)}</td><td class="n" data-l="Приёмов">${p.n}</td><td class="n" data-l="Подъём">${sg(p.rise)}</td><td class="n" data-l="Выше ${HIGH}">${p.hi} из ${p.n}</td><td class="n" data-l="В одиночку">${p.solo.n ? sg(p.solo.rise) + ' <span class="muted">(' + p.solo.n + ')</span>' : '<span class="muted">нет</span>'}</td><td class="wrapc" data-l="С чем ели">${comp}<div class="fiNote" style="margin:0">остальное в приёме ≈ ${f1(p.restC / XE())} ХЕ, сам продукт ≈ ${f1(p.ownC / XE())} ХЕ</div></td><td data-l="Оценка">${tag(p.cls)}<div class="fiNote" style="margin:0">${({ low: 'мало данных', noisy: 'большой разброс', mid: 'ориентир', good: 'надёжно' })[p.conf]} ±${f1(p.spread)}</div>${fewOwn ? '<div class="fiNote" style="margin:0">сам почти без углеводов: подъём связан с остальным приёмом</div>' : ''}</td></tr>`;
+        }).join('') + '</tbody></table>';
     } else h += `<p class="muted">Продуктов, которые встретились хотя бы в ${MIN_PROD} приёмах, пока нет.</p>`;
-    h += `<p class="fiNote">Надёжность: «мало данных» — 3–4 приёма; «ориентир» — 5–9; «надёжно» — 10 и больше при небольшом разбросе (до ±${f1(SPREAD)} ммоль/л). «±» — на сколько обычно отличается подъём от приёма к приёму. Свежие записи весят больше: вес записи падает вдвое за ${HALF} дней, потому что с ростом ребёнка чувствительность к инсулину меняется.</p>`;
+    h += `<p class="fiNote"><b>В одиночку</b> — приёмы, где остальные блюда давали не больше ${SOLO_C} г углеводов (в скобках их число; «нет» — такого приёма не было, и оценка относится ко всему приёму целиком). <b>С чем ели</b> — что чаще всего было в тех же приёмах; ХЕ считаются по записанным граммам (1 ХЕ = ${XE()} г углеводов). Надёжность: «мало данных» — 3–4 приёма; «ориентир» — 5–9; «надёжно» — 10 и больше при небольшом разбросе (до ±${f1(SPREAD)} ммоль/л). «±» — на сколько обычно отличается подъём от приёма к приёму. Свежие записи весят больше: вес записи падает вдвое за ${HALF} дней, потому что с ростом ребёнка чувствительность к инсулину меняется.</p>`;
     h += rookiesHtml(a);
-    if (a.top && a.top.length) {
-      h += `<div class="rptSub" style="margin-top:8px"><b>Самые высокие пики</b></div><table class="fiTbl rptTbl"><thead><tr><th>Когда</th><th>Еда</th><th class="n">У, г</th><th class="n">Доза</th><th class="n">До</th><th class="n">Пик</th><th class="n">2 ч</th></tr></thead><tbody>` +
-        a.top.map(r => `<tr><td>${dmy(r.date)} ${esc(r.meal.toLowerCase())}</td><td class="wrapc">${esc(r.items.slice(0, 3).map(i => i.name).join(', '))}${r.items.length > 3 ? '…' : ''}</td><td class="n" data-l="У, г">${Math.round(r.carbs)}</td><td class="n" data-l="Доза">${r.dose > 0 ? f1(r.dose) + ' ЕД' : '—'}</td><td class="n" data-l="До">${f1(r.before)}</td><td class="n fiHi" data-l="Пик">${f1(r.peak)}</td><td class="n" data-l="Через 2 ч">${Number.isFinite(r.a2) ? f1(r.a2) : '—'}</td></tr>`).join('') + '</tbody></table>';
+    if (a.worst && a.worst.length) {
+      const hd = a.hidden || [], cnt = {};
+      hd.forEach(r => new Set(r.items.map(i => i.name)).forEach(n => cnt[n] = (cnt[n] || 0) + 1));
+      const hc = Object.entries(cnt).sort((x, y) => y[1] - x[1]).slice(0, 4).map(([n, k]) => `${esc(n)} (${k})`).join(', ');
+      h += `<div class="rptSub" style="margin-top:8px"><b>Приёмы пищи с наибольшим подъёмом</b></div>`;
+      h += `<p>Подъём ${BIG_RISE}+ ммоль/л при небольшом количестве записанных углеводов (до ${FEW_XE} ХЕ) был в <b>${hd.length}</b> из ${a.n} приёмов.` + (hd.length ? ` Такой подъём не объясняется записанным количеством ХЕ: возможно, что-то съели и не внесли, дозу сделали с опозданием или сахар до еды был высоким. Чаще всего в этих приёмах: ${hc}.` : ' Значит, сильные подъёмы в основном соответствуют записанным углеводам.') + '</p>';
+      h += `<table class="fiTbl rptTbl"><thead><tr><th>Когда</th><th>Весь приём</th><th class="n">ХЕ</th><th class="n">Доза</th><th class="n">До</th><th class="n">Пик</th><th class="n">Подъём</th></tr></thead><tbody>` +
+        a.worst.map(r => { const fl = r.rise >= BIG_RISE && r.carbs / XE() <= FEW_XE; return `<tr><td>${dmy(r.date)} ${esc(r.meal.toLowerCase())}</td><td class="wrapc">${esc(r.items.slice(0, 6).map(i => i.name + ' ' + Math.round(i.g) + ' г').join(', '))}${r.items.length > 6 ? '…' : ''}${fl ? '<div class="fiHi" style="font-size:12px">мало ХЕ, а подъём большой — уточнить, что ещё ели</div>' : ''}</td><td class="n" data-l="ХЕ">${xeS(r.carbs)}</td><td class="n" data-l="Доза">${r.dose > 0 ? f1(r.dose) + ' ЕД' : '—'}</td><td class="n" data-l="До">${f1(r.before)}</td><td class="n${r.peak > HIGH ? ' fiHi' : ''}" data-l="Пик">${f1(r.peak)}</td><td class="n" data-l="Подъём">${sg(r.rise)}</td></tr>` }).join('') + '</tbody></table>';
     }
     const d = a.dose;
     if (d && d.nHigh && d.nOk) h += `<p>Записанная доза на 10 г углеводов: в приёмах с пиком выше ${HIGH} в среднем <b>${f1(d.high)} ЕД</b> (${d.nHigh} приёмов), в остальных <b>${f1(d.ok)} ЕД</b> (${d.nOk}). Это описание записей.</p>`;

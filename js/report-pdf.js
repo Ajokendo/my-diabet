@@ -27,7 +27,7 @@ async function build(){
       if(part!==box){part.style.left='-10000px';document.documentElement.appendChild(part)}
       try{
         /* разрезы считаем по раскладке КОПИИ, которую рисует html2canvas, — иначе строка может оказаться разрезанной пополам */
-        let cuts=[];const measure=(root)=>{const t=root.getBoundingClientRect().top;return [...root.querySelectorAll('p,li,tr,.reportSection,.mini,.card,svg,img,table,div')].filter(e=>!/^H[1-4]$/.test((e.nextElementSibling||{}).tagName||'')).map(e=>Math.round(e.getBoundingClientRect().bottom-t)).filter(y=>y>0).sort((a,b)=>a-b)};
+        let cuts=[];const measure=(root)=>{const t=root.getBoundingClientRect().top;return [...root.querySelectorAll('p,li,tr,.reportSection,.mini,.card,svg,img,table,div')].filter(e=>!/^H[1-4]$/.test((e.nextElementSibling||{}).tagName||'')).filter(e=>!e.classList.contains('rptSub')&&e.tagName.toLowerCase()!=='svg').map(e=>Math.round(e.getBoundingClientRect().bottom-t)).filter(y=>y>0).sort((a,b)=>a-b)};
         cuts=measure(part);
         const scale=2,canvas=await html2canvas(part,{scale,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:W+64,onclone:(doc,el)=>{try{const c=measure(el);if(c.length)cuts=c}catch(e){}}});
         const pxW=canvas.width,pageH=Math.floor(pxW*297/210),margin=Math.round(10*pxW/210);
